@@ -1,5 +1,13 @@
-import '../styles/globals.css';
+import { ThemeLanguageProvider } from '../context/ThemeLanguageContext'; 
+import '../styles/globals.css'; 
 
-export default function App({ Component, pageProps }) {
-  return <Component {...pageProps} />;
+function MyApp({ Component, pageProps }) {
+  return (
+    
+    <ThemeLanguageProvider>
+      <Component {...pageProps} />
+    </ThemeLanguageProvider>
+  );
 }
+
+export default MyApp;
