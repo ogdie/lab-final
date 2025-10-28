@@ -1,14 +1,26 @@
+'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ConnectionNotification from './ConnectionNotification';
 
 export default function Navbar({ user, onSearch = () => {}, onNotificationsClick }) {
+  const [searchTerm, setSearchTerm] = useState('');
   const [notificationsCount, setNotificationsCount] = useState(0);
   const [showConnectionNotifications, setShowConnectionNotifications] = useState(false);
 
+  // Debounce para busca
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchTerm.trim()) {
+        onSearch(searchTerm.trim());
+      }
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchTerm, onSearch]);
+
+  // Contagem de notificações
   useEffect(() => {
     if (user?._id) {
-      // Fetch unread notifications count
       const fetchCount = async () => {
         try {
           const res = await fetch(`/api/users/${user._id}/notifications`);
@@ -30,33 +42,58 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
       <div style={styles.container}>
         <Link href="/home" style={styles.logo}>CodeConnect</Link>
         
-        <div style={styles.searchContainer}>
+        <div style={{ ...styles.searchContainer, position: 'relative' }}>
           <input
             type="text"
             placeholder="Buscar posts e usuários..."
+            aria-label="Buscar posts e usuários"
             style={styles.searchInput}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                onSearch(e.target.value);
+            value={searchTerm}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearchTerm(value);
+              if (value.trim() === '') {
+                onSearch(''); // limpa resultados quando não há texto
               }
             }}
           />
+          {searchTerm && (
+            <button
+              style={styles.clearButton}
+              onClick={() => {
+                setSearchTerm('');
+                onSearch(''); // limpa resultados ao clicar no X
+              }}
+              aria-label="Limpar busca"
+            >
+              ✖️
+            </button>
+          )}
         </div>
 
         <div style={styles.rightSection}>
           <button 
             style={styles.iconButton}
             onClick={onNotificationsClick}
+            title="Notificações"
           >
             🔔 {notificationsCount > 0 && <span style={styles.badge}>{notificationsCount}</span>}
           </button>
           
-          <Link href="/chat" style={styles.iconButton}>
+          <Link href="/chat" style={styles.iconButton} title="Chat">
             💬
           </Link>
-          
+
+          <Link href="/forum" style={styles.iconButton} title="Fórum">
+            📢
+          </Link>
+
+          <Link href="/settings" style={styles.iconButton} title="Configurações">
+            ⚙️
+          </Link>
+
           {user && (
-            <Link href={`/profile?id=${user._id}`} style={styles.userInfo}>
+            <Link href={`/profile?id=${user._id}`} style={styles.userInfo} title="Meu perfil">
               <img 
                 src={user.profilePicture || '/default-avatar.svg'} 
                 alt={user.name}
@@ -73,6 +110,7 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                 window.location.href = '/';
               }}
               style={styles.logoutButton}
+              title="Sair"
             >
               Sair
             </button>
@@ -124,7 +162,18 @@ const styles = {
     padding: '0.5rem 1rem',
     border: '1px solid #ddd',
     borderRadius: '20px',
-    fontSize: '1rem'
+    fontSize: '1rem',
+    paddingRight: '2rem'
+  },
+  clearButton: {
+    position: 'absolute',
+    right: '0.5rem',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '0.9rem'
   },
   rightSection: {
     display: 'flex',
@@ -175,4 +224,3 @@ const styles = {
     cursor: 'pointer'
   }
 };
-
