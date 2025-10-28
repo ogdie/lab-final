@@ -40,7 +40,7 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
   return (
     <nav style={styles.navbar}>
       <div style={styles.container}>
-        <Link href="/home" style={styles.logo}>CodeConnect</Link>
+        <Link href="/home" style={styles.logo}>Codemia</Link>
         
         <div style={{ ...styles.searchContainer, position: 'relative' }}>
           <input
