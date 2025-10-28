@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 export default function AlertModal({ isOpen, onClose, message, title = 'Aviso' }) {
   if (!isOpen) return null;
 

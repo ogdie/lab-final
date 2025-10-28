@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import AuthForm from '../components/AuthForm';
+import AlertModal from '../components/AlertModal';
 import { authAPI } from '../services/api';
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -20,7 +22,18 @@ export default function Home() {
       localStorage.setItem('user', JSON.stringify(response.user));
       window.location.href = '/home';
     } catch (error) {
-      alert('Erro ao fazer login: ' + error.message);
+      let message = error.message;
+      let title = 'Erro ao fazer login';
+      
+      // Mensagens específicas do backend
+      if (message.includes('Senha incorreta')) {
+        message = 'Senha incorreta.';
+      } else if (message.includes('Usuário não cadastrado') || message.includes('não encontrado')) {
+        message = 'Usuário não cadastrado.';
+        title = 'Usuário não encontrado';
+      }
+      
+      setAlert({ isOpen: true, message, title });
     } finally {
       setLoading(false);
     }
@@ -34,7 +47,16 @@ export default function Home() {
       localStorage.setItem('user', JSON.stringify(response.user));
       window.location.href = '/home';
     } catch (error) {
-      alert('Erro ao fazer registro: ' + error.message);
+      let message = error.message;
+      let title = 'Erro ao se cadastrar';
+      
+      // Mensagens específicas
+      if (message.includes('Email já cadastrado') || message.includes('já está cadastrado')) {
+        message = 'Este email já está cadastrado.';
+        title = 'Email em uso';
+      }
+      
+      setAlert({ isOpen: true, message, title });
     } finally {
       setLoading(false);
     }
@@ -50,6 +72,13 @@ export default function Home() {
       ) : (
         <AuthForm onLogin={handleLogin} onRegister={handleRegister} />
       )}
+      
+      <AlertModal 
+        isOpen={alert.isOpen}
+        onClose={() => setAlert({ isOpen: false, message: '', title: 'Aviso' })}
+        message={alert.message}
+        title={alert.title}
+      />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import PostCard from '../components/PostCard';
 import EditProfileModal from '../components/EditProfileModal';
 import FollowButton from '../components/FollowButton';
 import ConnectButton from '../components/ConnectButton';
+import AlertModal from '../components/AlertModal';
 import { usersAPI } from '../services/api';
 
 export default function Profile() {
@@ -14,6 +15,7 @@ export default function Profile() {
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -54,9 +56,17 @@ export default function Profile() {
     try {
       await usersAPI.editProfile(user._id, formData);
       loadUser(user._id);
-      alert('Perfil atualizado com sucesso!');
+      setAlert({ 
+        isOpen: true, 
+        message: 'Perfil atualizado com sucesso!', 
+        title: 'Sucesso!' 
+      });
     } catch (err) {
-      alert('Erro ao atualizar perfil: ' + err.message);
+      setAlert({ 
+        isOpen: true, 
+        message: err.message || 'Erro ao atualizar perfil', 
+        title: 'Erro ao atualizar perfil' 
+      });
     }
   };
 
@@ -84,14 +94,14 @@ export default function Profile() {
     <div style={styles.container}>
       <Navbar user={currentUser} />
       
-      <div style={styles.header}>
+      <div style={styles.profileHeader}>
         <img 
           src={user.profilePicture || '/default-avatar.svg'} 
           alt={user.name}
           style={styles.profileImage}
         />
         <div style={styles.info}>
-          <div style={styles.header}>
+          <div style={styles.nameHeader}>
             <h1 style={styles.name}>{user.name}</h1>
             {currentUser && currentUser._id === user._id && (
               <button 
@@ -152,6 +162,13 @@ export default function Profile() {
         onSave={handleEditProfile}
       />
       
+      <AlertModal 
+        isOpen={alert.isOpen}
+        onClose={() => setAlert({ isOpen: false, message: '', title: 'Aviso' })}
+        message={alert.message}
+        title={alert.title}
+      />
+      
       <Footer />
     </div>
   );
@@ -168,7 +185,7 @@ const styles = {
     padding: '2rem',
     fontSize: '1.2rem'
   },
-  header: {
+  profileHeader: {
     display: 'flex',
     gap: '2rem',
     padding: '2rem',
@@ -185,7 +202,7 @@ const styles = {
   info: {
     flex: 1
   },
-  header: {
+  nameHeader: {
     display: 'flex',
     alignItems: 'center',
     gap: '1rem',

@@ -33,8 +33,12 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user || !await user.comparePassword(password)) {
-      return res.status(401).json({ error: 'Credenciais inválidas' });
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não cadastrado' });
+    }
+
+    if (!await user.comparePassword(password)) {
+      return res.status(401).json({ error: 'Senha incorreta' });
     }
 
     const token = generateToken(user._id);
