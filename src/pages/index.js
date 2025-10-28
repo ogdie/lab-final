@@ -44,12 +44,13 @@ export default function Home() {
     try {
       const response = await authAPI.login(data);
 
-      if (!response?.token || !response?.user?._id) {
+      const userId = response?.user?._id || response?.user?.id;
+      if (!response?.token || !userId) {
         throw new Error('Resposta inválida do servidor.');
       }
 
       localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('user', JSON.stringify({ ...response.user, _id: userId }));
       router.push('/home');
     } catch (error) {
       let message = error.message || 'Erro desconhecido.';
@@ -82,12 +83,13 @@ export default function Home() {
     try {
       const response = await authAPI.register(data);
 
-      if (!response?.token || !response?.user?._id) {
+      const userId = response?.user?._id || response?.user?.id;
+      if (!response?.token || !userId) {
         throw new Error('Resposta inválida do servidor.');
       }
 
       localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('user', JSON.stringify({ ...response.user, _id: userId }));
       router.push('/home');
     } catch (error) {
       let message = error.message || 'Erro desconhecido.';

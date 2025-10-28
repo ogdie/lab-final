@@ -2,6 +2,8 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import passport from "../lib/passport.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const router = express.Router();
 
@@ -140,40 +142,50 @@ router.post("/logout", (req, res) => {
   return res.json({ message: "Logout realizado" });
 });
 
-// Google OAuth Routes
-router.get('/google', passport.authenticate('google', {
-  scope: ['profile', 'email']
-}));
+// Google OAuth Routes (enabled only if env vars present)
+const hasGoogleCreds = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+if (hasGoogleCreds) {
+  router.get('/google', passport.authenticate('google', {
+    scope: ['profile', 'email']
+  }));
 
-router.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/login?error=oauth' }),
-  async (req, res) => {
-    try {
-      const token = generateToken(req.user._id);
-      // Redirect to frontend with token
-      res.redirect(`/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
-    } catch (error) {
-      res.redirect('/login?error=oauth');
+  router.get('/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/login?error=oauth' }),
+    async (req, res) => {
+      try {
+        const token = generateToken(req.user._id);
+        res.redirect(`/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+      } catch (error) {
+        res.redirect('/login?error=oauth');
+      }
     }
-  }
-);
+  );
+} else {
+  router.get('/google', (req, res) => res.status(503).json({ error: 'Google OAuth não configurado' }));
+  router.get('/google/callback', (req, res) => res.redirect('/login?error=oauth'));
+}
 
-// GitHub OAuth Routes
-router.get('/github', passport.authenticate('github', {
-  scope: ['user:email']
-}));
+// GitHub OAuth Routes (enabled only if env vars present)
+const hasGithubCreds = Boolean(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET);
+if (hasGithubCreds) {
+  router.get('/github', passport.authenticate('github', {
+    scope: ['user:email']
+  }));
 
-router.get('/github/callback',
-  passport.authenticate('github', { failureRedirect: '/login?error=oauth' }),
-  async (req, res) => {
-    try {
-      const token = generateToken(req.user._id);
-      // Redirect to frontend with token
-      res.redirect(`/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
-    } catch (error) {
-      res.redirect('/login?error=oauth');
+  router.get('/github/callback',
+    passport.authenticate('github', { failureRedirect: '/login?error=oauth' }),
+    async (req, res) => {
+      try {
+        const token = generateToken(req.user._id);
+        res.redirect(`/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+      } catch (error) {
+        res.redirect('/login?error=oauth');
+      }
     }
-  }
-);
+  );
+} else {
+  router.get('/github', (req, res) => res.status(503).json({ error: 'GitHub OAuth não configurado' }));
+  router.get('/github/callback', (req, res) => res.redirect('/login?error=oauth'));
+}
 
 export default router;

@@ -51,6 +51,8 @@ async function start() {
     
     // API Routes (Express handles these)
     server.use('/api/auth', authRoutes);
+    // Also expose non-API OAuth routes to match provider redirect URIs
+    server.use('/auth', authRoutes);
     server.use('/api/users', userRoutes);
     server.use('/api/posts', postRoutes);
     server.use('/api/comments', commentRoutes);

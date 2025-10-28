@@ -87,6 +87,14 @@ export default function AuthForm({ onLogin, onRegister }) {
     });
   };
 
+  const handleOAuthLogin = (provider) => {
+    if (provider === 'google') {
+      window.location.href = '/api/auth/google';
+    } else if (provider === 'github') {
+      window.location.href = '/api/auth/github';
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
       <h2 style={styles.title}>{isLogin ? 'Login' : 'Cadastro'}</h2>
@@ -168,6 +176,26 @@ export default function AuthForm({ onLogin, onRegister }) {
         {isLogin ? 'Entrar' : 'Cadastrar'}
       </button>
 
+      {isLogin && (
+        <>
+          <div style={styles.divider}>
+            <div style={styles.dividerLine}></div>
+            <span style={styles.dividerText}>ou continue com</span>
+            <div style={styles.dividerLine}></div>
+          </div>
+          <div style={styles.oauthContainer}>
+            <button type="button" onClick={() => handleOAuthLogin('google')} style={styles.googleButton}>
+              <span style={styles.oauthIcon}>📧</span>
+              Gmail
+            </button>
+            <button type="button" onClick={() => handleOAuthLogin('github')} style={styles.githubButton}>
+              <span style={styles.oauthIcon}>🐙</span>
+              GitHub
+            </button>
+          </div>
+        </>
+      )}
+
       <button
         type="button"
         onClick={() => {
@@ -221,6 +249,60 @@ const styles = {
     color: '#2196F3',
     cursor: 'pointer',
     textDecoration: 'underline'
+  },
+  divider: {
+    display: 'flex',
+    alignItems: 'center',
+    margin: '1rem 0',
+    fontSize: '0.9rem',
+    color: '#666'
+  },
+  dividerLine: {
+    flex: 1,
+    height: '1px',
+    background: '#ddd'
+  },
+  dividerText: {
+    padding: '0 1rem',
+    whiteSpace: 'nowrap'
+  },
+  oauthContainer: {
+    display: 'flex',
+    gap: '0.5rem',
+    marginBottom: '1rem'
+  },
+  googleButton: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    padding: '0.75rem',
+    background: '#db4437',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '0.9rem',
+    cursor: 'pointer',
+    fontWeight: 'bold'
+  },
+  githubButton: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    padding: '0.75rem',
+    background: '#333',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '0.9rem',
+    cursor: 'pointer',
+    fontWeight: 'bold'
+  },
+  oauthIcon: {
+    fontSize: '1.1rem'
   },
   error: {
     background: '#fdecea',
