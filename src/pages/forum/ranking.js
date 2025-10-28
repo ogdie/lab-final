@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { rankingAPI } from '../../services/api';
@@ -10,6 +10,7 @@ export default function Ranking() {
   const [ranking, setRanking] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [infoHover, setInfoHover] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -18,9 +19,7 @@ export default function Ranking() {
     let parsedUser = null;
     try {
       parsedUser = userData ? JSON.parse(userData) : null;
-    } catch (e) {
-      console.error('Invalid user data in localStorage:', e);
-    }
+    } catch {}
 
     if (!token || !parsedUser?._id) {
       router.push('/');
@@ -37,8 +36,7 @@ export default function Ranking() {
     try {
       const data = await rankingAPI.getRanking();
       setRanking(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Error loading ranking:', err);
+    } catch {
       setError('Não foi possível carregar o ranking.');
     } finally {
       setLoading(false);
@@ -77,6 +75,20 @@ export default function Ranking() {
 
       <div style={styles.content}>
         <h1 style={styles.title}>🏆 Ranking de XP</h1>
+
+        <div
+          style={{
+            ...styles.infoBox,
+            ...(infoHover ? styles.infoBoxHover : null),
+          }}
+          onMouseEnter={() => setInfoHover(true)}
+          onMouseLeave={() => setInfoHover(false)}
+        >
+          <p style={styles.infoText}>
+            Ao final de cada mês, os participantes que alcançarem o topo do ranking receberão um prêmio exclusivo da Codemia!
+            Participe, dê o seu melhor e conquiste recompensas especiais por sua dedicação e desempenho.
+          </p>
+        </div>
 
         {top10.length === 0 ? (
           <p style={styles.empty}>Nenhum usuário no ranking ainda.</p>
@@ -124,8 +136,27 @@ const styles = {
   },
   title: {
     fontSize: '2rem',
-    marginBottom: '2rem',
+    marginBottom: '1rem',
     textAlign: 'center',
+  },
+  infoBox: {
+    background: 'white',
+    border: '1px solid #e0e0e0',
+    borderRadius: '8px',
+    padding: '1rem',
+    marginBottom: '1.5rem',
+    textAlign: 'center',
+    transition: 'background 150ms ease, border-color 150ms ease',
+  },
+  infoBoxHover: {
+    background: '#e7f3ff',
+    borderColor: '#b3d4ff',
+  },
+  infoText: {
+    margin: 0,
+    fontSize: '1rem',
+    color: '#333',
+    lineHeight: 1.5,
   },
   ranking: {
     display: 'flex',
