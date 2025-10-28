@@ -1,6 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
+import passport from "../lib/passport.js";
 
 const router = express.Router();
 
@@ -138,5 +139,41 @@ router.post("/login", async (req, res) => {
 router.post("/logout", (req, res) => {
   return res.json({ message: "Logout realizado" });
 });
+
+// Google OAuth Routes
+router.get('/google', passport.authenticate('google', {
+  scope: ['profile', 'email']
+}));
+
+router.get('/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login?error=oauth' }),
+  async (req, res) => {
+    try {
+      const token = generateToken(req.user._id);
+      // Redirect to frontend with token
+      res.redirect(`/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+    } catch (error) {
+      res.redirect('/login?error=oauth');
+    }
+  }
+);
+
+// GitHub OAuth Routes
+router.get('/github', passport.authenticate('github', {
+  scope: ['user:email']
+}));
+
+router.get('/github/callback',
+  passport.authenticate('github', { failureRedirect: '/login?error=oauth' }),
+  async (req, res) => {
+    try {
+      const token = generateToken(req.user._id);
+      // Redirect to frontend with token
+      res.redirect(`/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+    } catch (error) {
+      res.redirect('/login?error=oauth');
+    }
+  }
+);
 
 export default router;

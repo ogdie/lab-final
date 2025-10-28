@@ -44,7 +44,11 @@ export const authAPI = {
   
   logout: () => fetchAPI('/auth/logout', {
     method: 'POST'
-  })
+  }),
+  
+  // OAuth login URLs
+  getGoogleLoginUrl: () => `${API_URL}/auth/google`,
+  getGitHubLoginUrl: () => `${API_URL}/auth/github`
 };
 
 // Users API

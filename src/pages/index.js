@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import AuthForm from '../components/AuthForm';
 import AlertModal from '../components/AlertModal';
 import { authAPI } from '../services/api';
+import { handleOAuthCallback, checkOAuthError } from '../utils/auth';
 
 export default function Home() {
   const router = useRouter();
@@ -10,6 +11,23 @@ export default function Home() {
   const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
 
   useEffect(() => {
+    // Check for OAuth callback
+    const oauthResult = handleOAuthCallback();
+    if (oauthResult) {
+      // Store user data and redirect to home
+      localStorage.setItem('user', JSON.stringify(oauthResult.user));
+      router.push('/home');
+      return;
+    }
+
+    // Check for OAuth error
+    const oauthError = checkOAuthError();
+    if (oauthError) {
+      setAlert({ isOpen: true, message: oauthError, title: 'Erro de Autenticação' });
+      return;
+    }
+
+    // Regular token check
     const token = localStorage.getItem('token');
     if (token) {
       router.push('/home');
