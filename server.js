@@ -2,7 +2,9 @@ import express from "express";
 import next from "next";
 import dotenv from "dotenv";
 import cors from "cors";
+import session from "express-session";
 import { connectDB } from "./lib/mongodb.js";
+import passport from "./lib/passport.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
@@ -26,11 +28,31 @@ async function start() {
     await app.prepare();
 
     const server = express();
-    server.use(cors());
+    server.use(cors({
+      origin: process.env.NODE_ENV === 'production' ? process.env.BASE_URL : 'http://localhost:3000',
+      credentials: true
+    }));
     server.use(express.json());
+    
+    // Session configuration for OAuth
+    server.use(session({
+      secret: process.env.SESSION_SECRET || 'your-session-secret-key',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      }
+    }));
+    
+    // Passport middleware
+    server.use(passport.initialize());
+    server.use(passport.session());
     
     // API Routes (Express handles these)
     server.use('/api/auth', authRoutes);
+    // Also expose non-API OAuth routes to match provider redirect URIs
+    server.use('/auth', authRoutes);
     server.use('/api/users', userRoutes);
     server.use('/api/posts', postRoutes);
     server.use('/api/comments', commentRoutes);

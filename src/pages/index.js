@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import AuthForm from '../components/AuthForm';
 import AlertModal from '../components/AlertModal';
 import { authAPI } from '../services/api';
+import { handleOAuthCallback, checkOAuthError } from '../utils/auth';
 
 export default function Home() {
   const router = useRouter();
@@ -10,6 +11,23 @@ export default function Home() {
   const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
 
   useEffect(() => {
+    // Check for OAuth callback
+    const oauthResult = handleOAuthCallback();
+    if (oauthResult) {
+      // Store user data and redirect to home
+      localStorage.setItem('user', JSON.stringify(oauthResult.user));
+      router.push('/home');
+      return;
+    }
+
+    // Check for OAuth error
+    const oauthError = checkOAuthError();
+    if (oauthError) {
+      setAlert({ isOpen: true, message: oauthError, title: 'Erro de Autenticação' });
+      return;
+    }
+
+    // Regular token check
     const token = localStorage.getItem('token');
     if (token) {
       router.push('/home');
@@ -26,12 +44,13 @@ export default function Home() {
     try {
       const response = await authAPI.login(data);
 
-      if (!response?.token || !response?.user?._id) {
+      const userId = response?.user?._id || response?.user?.id;
+      if (!response?.token || !userId) {
         throw new Error('Resposta inválida do servidor.');
       }
 
       localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('user', JSON.stringify({ ...response.user, _id: userId }));
       router.push('/home');
     } catch (error) {
       let message = error.message || 'Erro desconhecido.';
@@ -64,12 +83,13 @@ export default function Home() {
     try {
       const response = await authAPI.register(data);
 
-      if (!response?.token || !response?.user?._id) {
+      const userId = response?.user?._id || response?.user?.id;
+      if (!response?.token || !userId) {
         throw new Error('Resposta inválida do servidor.');
       }
 
       localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('user', JSON.stringify({ ...response.user, _id: userId }));
       router.push('/home');
     } catch (error) {
       let message = error.message || 'Erro desconhecido.';

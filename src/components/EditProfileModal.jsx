@@ -15,7 +15,7 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave }) {
         profilePicture: user.profilePicture || ''
       });
     }
-  }, [user]);
+  }, [user]); 
 
   if (!isOpen) return null;
 
