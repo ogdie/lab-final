@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import CommentCard from './CommentCard';
 import ShareButton from './ShareButton';
+import EditPostModal from './EditPostModal';
 
-export default function PostCard({ post, currentUser, onLike, onComment }) {
+export default function PostCard({ post, currentUser, onLike, onComment, onEdit, onDelete }) {
   const [showComments, setShowComments] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showFullContent, setShowFullContent] = useState(false);
+  const MAX_PREVIEW_LENGTH = 300;
 
   const handleLike = () => {
     if (currentUser) {
@@ -12,35 +16,70 @@ export default function PostCard({ post, currentUser, onLike, onComment }) {
   };
 
   const isLiked = currentUser && post.likes?.includes(currentUser._id);
+  const isOwnPost = currentUser && (currentUser._id === (post.author?._id || post.author));
+
+  const displayContent = post.content || '';
+  const shouldTruncate = displayContent.length > MAX_PREVIEW_LENGTH;
+  const visibleContent = showFullContent
+    ? displayContent
+    : displayContent.substring(0, MAX_PREVIEW_LENGTH);
+
+  const toggleContent = () => {
+    setShowFullContent(!showFullContent);
+  };
+
+  const handleEdit = (updatedData) => {
+    if (onEdit && typeof onEdit === 'function') {
+      onEdit(post._id, updatedData);
+    }
+    setShowEditModal(false);
+  };
 
   return (
     <div style={styles.card}>
       <div style={styles.header}>
-        <img 
-          src={post.author?.profilePicture || '/default-avatar.svg'} 
-          alt={post.author?.name}
+        <img
+          src={post.author?.profilePicture || '/default-avatar.svg'}
+          alt={post.author?.name || 'Autor'}
           style={styles.avatar}
         />
         <div style={styles.authorInfo}>
-          <div style={styles.name}>{post.author?.name}</div>
-          <div style={styles.date}>{new Date(post.createdAt).toLocaleDateString()}</div>
+          <div style={styles.name}>{post.author?.name || 'Usuário'}</div>
+          <div style={styles.date}>{new Date(post.createdAt).toLocaleDateString('pt-BR')}</div>
         </div>
+        {isOwnPost && (
+          <button
+            onClick={() => setShowEditModal(true)}
+            style={styles.editButton}
+            aria-label="Editar post"
+          >
+            ⋮
+          </button>
+        )}
       </div>
-      
-      <div style={styles.content}>{post.content}</div>
-      
+
+      <div style={styles.content}>
+        {visibleContent}
+        {shouldTruncate && !showFullContent && '... '}
+        {shouldTruncate && (
+          <button onClick={toggleContent} style={styles.toggleButton}>
+            {showFullContent ? ' Ver menos' : ' Ver mais'}
+          </button>
+        )}
+      </div>
+
       {post.image && (
         <img src={post.image} alt="Post" style={styles.image} />
       )}
-      
+
       <div style={styles.actions}>
-        <button 
+        <button
           onClick={handleLike}
           style={{ ...styles.actionButton, color: isLiked ? '#f44336' : '#666' }}
         >
           ❤️ {post.likes?.length || 0}
         </button>
-        <button 
+        <button
           onClick={() => setShowComments(!showComments)}
           style={styles.actionButton}
         >
@@ -50,7 +89,7 @@ export default function PostCard({ post, currentUser, onLike, onComment }) {
           <ShareButton post={post} />
         </div>
       </div>
-      
+
       {showComments && (
         <div style={styles.commentsSection}>
           {post.comments?.map((comment) => (
@@ -84,6 +123,16 @@ export default function PostCard({ post, currentUser, onLike, onComment }) {
           )}
         </div>
       )}
+
+      {showEditModal && (
+        <EditPostModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          post={post}
+          onSave={handleEdit}
+          onDelete={onDelete}
+        />
+      )}
     </div>
   );
 }
@@ -95,45 +144,72 @@ const styles = {
     borderRadius: '8px',
     padding: '1rem',
     marginBottom: '1rem',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
   },
   header: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: '0.75rem',
-    marginBottom: '1rem'
+    marginBottom: '1rem',
   },
   avatar: {
     width: '48px',
     height: '48px',
     borderRadius: '50%',
-    objectFit: 'cover'
+    objectFit: 'cover',
+  },
+  authorInfo: {
+    flex: 1,
   },
   name: {
     fontWeight: 'bold',
-    fontSize: '1rem'
+    fontSize: '1rem',
   },
   date: {
     fontSize: '0.85rem',
-    color: '#666'
+    color: '#666',
+  },
+  editButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '1.25rem',
+    cursor: 'pointer',
+    color: '#666',
+    padding: '4px',
+    borderRadius: '4px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     fontSize: '1rem',
     lineHeight: '1.5',
-    marginBottom: '1rem'
+    marginBottom: '1rem',
+    whiteSpace: 'pre-wrap',
+  },
+  toggleButton: {
+    background: 'none',
+    border: 'none',
+    color: '#2196F3',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    fontWeight: '600',
+    marginLeft: '4px',
   },
   image: {
     width: '100%',
     maxHeight: '400px',
     objectFit: 'contain',
     borderRadius: '8px',
-    marginBottom: '1rem'
+    marginBottom: '1rem',
   },
   actions: {
     display: 'flex',
     gap: '1rem',
     paddingTop: '1rem',
-    borderTop: '1px solid #e0e0e0'
+    borderTop: '1px solid #e0e0e0',
   },
   actionButton: {
     background: 'none',
@@ -142,31 +218,27 @@ const styles = {
     fontSize: '1rem',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   shareDropdown: {
     position: 'relative',
-    display: 'inline-block'
+    display: 'inline-block',
   },
   commentsSection: {
     marginTop: '1rem',
     paddingTop: '1rem',
-    borderTop: '1px solid #e0e0e0'
-  },
-  comment: {
-    padding: '0.5rem 0',
-    fontSize: '0.9rem'
+    borderTop: '1px solid #e0e0e0',
   },
   commentForm: {
     display: 'flex',
     gap: '0.5rem',
-    marginTop: '1rem'
+    marginTop: '1rem',
   },
   commentInput: {
     flex: 1,
     padding: '0.5rem',
     border: '1px solid #ddd',
-    borderRadius: '4px'
+    borderRadius: '4px',
   },
   commentButton: {
     padding: '0.5rem 1rem',
@@ -174,6 +246,6 @@ const styles = {
     color: 'white',
     border: 'none',
     borderRadius: '4px',
-    cursor: 'pointer'
-  }
+    cursor: 'pointer',
+  },
 };
