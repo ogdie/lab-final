@@ -1,38 +1,53 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import AuthForm from '../components/AuthForm';
 import AlertModal from '../components/AlertModal';
 import { authAPI } from '../services/api';
 
 export default function Home() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      window.location.href = '/home';
+      router.push('/home');
     }
-  }, []);
+  }, [router]);
 
   const handleLogin = async (data) => {
+    if (!data.email?.trim() || !data.password?.trim()) {
+      setAlert({ isOpen: true, message: 'Preencha todos os campos.', title: 'Campos inválidos' });
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await authAPI.login(data);
+
+      if (!response?.token || !response?.user?._id) {
+        throw new Error('Resposta inválida do servidor.');
+      }
+
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
-      window.location.href = '/home';
+      router.push('/home');
     } catch (error) {
-      let message = error.message;
+      let message = error.message || 'Erro desconhecido.';
       let title = 'Erro ao fazer login';
-      
-      // Mensagens específicas do backend
+
       if (message.includes('Senha incorreta')) {
         message = 'Senha incorreta.';
-      } else if (message.includes('Usuário não cadastrado') || message.includes('não encontrado')) {
+      } else if (
+        message.includes('Usuário não cadastrado') ||
+        message.includes('não encontrado') ||
+        message.includes('User not found')
+      ) {
         message = 'Usuário não cadastrado.';
         title = 'Usuário não encontrado';
       }
-      
+
       setAlert({ isOpen: true, message, title });
     } finally {
       setLoading(false);
@@ -40,42 +55,59 @@ export default function Home() {
   };
 
   const handleRegister = async (data) => {
+    if (!data.name?.trim() || !data.email?.trim() || !data.password?.trim()) {
+      setAlert({ isOpen: true, message: 'Preencha todos os campos.', title: 'Campos inválidos' });
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await authAPI.register(data);
+
+      if (!response?.token || !response?.user?._id) {
+        throw new Error('Resposta inválida do servidor.');
+      }
+
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
-      window.location.href = '/home';
+      router.push('/home');
     } catch (error) {
-      let message = error.message;
+      let message = error.message || 'Erro desconhecido.';
       let title = 'Erro ao se cadastrar';
-      
-      // Mensagens específicas
-      if (message.includes('Email já cadastrado') || message.includes('já está cadastrado')) {
+
+      if (
+        message.includes('Email já cadastrado') ||
+        message.includes('já está cadastrado') ||
+        message.includes('already exists')
+      ) {
         message = 'Este email já está cadastrado.';
         title = 'Email em uso';
       }
-      
+
       setAlert({ isOpen: true, message, title });
     } finally {
       setLoading(false);
     }
   };
 
+  const closeAlert = () => {
+    setAlert({ isOpen: false, message: '', title: 'Aviso' });
+  };
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>CodeConnect</h1>
       <p style={styles.subtitle}>Rede social para estudantes de programação</p>
-      
+
       {loading ? (
         <div style={styles.loading}>Carregando...</div>
       ) : (
         <AuthForm onLogin={handleLogin} onRegister={handleRegister} />
       )}
-      
-      <AlertModal 
+
+      <AlertModal
         isOpen={alert.isOpen}
-        onClose={() => setAlert({ isOpen: false, message: '', title: 'Aviso' })}
+        onClose={closeAlert}
         message={alert.message}
         title={alert.title}
       />
@@ -91,21 +123,21 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    padding: '2rem'
+    padding: '2rem',
   },
   title: {
     fontSize: '3rem',
     color: 'white',
-    marginBottom: '1rem'
+    marginBottom: '1rem',
   },
   subtitle: {
     fontSize: '1.2rem',
     color: 'rgba(255,255,255,0.9)',
     marginBottom: '2rem',
-    textAlign: 'center'
+    textAlign: 'center',
   },
   loading: {
     color: 'white',
-    fontSize: '1.2rem'
-  }
+    fontSize: '1.2rem',
+  },
 };
