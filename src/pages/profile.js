@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import PostCard from '../components/PostCard';
 import EditProfileModal from '../components/EditProfileModal';
 import FollowButton from '../components/FollowButton';
 import ConnectButton from '../components/ConnectButton';
@@ -11,9 +10,9 @@ import { usersAPI } from '../services/api';
 
 export default function Profile() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentUser, setCurrentUser] = useState(null);
   const [user, setUser] = useState(null);
-  const [posts, setPosts] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
   const [loading, setLoading] = useState(true);
@@ -37,15 +36,14 @@ export default function Profile() {
 
     setCurrentUser(parsedUser);
 
-    const userId = router.query?.id || parsedUser._id;
+    const userId = searchParams?.get('id') || parsedUser._id;
     if (userId) {
       loadUser(userId);
-      loadUserPosts(userId);
     } else {
       setError('ID de usuário inválido.');
       setLoading(false);
     }
-  }, [router, router.query]);
+  }, [searchParams]);
 
   const loadUser = async (userId) => {
     try {
@@ -57,16 +55,6 @@ export default function Profile() {
       setError('Não foi possível carregar o perfil.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadUserPosts = async (userId) => {
-    try {
-      const data = await usersAPI.getUserPosts(userId);
-      setPosts(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Error loading posts:', err);
-      // Não interrompe a renderização do perfil
     }
   };
 
@@ -205,23 +193,6 @@ export default function Profile() {
         </div>
       </div>
 
-      <div style={styles.content}>
-        <main style={styles.posts}>
-          <h2>Posts ({posts.length})</h2>
-          {posts.length === 0 ? (
-            <p style={styles.emptyPosts}>Nenhum post publicado.</p>
-          ) : (
-            posts.map((post) => (
-              <PostCard
-                key={post._id || Math.random()}
-                post={post}
-                currentUser={currentUser}
-              />
-            ))
-          )}
-        </main>
-      </div>
-
       <EditProfileModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
@@ -321,14 +292,5 @@ const styles = {
     display: 'flex',
     gap: '2rem',
     marginTop: '1rem',
-  },
-  posts: {
-    flex: 1,
-  },
-  emptyPosts: {
-    textAlign: 'center',
-    color: '#666',
-    fontStyle: 'italic',
-    padding: '1rem 0',
   },
 };
