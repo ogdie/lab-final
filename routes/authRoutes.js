@@ -4,54 +4,139 @@ import User from "../models/user.js";
 
 const router = express.Router();
 
+const ALLOWED_INSTITUTIONS = [
+  "Faculdade de Engenharia da Universidade do Porto (FEUP)",
+  "Faculdade de Ciências da Universidade do Porto (FCUP)",
+  "Instituto Superior de Engenharia do Porto (ISEP – Politécnico do Porto)",
+  "Instituto Superior de Tecnologias Avançadas do Porto (ISTEC Porto)",
+  "Universidade Portucalense (UPT)",
+  "42 Porto",
+  "Academia de Código (Porto)",
+  "EDIT. – Disruptive Digital Education (Porto)",
+  "ATEC- Academia de Formação",
+  "Bytes4Future",
+  "Tokio School",
+  "Outros"
+];
+
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
+const normalizeEmail = (email) => String(email || "").trim().toLowerCase();
+const normalizeText = (v) => String(v || "").trim();
+
+const isValidBirthDate = (dateStr) => {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return false;
+  const min = new Date("1900-01-01");
+  const today = new Date();
+  return d >= min && d <= today;
+};
+
+const sanitizeUser = (user) => ({
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  userType: user.userType,
+  institution: user.institution,
+  birthDate: user.birthDate,
+  bio: user.bio,
+  profilePicture: user.profilePicture,
+  xp: user.xp,
+  language: user.language,
+  theme: user.theme,
+  followers: user.followers,
+  following: user.following,
+  connections: user.connections,
+  createdAt: user.createdAt,
+  updatedAt: user.updatedAt
+});
+
 // Register
-router.post('/register', async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, userType } = req.body;
-    
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: 'Email já cadastrado' });
+    const {
+      name,
+      email,
+      password,
+      userType,
+      institution,
+      birthDate
+    } = req.body || {};
+
+    const nameNorm = normalizeText(name);
+    const emailNorm = normalizeEmail(email);
+    const instNorm = normalizeText(institution);
+
+    if (!nameNorm || !emailNorm || !password || !instNorm || !birthDate) {
+      return res.status(400).json({ error: "Dados obrigatórios ausentes." });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Senha deve ter ao menos 6 caracteres." });
+    }
+    if (!ALLOWED_INSTITUTIONS.includes(instNorm)) {
+      return res.status(400).json({ error: "Instituição inválida." });
+    }
+    if (!isValidBirthDate(birthDate)) {
+      return res.status(400).json({ error: "Data de nascimento inválida." });
     }
 
-    const user = await User.create({ name, email, password, userType });
-    const token = generateToken(user._id);
+    const existingUser = await User.findOne({ email: emailNorm }).lean();
+    if (existingUser) {
+      return res.status(409).json({ error: "Email já cadastrado." });
+    }
 
-    res.status(201).json({ user, token });
+    const user = await User.create({
+      name: nameNorm,
+      email: emailNorm,
+      password,
+      userType: ["Estudante", "Professor", "Recrutador"].includes(userType) ? userType : "Estudante",
+      institution: instNorm,
+      birthDate
+    });
+
+    const token = generateToken(user._id);
+    return res.status(201).json({ user: sanitizeUser(user), token });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    if (error && error.code === 11000) {
+      return res.status(409).json({ error: "Email já cadastrado." });
+    }
+    return res.status(500).json({ error: "Erro ao cadastrar." });
   }
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const { email, password } = req.body || {};
+    const emailNorm = normalizeEmail(email);
 
-    if (!user) {
-      return res.status(404).json({ error: 'Usuário não cadastrado' });
+    if (!emailNorm || !password) {
+      return res.status(400).json({ error: "Credenciais inválidas." });
     }
 
-    if (!await user.comparePassword(password)) {
-      return res.status(401).json({ error: 'Senha incorreta' });
+    const user = await User.findOne({ email: emailNorm });
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não cadastrado." });
+    }
+
+    const ok = await user.comparePassword(password);
+    if (!ok) {
+      return res.status(401).json({ error: "Senha incorreta." });
     }
 
     const token = generateToken(user._id);
-    res.json({ user, token });
+    return res.json({ user: sanitizeUser(user), token });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: "Erro ao entrar." });
   }
 });
 
-// Logout (client-side token removal)
-router.post('/logout', (req, res) => {
-  res.json({ message: 'Logout realizado' });
+// Logout
+router.post("/logout", (req, res) => {
+  return res.json({ message: "Logout realizado" });
 });
 
 export default router;
-
