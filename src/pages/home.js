@@ -6,6 +6,7 @@ import PostCard from '../components/PostCard';
 import PostModal from '../components/PostModal';
 import Notificacoes from '../components/Notificacoes';
 import ChatModal from '../components/ChatModal';
+import AlertModal from '../components/AlertModal';
 import { postsAPI, usersAPI } from '../services/api';
 
 export default function Home() {
@@ -20,6 +21,13 @@ export default function Home() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [alert, setAlert] = useState({ 
+    isOpen: false, 
+    message: '', 
+    title: 'Aviso',
+    onConfirm: null,
+    showCancel: false
+  });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -61,7 +69,10 @@ export default function Home() {
       await postsAPI.create({ ...data, author: user._id });
       loadPosts();
     } catch (err) {
-      alert('Erro ao criar post: ' + (err.message || 'Erro desconhecido'));
+      showAlert({ 
+        message: 'Erro ao criar post: ' + (err.message || 'Erro desconhecido'), 
+        title: 'Erro' 
+      });
     }
   };
 
@@ -83,6 +94,44 @@ export default function Home() {
     } catch (err) {
       console.error('Error adding comment:', err);
     }
+  };
+
+  const handleEditPost = async (postId, updatedData) => {
+    if (!postId || !user?._id) return;
+    try {
+      await postsAPI.update(postId, updatedData);
+      loadPosts();
+    } catch (err) {
+      showAlert({ 
+        message: 'Erro ao atualizar post: ' + (err.message || 'Erro desconhecido'), 
+        title: 'Erro' 
+      });
+    }
+  };
+
+  const handleDeletePost = (postId) => {
+    const confirmDelete = async () => {
+      try {
+        await postsAPI.delete(postId);
+        loadPosts();
+        showAlert({ 
+          message: 'Post excluído com sucesso.', 
+          title: 'Sucesso!' 
+        });
+      } catch (err) {
+        showAlert({ 
+          message: 'Erro ao excluir post: ' + (err.message || 'Erro desconhecido'), 
+          title: 'Erro' 
+        });
+      }
+    };
+
+    showAlert({
+      title: 'Excluir post?',
+      message: 'Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.',
+      showCancel: true,
+      onConfirm: confirmDelete
+    });
   };
 
   const handleSearch = async (query) => {
@@ -107,11 +156,19 @@ export default function Home() {
     setSearchResults([]);
   };
 
+  const showAlert = ({ message, title = 'Aviso', onConfirm = null, showCancel = false }) => {
+    setAlert({ isOpen: true, message, title, onConfirm, showCancel });
+  };
+
+  const closeAlert = () => {
+    setAlert(prev => ({ ...prev, isOpen: false }));
+  };
+
   if (loading) {
     return (
       <div style={styles.container}>
         <Navbar user={user} onSearch={handleSearch} onNotificationsClick={() => setShowNotifications(!showNotifications)} />
-        <div style={styles.content}>
+        <div style={styles.mainArea}>
           <p style={styles.loading}>Carregando...</p>
         </div>
         <Footer />
@@ -123,7 +180,7 @@ export default function Home() {
     return (
       <div style={styles.container}>
         <Navbar user={user} onSearch={handleSearch} onNotificationsClick={() => setShowNotifications(!showNotifications)} />
-        <div style={styles.content}>
+        <div style={styles.mainArea}>
           <p style={styles.error}>{error}</p>
         </div>
         <Footer />
@@ -193,40 +250,74 @@ export default function Home() {
         onSubmit={handleCreatePost}
       />
 
-      <div style={styles.content}>
-        <aside style={styles.sidebar}>
-          <button
-            onClick={() => setShowPostModal(true)}
-            style={styles.createButton}
-          >
-            + Criar Post
-          </button>
-
-          <div style={styles.stats}>
-            <h3>Estatísticas</h3>
-            <p>XP: {user?.xp || 0}</p>
-            <p>Seguidores: {user?.followers?.length || 0}</p>
-            <p>Seguindo: {user?.following?.length || 0}</p>
+      <aside style={styles.sidebar}>
+        <div style={styles.profileCard}>
+          <img
+            src={user?.profilePicture || '/default-avatar.svg'}
+            alt={user?.name || 'Você'}
+            style={styles.sidebarAvatar}
+          />
+          <div style={styles.sidebarInfo}>
+            <div style={styles.sidebarName}>{user?.name || 'Usuário'}</div>
+            <div style={styles.sidebarEmail}>{user?.email || ''}</div>
           </div>
-        </aside>
+        </div>
 
-        <main style={styles.posts}>
-          <h2 style={styles.feedTitle}>Feed</h2>
-          {posts.length === 0 ? (
-            <p style={styles.emptyFeed}>Nenhum post disponível.</p>
-          ) : (
-            posts.map((post) => (
+        <button
+          onClick={() => setShowPostModal(true)}
+          style={styles.createPostButton}
+        >
+          <span style={styles.createPostIcon}>+</span>
+          <span>Publicar</span>
+        </button>
+
+        <div style={styles.statsCard}>
+          <h3 style={styles.statsTitle}>Seu desempenho</h3>
+          <div style={styles.statItem}>
+            <span>⭐ XP</span>
+            <strong>{user?.xp || 0}</strong>
+          </div>
+          <div style={styles.statItem}>
+            <span>👥 Seguidores</span>
+            <strong>{user?.followers?.length || 0}</strong>
+          </div>
+          <div style={styles.statItem}>
+            <span>↗️ Seguindo</span>
+            <strong>{user?.following?.length || 0}</strong>
+          </div>
+        </div>
+      </aside>
+
+      <main style={styles.mainArea}>
+        {posts.length === 0 ? (
+          <div style={styles.emptyFeedCard}>
+            <p style={styles.emptyFeedText}>Nenhum post no feed ainda.</p>
+            <p style={styles.emptyFeedHint}>Siga outros usuários para ver conteúdo aqui.</p>
+          </div>
+        ) : (
+          posts.map((post) => (
+            <div key={post._id || Math.random()} style={styles.postWrapper}>
               <PostCard
-                key={post._id || Math.random()}
                 post={post}
                 currentUser={user}
                 onLike={handleLike}
                 onComment={handleComment}
+                onEdit={handleEditPost}
+                onDelete={handleDeletePost}
               />
-            ))
-          )}
-        </main>
-      </div>
+            </div>
+          ))
+        )}
+      </main>
+
+      <AlertModal
+        isOpen={alert.isOpen}
+        onClose={closeAlert}
+        message={alert.message}
+        title={alert.title}
+        onConfirm={alert.onConfirm}
+        showCancel={alert.showCancel}
+      />
 
       <Footer />
     </div>
@@ -238,41 +329,129 @@ const styles = {
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
-  },
-  content: {
-    display: 'flex',
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '2rem',
-    gap: '2rem',
-    flex: 1,
+    backgroundColor: '#f0f2f5',
   },
   sidebar: {
-    width: '250px',
+    position: 'fixed',
+    top: '72px',
+    left: '0',
+    width: '280px',
+    padding: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+    backgroundColor: '#f0f2f5',
+    height: 'calc(100vh - 72px)',
+    overflowY: 'auto',
+    zIndex: 10,
   },
-  createButton: {
-    width: '100%',
-    padding: '1rem',
-    background: '#2196F3',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '1rem',
-    cursor: 'pointer',
-    marginBottom: '2rem',
-    fontWeight: 'bold',
-  },
-  stats: {
+  profileCard: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '12px',
     background: 'white',
-    padding: '1rem',
     borderRadius: '8px',
-    border: '1px solid #e0e0e0',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
   },
-  posts: {
+  sidebarAvatar: {
+    width: '56px',
+    height: '56px',
+    borderRadius: '50%',
+    objectFit: 'cover',
+  },
+  sidebarInfo: {
     flex: 1,
   },
-  feedTitle: {
-    marginBottom: '1rem',
+  sidebarName: {
+    fontSize: '1rem',
+    fontWeight: '600',
+    color: '#000',
+    margin: 0,
+  },
+  sidebarEmail: {
+    fontSize: '0.875rem',
+    color: '#65676b',
+    margin: 0,
+  },
+  createPostButton: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: '12px',
+    padding: '14px 16px',
+    background: 'white',
+    border: '1px solid #e0e0e0',
+    borderRadius: '8px',
+    fontSize: '1rem',
+    fontWeight: '600',
+    color: '#65676b',
+    cursor: 'pointer',
+  },
+  createPostIcon: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    borderRadius: '50%',
+    background: '#e7f3ff',
+    color: '#1877f2',
+    fontWeight: 'bold',
+    fontSize: '1.25rem',
+  },
+  statsCard: {
+    background: 'white',
+    borderRadius: '8px',
+    padding: '16px',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+  },
+  statsTitle: {
+    fontSize: '1rem',
+    fontWeight: '600',
+    marginBottom: '16px',
+    color: '#000',
+  },
+  statItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '12px',
+    fontSize: '0.95rem',
+    color: '#65676b',
+  },
+  mainArea: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '24px 16px',
+    marginLeft: '280px',
+    gap: '24px',
+  },
+  postWrapper: {
+    width: '600px',
+    maxWidth: '100%',
+  },
+  emptyFeedCard: {
+    width: '600px',
+    maxWidth: '100%',
+    background: 'white',
+    borderRadius: '8px',
+    padding: '2rem',
+    textAlign: 'center',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+  },
+  emptyFeedText: {
+    fontSize: '1.1rem',
+    color: '#000',
+    margin: 0,
+    marginBottom: '0.5rem',
+  },
+  emptyFeedHint: {
+    fontSize: '0.95rem',
+    color: '#65676b',
+    margin: 0,
   },
   searchResults: {
     position: 'fixed',
@@ -282,7 +461,7 @@ const styles = {
     background: 'white',
     border: '1px solid #e0e0e0',
     borderRadius: '8px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     zIndex: 1000,
     width: '90%',
     maxWidth: '500px',
@@ -302,6 +481,7 @@ const styles = {
     border: 'none',
     fontSize: '1.2rem',
     cursor: 'pointer',
+    color: '#666',
   },
   noResults: {
     padding: '2rem',
@@ -326,12 +506,13 @@ const styles = {
   },
   viewProfileButton: {
     padding: '0.5rem 1rem',
-    background: '#2196F3',
+    background: '#1877f2',
     color: 'white',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '0.9rem',
+    fontWeight: '600',
   },
   loading: {
     textAlign: 'center',
@@ -344,11 +525,5 @@ const styles = {
     padding: '2rem',
     fontSize: '1.1rem',
     color: '#d32f2f',
-  },
-  emptyFeed: {
-    textAlign: 'center',
-    color: '#666',
-    fontStyle: 'italic',
-    padding: '2rem',
   },
 };

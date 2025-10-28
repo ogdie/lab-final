@@ -1,14 +1,38 @@
-export default function AlertModal({ isOpen, onClose, message, title = 'Aviso' }) {
+export default function AlertModal({ 
+  isOpen, 
+  onClose, 
+  message, 
+  title = 'Aviso',
+  onConfirm,
+  showCancel = false,
+  confirmText = 'Confirmar',
+  cancelText = 'Cancelar'
+}) {
   if (!isOpen) return null;
+
+  const handleConfirm = () => {
+    if (onConfirm) onConfirm();
+    onClose();
+  };
 
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h2 style={styles.title}>{title}</h2>
         <p style={styles.message}>{message}</p>
-        <button onClick={onClose} style={styles.button}>
-          Fechar
-        </button>
+        <div style={styles.buttonContainer}>
+          {showCancel && (
+            <button onClick={onClose} style={{ ...styles.button, ...styles.cancelButton }}>
+              {cancelText}
+            </button>
+          )}
+          <button 
+            onClick={handleConfirm} 
+            style={showCancel ? { ...styles.button, ...styles.confirmButton } : styles.button}
+          >
+            {showCancel ? confirmText : 'Fechar'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -46,15 +70,25 @@ const styles = {
     marginBottom: '1.5rem',
     lineHeight: '1.5'
   },
+  buttonContainer: {
+    display: 'flex',
+    gap: '0.75rem',
+    justifyContent: 'center'
+  },
   button: {
     padding: '0.75rem 1.5rem',
-    background: '#2196F3',
-    color: 'white',
     border: 'none',
     borderRadius: '4px',
     fontSize: '1rem',
     cursor: 'pointer',
-    width: '100%'
+    flex: 1
+  },
+  cancelButton: {
+    background: '#e0e0e0',
+    color: '#333'
+  },
+  confirmButton: {
+    background: '#2196F3',
+    color: 'white'
   }
 };
-
