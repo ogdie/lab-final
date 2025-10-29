@@ -146,7 +146,18 @@ export default function Forum() {
     try {
       const data = await forumAPI.getTopics();
       const backendTopics = Array.isArray(data) ? data : [];
-      setTopics([...defaultTopics, ...backendTopics]);
+      // Mesclar por nome (case-insensitive), preferindo os do backend quando existirem
+      const byName = new Map();
+      backendTopics.forEach((t) => {
+        const key = (t?.name || '').toLowerCase();
+        if (!byName.has(key)) byName.set(key, t);
+      });
+      const merged = [...byName.values()];
+      defaultTopics.forEach((t) => {
+        const key = (t?.name || '').toLowerCase();
+        if (!byName.has(key)) merged.push(t);
+      });
+      setTopics(merged);
     } catch (err) {
       console.error("Error loading topics:", err);
       setTopics(defaultTopics);

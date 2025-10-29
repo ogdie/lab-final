@@ -10,7 +10,7 @@ export default function TopicCard({ topic }) {
       </div>
 
       <a
-        href={`/forum/topic?id=${encodeURIComponent(topic._id)}`}
+        href={`/forum/topic?id=${encodeURIComponent(topic._id || '')}&name=${encodeURIComponent(topic.name || '')}`}
         style={styles.link}
       >
         Ver Discussão →
