@@ -9,6 +9,7 @@ export default function Home() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     // Check for OAuth callback
@@ -90,7 +91,9 @@ export default function Home() {
 
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify({ ...response.user, _id: userId }));
-      router.push('/home');
+      
+      // Mostrar modal de sucesso antes de redirecionar
+      setShowSuccessModal(true);
     } catch (error) {
       let message = error.message || 'Erro desconhecido.';
       let title = 'Erro ao se cadastrar';
@@ -114,6 +117,11 @@ export default function Home() {
     setAlert({ isOpen: false, message: '', title: 'Aviso' });
   };
 
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    router.push('/home');
+  };
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Codemia</h1>
@@ -130,6 +138,13 @@ export default function Home() {
         onClose={closeAlert}
         message={alert.message}
         title={alert.title}
+      />
+
+      <AlertModal
+        isOpen={showSuccessModal}
+        onClose={handleSuccessModalClose}
+        message="Usuário criado ou cadastrado com sucesso!"
+        title="Sucesso!"
       />
     </div>
   );

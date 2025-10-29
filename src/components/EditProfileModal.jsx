@@ -1,166 +1,208 @@
 import { useState, useEffect } from 'react';
 
-export default function EditProfileModal({ isOpen, onClose, user, onSave }) {
-  const [formData, setFormData] = useState({
-    name: '',
-    bio: '',
-    profilePicture: ''
-  });
+// --- Função de Estilo Dinâmico (getStyles) ---
+// Note que agora ele recebe o tema (theme) como argumento
+const getStyles = (theme) => {
+    const isDark = theme === 'dark';
+    // Paleta de cores LinkedIn-like/Dark Mode
+    const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
+    const textSecondary = isDark ? '#b0b3b8' : '#606770';
+    const backgroundModal = isDark ? '#242526' : 'white';
+    const borderInput = isDark ? '#3e4042' : '#ddd';
+    const blueAction = '#0a66c2'; // Azul de ação principal (Salvar)
+    const grayCancel = isDark ? '#474a4d' : '#e7e7e7'; // Cinza de cancelamento
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || '',
-        bio: user.bio || '',
-        profilePicture: user.profilePicture || ''
-      });
-    }
-  }, [user]); 
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (onSave) {
-      onSave(formData);
-    }
-    onClose();
-  };
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  return (
-    <div style={styles.overlay} onClick={onClose}>
-      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2 style={styles.title}>Editar Perfil</h2>
-        
-        <form onSubmit={handleSubmit}>
-          <div style={styles.field}>
-            <label style={styles.label}>Nome</label>
-            <input
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              style={styles.input}
-              required
-            />
-          </div>
-          
-          <div style={styles.field}>
-            <label style={styles.label}>Bio</label>
-            <textarea
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              style={styles.textarea}
-              rows={4}
-              placeholder="Conte um pouco sobre você..."
-            />
-          </div>
-          
-          <div style={styles.field}>
-            <label style={styles.label}>Foto de Perfil (URL)</label>
-            <input
-              name="profilePicture"
-              type="url"
-              value={formData.profilePicture}
-              onChange={handleChange}
-              style={styles.input}
-              placeholder="https://exemplo.com/foto.jpg"
-            />
-          </div>
-          
-          <div style={styles.actions}>
-            <button type="button" onClick={onClose} style={styles.cancelButton}>
-              Cancelar
-            </button>
-            <button type="submit" style={styles.saveButton}>
-              Salvar
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-const styles = {
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000
-  },
-  modal: {
-    background: 'white',
-    borderRadius: '8px',
-    padding: '2rem',
-    maxWidth: '500px',
-    width: '90%',
-    maxHeight: '90vh',
-    overflow: 'auto'
-  },
-  title: {
-    fontSize: '1.5rem',
-    marginBottom: '1.5rem',
-    textAlign: 'center'
-  },
-  field: {
-    marginBottom: '1rem'
-  },
-  label: {
-    display: 'block',
-    marginBottom: '0.5rem',
-    fontWeight: 'bold',
-    color: '#333'
-  },
-  input: {
-    width: '100%',
-    padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '1rem'
-  },
-  textarea: {
-    width: '100%',
-    padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '1rem',
-    resize: 'vertical'
-  },
-  actions: {
-    display: 'flex',
-    gap: '1rem',
-    justifyContent: 'flex-end',
-    marginTop: '1.5rem'
-  },
-  cancelButton: {
-    padding: '0.75rem 1.5rem',
-    background: '#ccc',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  },
-  saveButton: {
-    padding: '0.75rem 1.5rem',
-    background: '#2196F3',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  }
+    return {
+        // Overlay (fundo escuro semi-transparente)
+        overlay: {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: isDark ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+        },
+        // Container do Modal
+        modal: {
+            background: backgroundModal,
+            borderRadius: '10px', // Mais arredondado, estilo moderno
+            padding: '2rem',
+            maxWidth: '550px', // Mais largura para conteúdo profissional
+            width: '90%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.25)', // Sombra profissional
+            border: isDark ? '1px solid #3e4042' : 'none',
+        },
+        title: {
+            fontSize: '1.5rem',
+            fontWeight: '600',
+            marginBottom: '1.5rem',
+            color: textPrimary,
+            borderBottom: `1px solid ${borderInput}`,
+            paddingBottom: '0.5rem',
+            textAlign: 'left', // Alinhamento à esquerda, estilo LinkedIn
+        },
+        field: {
+            marginBottom: '1.25rem',
+        },
+        label: {
+            display: 'block',
+            marginBottom: '0.4rem',
+            fontWeight: '500',
+            color: textSecondary,
+            fontSize: '0.9rem',
+        },
+        input: {
+            width: '100%',
+            padding: '0.75rem',
+            border: `1px solid ${borderInput}`,
+            borderRadius: '6px',
+            fontSize: '1rem',
+            backgroundColor: backgroundModal,
+            color: textPrimary,
+            transition: 'border-color 0.2s',
+            boxSizing: 'border-box',
+        },
+        textarea: {
+            width: '100%',
+            padding: '0.75rem',
+            border: `1px solid ${borderInput}`,
+            borderRadius: '6px',
+            fontSize: '1rem',
+            resize: 'vertical',
+            backgroundColor: backgroundModal,
+            color: textPrimary,
+            boxSizing: 'border-box',
+        },
+        actions: {
+            display: 'flex',
+            gap: '1rem',
+            justifyContent: 'flex-end',
+            marginTop: '2rem',
+        },
+        // Botão de Cancelar (Cinza/Neutro)
+        cancelButton: {
+            padding: '0.6rem 1.2rem',
+            background: grayCancel,
+            color: isDark ? textPrimary : '#333',
+            border: isDark ? `1px solid ${borderInput}` : 'none',
+            borderRadius: '24px', // Borda arredondada
+            cursor: 'pointer',
+            fontWeight: '600',
+            transition: 'background 0.2s',
+        },
+        // Botão de Salvar (Azul Principal)
+        saveButton: {
+            padding: '0.6rem 1.2rem',
+            background: blueAction,
+            color: 'white',
+            border: 'none',
+            borderRadius: '24px',
+            cursor: 'pointer',
+            fontWeight: '600',
+            transition: 'background 0.2s',
+        }
+    };
 };
+// --- FIM da Função de Estilo Dinâmico ---
+
+
+export default function EditProfileModal({ isOpen, onClose, user, onSave, theme = 'light' }) {
+    const [formData, setFormData] = useState({
+        name: '',
+        bio: '',
+        profilePicture: ''
+    });
+    
+    // Obter estilos dinâmicos baseados no tema
+    const styles = getStyles(theme);
+
+    // Carrega os dados do usuário quando o modal abre ou o usuário muda
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                name: user.name || '',
+                bio: user.bio || '',
+                profilePicture: user.profilePicture || ''
+            });
+        }
+    }, [user, isOpen]); // Adicionado 'isOpen' para garantir que os dados sejam redefinidos quando o modal é aberto
+
+    if (!isOpen) return null;
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (onSave) {
+            onSave(formData);
+        }
+        onClose();
+    };
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    return (
+        // Oculta o modal clicando no overlay, mas não no modal em si
+        <div style={styles.overlay} onClick={onClose}>
+            <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+                <h2 style={styles.title}>Editar Perfil</h2>
+                
+                <form onSubmit={handleSubmit}>
+                    <div style={styles.field}>
+                        <label style={styles.label}>Nome</label>
+                        <input
+                            name="name"
+                            type="text"
+                            value={formData.name}
+                            onChange={handleChange}
+                            style={styles.input}
+                            required
+                        />
+                    </div>
+                    
+                    <div style={styles.field}>
+                        <label style={styles.label}>Resumo/Bio</label>
+                        <textarea
+                            name="bio"
+                            value={formData.bio}
+                            onChange={handleChange}
+                            style={styles.textarea}
+                            rows={4}
+                            placeholder="Descreva sua experiência profissional e objetivos..."
+                        />
+                    </div>
+                    
+                    <div style={styles.field}>
+                        <label style={styles.label}>Foto de Perfil (URL)</label>
+                        <input
+                            name="profilePicture"
+                            type="url"
+                            value={formData.profilePicture}
+                            onChange={handleChange}
+                            style={styles.input}
+                            placeholder="https://exemplo.com/foto.jpg"
+                        />
+                    </div>
+                    
+                    <div style={styles.actions}>
+                        <button type="button" onClick={onClose} style={styles.cancelButton}>
+                            Cancelar
+                        </button>
+                        <button type="submit" style={styles.saveButton}>
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}

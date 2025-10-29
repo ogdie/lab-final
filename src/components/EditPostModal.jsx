@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-
+// Modal component for editing a post
 export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete }) {
   const [content, setContent] = useState('');
   const [image, setImage] = useState('');
