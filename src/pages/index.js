@@ -124,7 +124,7 @@ export default function Home() {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>CodeConnect</h1>
+      <h1 style={styles.title}>Codemia</h1>
       <p style={styles.subtitle}>Rede social para estudantes de programação</p>
 
       {loading ? (
