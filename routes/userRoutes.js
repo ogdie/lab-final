@@ -167,5 +167,44 @@ router.get('/:id/notifications', async (req, res) => {
   }
 });
 
+// Follow/Unfollow user (toggle)
+router.post('/:id/follow', async (req, res) => {
+  try {
+    const { followerId } = req.body || {};
+    const targetUserId = req.params.id;
+    if (!followerId || !targetUserId) {
+      return res.status(400).json({ error: 'Dados inválidos' });
+    }
+
+    if (followerId === targetUserId) {
+      return res.status(400).json({ error: 'Não é possível seguir a si mesmo' });
+    }
+
+    const target = await User.findById(targetUserId);
+    const follower = await User.findById(followerId);
+    if (!target || !follower) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    const alreadyFollowing = follower.following.some(id => id.toString() === targetUserId);
+
+    if (alreadyFollowing) {
+      await User.findByIdAndUpdate(followerId, { $pull: { following: targetUserId } });
+      await User.findByIdAndUpdate(targetUserId, { $pull: { followers: followerId } });
+    } else {
+      await User.findByIdAndUpdate(followerId, { $addToSet: { following: targetUserId } });
+      await User.findByIdAndUpdate(targetUserId, { $addToSet: { followers: followerId } });
+      // Notificação opcional
+      await Notification.create({ user: targetUserId, from: followerId, type: 'new_follower' });
+    }
+
+    const updatedTarget = await User.findById(targetUserId).select('-password');
+    const updatedFollower = await User.findById(followerId).select('-password');
+    res.json({ target: updatedTarget, follower: updatedFollower, following: !alreadyFollowing });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
 

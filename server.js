@@ -13,7 +13,7 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import rankingRoutes from "./routes/rankingRoutes.js";
 import forumRoutes from "./routes/forumRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
-import connectionRoutes from "./routes/connectionRoutes.js";
+// connectionRoutes removido
 
 dotenv.config();
 
@@ -60,7 +60,7 @@ async function start() {
     server.use('/api/ranking', rankingRoutes);
     server.use('/api/forum', forumRoutes);
     server.use('/api/chat', chatRoutes);
-    server.use('/api/connections', connectionRoutes);
+    // server.use('/api/connections', connectionRoutes);
 
     // Next.js handler - only for non-API routes
     server.use((req, res) => {
