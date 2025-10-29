@@ -66,6 +66,9 @@ const getStyles = (theme) => {
             objectFit: 'cover',
             border: isDark ? `2px solid ${textPrimary}` : 'none',
         },
+        sidebarInfo: {
+            flex: 1,
+        },
         sidebarName: {
             fontSize: '1rem',
             fontWeight: '600',
@@ -390,6 +393,32 @@ export default function Home() {
         setUser(parsedUser);
         loadPosts();
     }, [router]);
+
+    // Listener para mudanças no localStorage (para atualizar quando o perfil for editado)
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                try {
+                    const parsedUser = JSON.parse(userData);
+                    setUser(parsedUser);
+                } catch (e) {
+                    console.error('Invalid user data:', e);
+                }
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        // Também verifica o localStorage diretamente (para mudanças na mesma aba)
+        const interval = setInterval(() => {
+            handleStorageChange();
+        }, 1000);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            clearInterval(interval);
+        };
+    }, []);
 
     if (loading) {
         return (
