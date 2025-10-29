@@ -142,7 +142,16 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
         }
     };
     
-    // ... (restante dos hooks e lógica)
+    // Busca ao digitar (debounce curto)
+    useEffect(() => {
+        const term = searchTerm.trim();
+        const id = setTimeout(() => {
+            if (term) {
+                onSearch(term);
+            }
+        }, 250);
+        return () => clearTimeout(id);
+    }, [searchTerm, onSearch]);
 
     return (
         <nav style={styles.navbar}>
@@ -167,18 +176,38 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                                 onSearch('');
                             }
                         }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                const q = searchTerm.trim();
+                                onSearch(q);
+                            }
+                        }}
                     />
                     {searchTerm && (
-                        <button
-                            style={styles.clearButton}
-                            onClick={() => {
-                                setSearchTerm('');
-                                onSearch('');
-                            }}
-                            aria-label="Limpar busca"
-                        >
-                            ✖️
-                        </button>
+                        <>
+                            <button
+                                style={{ ...styles.clearButton, right: '2rem' }}
+                                onClick={() => {
+                                    const q = searchTerm.trim();
+                                    onSearch(q);
+                                }}
+                                aria-label="Executar busca"
+                                title="Buscar"
+                            >
+                                🔍
+                            </button>
+                            <button
+                                style={styles.clearButton}
+                                onClick={() => {
+                                    setSearchTerm('');
+                                    onSearch('');
+                                }}
+                                aria-label="Limpar busca"
+                                title="Limpar"
+                            >
+                                ✖️
+                            </button>
+                        </>
                     )}
                 </div>
 

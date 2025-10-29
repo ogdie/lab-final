@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { notificationsAPI, usersAPI } from '../services/api';
 
 export default function Notificacoes({ userId, onClose }) {
   const [notifications, setNotifications] = useState([]);
@@ -11,17 +12,27 @@ export default function Notificacoes({ userId, onClose }) {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch(`/api/users/${userId}/notifications`);
-      const data = await res.json();
-      setNotifications(data);
+      const data = await notificationsAPI.getAll(userId);
+      setNotifications(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Error fetching notifications:', err);
+      console.error('Error fetching notifications (notificationsAPI):', err?.message || err);
+      // Fallback para rota alternativa, caso o backend exponha por usuário
+      try {
+        const byUser = await usersAPI.getNotifications(userId);
+        setNotifications(Array.isArray(byUser) ? byUser : []);
+      } catch (err2) {
+        console.error('Error fetching notifications (usersAPI):', err2?.message || err2);
+      }
     }
   };
 
   const markAsRead = async (id) => {
     try {
-      await fetch(`/api/notifications/${id}/read`, { method: 'PUT' });
+      if (!id) return;
+      await notificationsAPI.markAsRead(id);
+      // Atualiza localmente para resposta rápida
+      setNotifications((prev) => prev.map((n) => (n._id === id ? { ...n, read: true } : n)));
+      // Revalida do servidor
       fetchNotifications();
     } catch (err) {
       console.error('Error marking as read:', err);

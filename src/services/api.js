@@ -12,7 +12,8 @@ const fetchAPI = async (url, options = {}) => {
     headers['Authorization'] = `Bearer ${token}`;
   }
   
-  const response = await fetch(`${API_URL}${url}`, {
+  const fullUrl = `${API_URL}${url}`;
+  const response = await fetch(fullUrl, {
     ...options,
     headers
   });
@@ -24,7 +25,9 @@ const fetchAPI = async (url, options = {}) => {
     } catch {
       error = { error: 'Erro ao fazer requisição' };
     }
-    throw new Error(error.error || 'Erro ao fazer requisição');
+    const message = error.error || 'Erro ao fazer requisição';
+    const details = `status=${response.status} url=${fullUrl}`;
+    throw new Error(`${message} (${details})`);
   }
   
   return response.json();
@@ -119,7 +122,7 @@ export const commentsAPI = {
 
 // Notifications API
 export const notificationsAPI = {
-  getAll: () => fetchAPI('/notifications'),
+  getAll: (userId) => fetchAPI(`/notifications${userId ? `?userId=${encodeURIComponent(userId)}` : ''}`),
   markAsRead: (id) => fetchAPI(`/notifications/${id}/read`, {
     method: 'PUT'
   }),

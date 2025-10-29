@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { notificationsAPI } from '../services/api';
 
 export default function ConnectionNotification({ userId, onClose }) {
   const [requests, setRequests] = useState([]);
@@ -11,27 +12,30 @@ export default function ConnectionNotification({ userId, onClose }) {
 
   const fetchRequests = async () => {
     try {
-      const res = await fetch(`/api/connections/requests?userId=${userId}`);
-      const data = await res.json();
-      setRequests(data);
+      const data = await notificationsAPI.getAll(userId);
+      const list = (Array.isArray(data) ? data : []).filter((n) => n?.type === 'connection_request');
+      setRequests(list);
     } catch (err) {
       console.error('Error fetching connection requests:', err);
+      setRequests([]);
     }
   };
 
-  const handleAccept = async (requestId) => {
+  const handleAccept = async (notificationId) => {
     try {
-      await fetch(`/api/connections/${requestId}/accept`, { method: 'PUT' });
-      fetchRequests();
+      if (!notificationId) return;
+      await notificationsAPI.markAsRead(notificationId);
+      setRequests((prev) => prev.filter((r) => r._id !== notificationId));
     } catch (err) {
       console.error('Error accepting request:', err);
     }
   };
 
-  const handleDecline = async (requestId) => {
+  const handleDecline = async (notificationId) => {
     try {
-      await fetch(`/api/connections/${requestId}/decline`, { method: 'PUT' });
-      fetchRequests();
+      if (!notificationId) return;
+      await notificationsAPI.markAsRead(notificationId);
+      setRequests((prev) => prev.filter((r) => r._id !== notificationId));
     } catch (err) {
       console.error('Error declining request:', err);
     }
