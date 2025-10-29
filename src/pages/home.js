@@ -15,12 +15,13 @@ const getStyles = (theme) => {
     const isDark = theme === 'dark';
     const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
     const textSecondary = isDark ? '#b0b3b8' : '#606770';
-    const backgroundPrimary = isDark ? '#18191a' : '#f0f2f5';
-    const backgroundCard = isDark ? '#242526' : 'white';
-    const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
+    const backgroundPrimary = isDark ? '#1d2226' : '#f3f2ef'; // Fundo do LinkedIn
+    const backgroundCard = isDark ? '#2c2f33' : '#ffffff';
+    const borderSubtle = isDark ? '#3e4042' : '#d1d1d1';
     const blueAction = '#0a66c2';
     const blueActionLight = isDark ? '#1d3e66' : '#e7f3ff';
     const colorError = isDark ? '#ff7979' : '#d32f2f';
+    const linkedInShadow = "0 0 0 1px rgb(0 0 0 / 15%), 0 2px 3px rgb(0 0 0 / 20%)"; // Sombra discreta do LinkedIn
 
     return {
         container: {
@@ -35,50 +36,81 @@ const getStyles = (theme) => {
             margin: '0 auto',
             flex: 1,
             width: '100%',
-            padding: '1rem 0',
+            padding: '16px 24px',
+            gap: '24px',
+            alignItems: 'flex-start',
         },
         sidebar: {
             position: 'sticky',
             top: '72px',
-            width: '280px',
-            padding: '12px 16px',
+            width: '260px', 
+            flexShrink: 0,
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px',
-            height: 'calc(100vh - 72px - 2rem)',
+            gap: '8px', 
+            height: 'calc(100vh - 72px - 32px)',
             overflowY: 'auto',
             zIndex: 10,
         },
+        sidebarHeader: {
+            height: '54px',
+            background: blueAction,
+            marginBottom: '-32px',
+            borderRadius: '12px 12px 0 0',
+        },
         profileCard: {
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            gap: '12px',
-            padding: '16px',
             background: backgroundCard,
-            borderRadius: '8px',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+            borderRadius: '12px',
+            boxShadow: linkedInShadow,
             border: `1px solid ${borderSubtle}`,
+            overflow: 'hidden',
+        },
+        profileCardContent: {
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '0 16px 16px 16px',
+            width: '100%',
+            cursor: 'pointer',
         },
         sidebarAvatar: {
-            width: '48px',
-            height: '48px',
+            width: '72px',
+            height: '72px',
             borderRadius: '50%',
             objectFit: 'cover',
-            border: isDark ? `2px solid ${textPrimary}` : 'none',
-        },
-        sidebarInfo: {
-            flex: 1,
+            border: `2px solid ${backgroundCard}`,
         },
         sidebarName: {
             fontSize: '1rem',
             fontWeight: '600',
             color: textPrimary,
-            margin: 0,
+            margin: '8px 0 4px 0',
         },
         sidebarEmail: {
             fontSize: '0.875rem',
             color: textSecondary,
             margin: 0,
+            textAlign: 'center',
+        },
+        statsSection: {
+            padding: '12px 16px',
+            borderTop: `1px solid ${borderSubtle}`,
+            width: '100%',
+        },
+        statItem: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: '0.9rem',
+            color: textSecondary,
+            width: '100%',
+            padding: '4px 0',
+        },
+        statValue: {
+            color: blueAction, 
+            fontWeight: 'bold',
         },
         createPostButton: {
             width: '100%',
@@ -89,63 +121,22 @@ const getStyles = (theme) => {
             padding: '12px 16px',
             background: backgroundCard,
             border: `1px solid ${borderSubtle}`,
-            borderRadius: '8px',
+            borderRadius: '8px', 
             fontSize: '1rem',
             fontWeight: '600',
             color: textPrimary,
             cursor: 'pointer',
             transition: 'background 0.2s',
-            '&:hover': {
-                backgroundColor: isDark ? '#3a3b3c' : '#f0f2f5',
-            }
-        },
-        createPostIcon: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            background: blueActionLight,
-            color: blueAction,
-            fontWeight: 'bold',
-            fontSize: '1.25rem',
-        },
-        statsCard: {
-            background: backgroundCard,
-            borderRadius: '8px',
-            padding: '16px',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-            border: `1px solid ${borderSubtle}`,
-        },
-        statsTitle: {
-            fontSize: '1rem',
-            fontWeight: '600',
-            marginBottom: '16px',
-            color: textPrimary,
-            borderBottom: `1px solid ${borderSubtle}`,
-            paddingBottom: '8px',
-        },
-        statItem: {
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: '12px',
-            fontSize: '0.95rem',
-            color: textSecondary,
-        },
-        statValue: {
-            color: textPrimary,
-            fontWeight: 'bold',
+            boxShadow: linkedInShadow,
         },
         mainArea: {
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
+            gap: '8px', 
             padding: '0 16px',
-            gap: '16px',
-            maxWidth: '650px',
-            margin: '0 auto',
+            maxWidth: '560px', 
+            margin: '0', 
         },
         postWrapper: {
             width: '100%',
@@ -156,7 +147,7 @@ const getStyles = (theme) => {
             borderRadius: '8px',
             padding: '2rem',
             textAlign: 'center',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+            boxShadow: linkedInShadow,
             border: `1px solid ${borderSubtle}`,
         },
         emptyFeedText: {
@@ -228,7 +219,7 @@ const getStyles = (theme) => {
             background: blueAction,
             color: 'white',
             border: 'none',
-            borderRadius: '4px',
+            borderRadius: '24px', 
             cursor: 'pointer',
             fontSize: '0.9rem',
             fontWeight: '600',
@@ -394,7 +385,6 @@ export default function Home() {
         loadPosts();
     }, [router]);
 
-    // Listener para mudanças no localStorage (para atualizar quando o perfil for editado)
     useEffect(() => {
         const handleStorageChange = () => {
             const userData = localStorage.getItem('user');
@@ -409,7 +399,6 @@ export default function Home() {
         };
 
         window.addEventListener('storage', handleStorageChange);
-        // Também verifica o localStorage diretamente (para mudanças na mesma aba)
         const interval = setInterval(() => {
             handleStorageChange();
         }, 1000);
@@ -427,7 +416,7 @@ export default function Home() {
                 <div style={styles.mainArea}>
                     <p style={styles.loading}>Carregando...</p>
                 </div>
-                <Footer />
+                <Footer theme={theme} />
             </div>
         );
     }
@@ -439,7 +428,7 @@ export default function Home() {
                 <div style={styles.mainArea}>
                     <p style={styles.error}>{error}</p>
                 </div>
-                <Footer />
+                <Footer theme={theme} />
             </div>
         );
     }
@@ -464,7 +453,7 @@ export default function Home() {
                         </button>
                     </div>
                     {searchResults.length === 0 ? (
-                        <p style={styles.noResults}>Nenhum usuário encontrado</p>
+                        <p style={{padding: '1rem', color: styles.textSecondary}}>Nenhum usuário encontrado</p>
                     ) : (
                         searchResults.map((userResult) => (
                             <div key={userResult._id} style={styles.userResult}>
@@ -474,9 +463,8 @@ export default function Home() {
                                     style={styles.resultAvatar}
                                 />
                                 <div style={styles.resultInfo}>
-                                    <h4 style={{color: styles.textPrimary}}>{userResult.name || 'Nome indisponível'}</h4>
-                                    <p style={{color: styles.textSecondary}}>{userResult.email || 'Email indisponível'}</p>
-                                    <p style={{color: styles.textSecondary}}>⭐ {userResult.xp || 0} XP</p>
+                                    <h4 style={{color: styles.textPrimary, margin: 0}}>{userResult.name || 'Nome indisponível'}</h4>
+                                    <p style={{color: styles.textSecondary, margin: '2px 0 0 0', fontSize: '0.85rem'}}>{userResult.email || 'Email indisponível'}</p>
                                 </div>
                                 <button
                                     onClick={() => router.push(`/profile?id=${userResult._id}`)}
@@ -507,48 +495,46 @@ export default function Home() {
 
             <div style={styles.mainLayout}>
                 <aside style={styles.sidebar}>
-                    <div style={styles.profileCard}>
-                        <img
-                            src={user?.profilePicture || '/default-avatar.svg'}
-                            alt={user?.name || 'Você'}
-                            style={styles.sidebarAvatar}
-                        />
-                        <div style={styles.sidebarInfo}>
+                    <div style={styles.profileCard} onClick={() => router.push(`/profile?id=${user?._id}`)}>
+                        <div style={styles.sidebarHeader} />
+                        <div style={styles.profileCardContent}>
+                            <img
+                                src={user?.profilePicture || '/default-avatar.svg'}
+                                alt={user?.name || 'Você'}
+                                style={styles.sidebarAvatar}
+                            />
                             <div style={styles.sidebarName}>{user?.name || 'Usuário'}</div>
-                            <div style={styles.sidebarEmail}>{user?.email || ''}</div>
+                            <div style={styles.sidebarEmail}>{user?.title || user?.email || 'Bem-vindo(a)'}</div>
+                        </div>
+                        <div style={styles.statsSection}>
+                            <div style={styles.statItem}>
+                                <span>👥 Conexões</span>
+                                <strong style={styles.statValue}>{user?.followers?.length || 0}</strong>
+                            </div>
+                            <div style={styles.statItem}>
+                                <span>⭐ XP</span>
+                                <strong style={styles.statValue}>{user?.xp || 0}</strong>
+                            </div>
                         </div>
                     </div>
 
-                    <button
-                        onClick={() => setShowPostModal(true)}
+                    <div 
+                        onClick={() => setShowPostModal(true)} 
                         style={styles.createPostButton}
                     >
-                        <span style={styles.createPostIcon}>+</span>
-                        <span>Publicar</span>
-                    </button>
-
-                    <div style={styles.statsCard}>
-                        <h3 style={styles.statsTitle}>Seu desempenho</h3>
-                        <div style={styles.statItem}>
-                            <span>⭐ XP</span>
-                            <strong style={styles.statValue}>{user?.xp || 0}</strong>
-                        </div>
-                        <div style={styles.statItem}>
-                            <span>👥 Seguidores</span>
-                            <strong style={styles.statValue}>{user?.followers?.length || 0}</strong>
-                        </div>
-                        <div style={styles.statItem}>
-                            <span>↗️ Seguindo</span>
-                            <strong style={styles.statValue}>{user?.following?.length || 0}</strong>
-                        </div>
+                        <span style={{...styles.sidebarAvatar, width: '32px', height: '32px'}}>+</span>
+                        <span>Iniciar uma publicação</span>
                     </div>
+
+                    {/* Você pode adicionar mais cards laterais aqui, como "Grupos" ou "Sugestões" */}
+
                 </aside>
 
                 <main style={styles.mainArea}>
                     {posts.length === 0 ? (
                         <div style={styles.emptyFeedCard}>
                             <p style={styles.emptyFeedText}>Nenhum post no feed ainda.</p>
-                            <p style={styles.emptyFeedHint}>Siga outros usuários para ver conteúdo aqui.</p>
+                            <p style={styles.emptyFeedHint}>Siga outros usuários ou publique algo para começar!</p>
                         </div>
                     ) : (
                         posts.map((post) => (
