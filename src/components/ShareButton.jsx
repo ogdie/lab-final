@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import AlertModal from './AlertModal';
 
 export default function ShareButton({ post }) {
   const [showMenu, setShowMenu] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleShare = (platform) => {
     const url = window.location.origin + `/post/${post._id}`;
     const text = `Confira este post no CodeConnect: ${post.content.substring(0, 100)}...`;
     
     let shareUrl = '';
-    
-    switch(platform) {
+
+    switch (platform) {
       case 'twitter':
         shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
         break;
@@ -23,17 +25,28 @@ export default function ShareButton({ post }) {
         shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
         break;
       case 'copy':
-        navigator.clipboard.writeText(url);
-        alert('Link copiado para a área de transferência!');
+        navigator.clipboard.writeText(url)
+          .then(() => setShowAlert(true))
+          .catch(() => console.error('Erro ao copiar link.'));
         setShowMenu(false);
         return;
+      default:
+        return;
     }
-    
+
     if (shareUrl) {
       window.open(shareUrl, '_blank', 'width=600,height=400');
     }
     setShowMenu(false);
   };
+
+  // Fechar automaticamente o alerta após 2s
+  useEffect(() => {
+    if (showAlert) {
+      const timer = setTimeout(() => setShowAlert(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showAlert]);
 
   return (
     <div style={styles.shareDropdown}>
@@ -46,23 +59,21 @@ export default function ShareButton({ post }) {
       
       {showMenu && (
         <div style={styles.shareMenu}>
-          <button onClick={() => handleShare('twitter')} style={styles.shareOption}>
-            🐦 Twitter
-          </button>
-          <button onClick={() => handleShare('facebook')} style={styles.shareOption}>
-            📘 Facebook
-          </button>
-          <button onClick={() => handleShare('linkedin')} style={styles.shareOption}>
-            💼 LinkedIn
-          </button>
-          <button onClick={() => handleShare('whatsapp')} style={styles.shareOption}>
-            📱 WhatsApp
-          </button>
-          <button onClick={() => handleShare('copy')} style={styles.shareOption}>
-            📋 Copiar Link
-          </button>
+          <button onClick={() => handleShare('twitter')} style={styles.shareOption}>🐦 Twitter</button>
+          <button onClick={() => handleShare('facebook')} style={styles.shareOption}>📘 Facebook</button>
+          <button onClick={() => handleShare('linkedin')} style={styles.shareOption}>💼 LinkedIn</button>
+          <button onClick={() => handleShare('whatsapp')} style={styles.shareOption}>📱 WhatsApp</button>
+          <button onClick={() => handleShare('copy')} style={styles.shareOption}>📋 Copiar Link</button>
         </div>
       )}
+
+      <AlertModal 
+        isOpen={showAlert}
+        onClose={() => setShowAlert(false)}
+        message="✅ Link copiado para a área de transferência!"
+        title="Sucesso"
+        showCancel={false}
+      />
     </div>
   );
 }
@@ -70,7 +81,7 @@ export default function ShareButton({ post }) {
 const styles = {
   shareDropdown: {
     position: 'relative',
-    display: 'inline-block'
+    display: 'inline-block',
   },
   shareButton: {
     background: 'none',
@@ -82,7 +93,7 @@ const styles = {
     gap: '0.5rem',
     padding: '0.5rem',
     borderRadius: '4px',
-    transition: 'background 0.2s'
+    transition: 'background 0.2s',
   },
   shareMenu: {
     position: 'absolute',
@@ -93,7 +104,7 @@ const styles = {
     borderRadius: '8px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
     zIndex: 1000,
-    minWidth: '150px'
+    minWidth: '150px',
   },
   shareOption: {
     display: 'block',
@@ -104,7 +115,6 @@ const styles = {
     textAlign: 'left',
     cursor: 'pointer',
     fontSize: '0.9rem',
-    transition: 'background 0.2s'
-  }
+    transition: 'background 0.2s',
+  },
 };
-
