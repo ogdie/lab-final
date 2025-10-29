@@ -6,10 +6,10 @@ import Notification from "../models/notification.js";
 
 const router = express.Router();
 
-// Get all posts
+// Get all posts (Feed only: exclude forum posts)
 router.get('/', async (req, res) => {
   try {
-    const posts = await Post.find()
+    const posts = await Post.find({ topic: null })
       .populate('author', 'name profilePicture')
       .populate({ path: 'comments', populate: { path: 'author', select: 'name profilePicture' } })
       .sort({ createdAt: -1 });
