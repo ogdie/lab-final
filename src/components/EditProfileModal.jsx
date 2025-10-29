@@ -1,5 +1,22 @@
 import { useState, useEffect } from 'react';
 
+const INSTITUTIONS = [
+    "Faculdade de Engenharia da Universidade do Porto (FEUP)",
+    "Faculdade de Ciências da Universidade do Porto (FCUP)",
+    "Instituto Superior de Engenharia do Porto (ISEP – Politécnico do Porto)",
+    "Instituto Superior de Tecnologias Avançadas do Porto (ISTEC Porto)",
+    "Universidade Portucalense (UPT)",
+    "42 Porto",
+    "Academia de Código (Porto)",
+    "EDIT. – Disruptive Digital Education (Porto)",
+    "ATEC- Academia de Formação",
+    "Bytes4Future",
+    "Tokio School",
+    "Outros"
+];
+
+const USER_TYPES = ["Estudante", "Professor", "Recrutador"];
+
 // --- Função de Estilo Dinâmico (getStyles) ---
 // Note que agora ele recebe o tema (theme) como argumento
 const getStyles = (theme) => {
@@ -116,7 +133,9 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
     const [formData, setFormData] = useState({
         name: '',
         bio: '',
-        profilePicture: ''
+        profilePicture: '',
+        institution: INSTITUTIONS[0],
+        userType: USER_TYPES[0]
     });
     
     // Obter estilos dinâmicos baseados no tema
@@ -128,7 +147,9 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
             setFormData({
                 name: user.name || '',
                 bio: user.bio || '',
-                profilePicture: user.profilePicture || ''
+                profilePicture: user.profilePicture || '',
+                institution: user.institution || INSTITUTIONS[0],
+                userType: user.userType || USER_TYPES[0]
             });
         }
     }, [user, isOpen]); // Adicionado 'isOpen' para garantir que os dados sejam redefinidos quando o modal é aberto
@@ -193,6 +214,34 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
                         />
                     </div>
                     
+                    <div style={styles.field}>
+                        <label style={styles.label}>Tipo de Usuário</label>
+                        <select
+                            name="userType"
+                            value={formData.userType}
+                            onChange={handleChange}
+                            style={styles.input}
+                        >
+                            {USER_TYPES.map((opt) => (
+                                <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div style={styles.field}>
+                        <label style={styles.label}>Instituição</label>
+                        <select
+                            name="institution"
+                            value={formData.institution}
+                            onChange={handleChange}
+                            style={styles.input}
+                        >
+                            {INSTITUTIONS.map((inst) => (
+                                <option key={inst} value={inst}>{inst}</option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div style={styles.actions}>
                         <button type="button" onClick={onClose} style={styles.cancelButton}>
                             Cancelar

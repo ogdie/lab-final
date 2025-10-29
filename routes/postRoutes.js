@@ -25,8 +25,8 @@ router.post('/', async (req, res) => {
     const { author, content, image, topic, tags } = req.body;
     const post = await Post.create({ author, content, image, topic, tags });
     
-    // Add XP for posting
-    await User.findByIdAndUpdate(author, { $inc: { xp: 20 } });
+    // Gamificação: não conceder XP para posts do feed.
+    // Posts de fórum recebem XP via rotas de fórum.
     
     const populatedPost = await Post.findById(post._id)
       .populate('author', 'name profilePicture');
@@ -68,8 +68,11 @@ router.delete('/:id', async (req, res) => {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ error: 'Post não encontrado' });
     
-    // Remove XP for deleting post
-    await User.findByIdAndUpdate(post.author, { $inc: { xp: -20 } });
+    // Gamificação: somente ajustar XP se for post do fórum
+    if (post.topic) {
+      // Remover XP relacionado ao post do fórum
+      await User.findByIdAndUpdate(post.author, { $inc: { xp: -15 } });
+    }
     
     await Post.findByIdAndDelete(req.params.id);
     res.json({ message: 'Post deletado' });
@@ -101,8 +104,10 @@ router.post('/:id/like', async (req, res) => {
           relatedPost: post._id
         });
       }
-      // Add 1 XP to post author
-      await User.findByIdAndUpdate(post.author, { $inc: { xp: 1 } });
+      // Gamificação: somente curtidas em posts do fórum geram XP
+      if (post.topic) {
+        await User.findByIdAndUpdate(post.author, { $inc: { xp: 1 } });
+      }
     }
     
     await post.save();
@@ -124,8 +129,10 @@ router.post('/:id/comments', async (req, res) => {
     post.comments.push(comment._id);
     await post.save();
     
-    // Add XP for commenting
-    await User.findByIdAndUpdate(author, { $inc: { xp: 3 } });
+    // Gamificação: somente comentários em posts do fórum geram XP
+    if (post.topic) {
+      await User.findByIdAndUpdate(author, { $inc: { xp: 3 } });
+    }
     
     // Notify post author
     if (post.author.toString() !== author) {

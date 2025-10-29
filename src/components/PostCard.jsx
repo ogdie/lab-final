@@ -1,4 +1,44 @@
 import { useState } from 'react';
+
+// Formata a diferença de tempo de forma resumida (estilo LinkedIn)
+function formatRelativeTime(dateInput) {
+    const now = new Date();
+    const date = new Date(dateInput);
+    const diffMs = Math.max(0, now - date);
+    const seconds = Math.floor(diffMs / 1000);
+    if (seconds < 60) {
+        const v = seconds;
+        return `${v} ${v === 1 ? 'segundo' : 'segundos'}`;
+    }
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) {
+        const v = minutes;
+        return `${v} ${v === 1 ? 'minuto' : 'minutos'}`;
+    }
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+        const v = hours;
+        return `${v} ${v === 1 ? 'hora' : 'horas'}`;
+    }
+    const days = Math.floor(hours / 24);
+    if (days < 7) {
+        const v = days;
+        return `${v} ${v === 1 ? 'dia' : 'dias'}`;
+    }
+    const weeks = Math.floor(days / 7);
+    if (days < 30) { // até ~4 semanas
+        const v = Math.max(1, weeks);
+        return `${v} ${v === 1 ? 'semana' : 'semanas'}`;
+    }
+    const months = Math.floor(days / 30);
+    if (months < 12) {
+        const v = Math.max(1, months);
+        return `${v} ${v === 1 ? 'mês' : 'meses'}`;
+    }
+    const years = Math.floor(days / 365);
+    const v = Math.max(1, years);
+    return `${v} ${v === 1 ? 'ano' : 'anos'}`;
+}
 import CommentCard from './CommentCard';
 import ShareButton from './ShareButton';
 import EditPostModal from './EditPostModal';
@@ -183,7 +223,7 @@ export default function PostCard({ post, currentUser, onLike, onComment, onEdit,
                 />
                 <div style={styles.authorInfo}>
                     <div style={styles.name}>{post.author?.name || 'Usuário'}</div>
-                    <div style={styles.date}>{new Date(post.createdAt).toLocaleDateString('pt-BR')}</div>
+                    <div style={styles.date}>{formatRelativeTime(post.createdAt)}</div>
                 </div>
                 {isOwnPost && (
                     <button

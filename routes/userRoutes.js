@@ -83,12 +83,27 @@ router.put('/:id/settings', async (req, res) => {
 // Edit profile
 router.put('/:id/edit', async (req, res) => {
   try {
-    const { name, bio, profilePicture } = req.body;
+    const {
+      name,
+      bio,
+      profilePicture,
+      institution,
+      userType
+    } = req.body || {};
+
+    const update = {};
+    if (typeof name === 'string') update.name = name.trim();
+    if (typeof bio === 'string') update.bio = bio;
+    if (typeof profilePicture === 'string') update.profilePicture = profilePicture;
+    if (typeof institution === 'string') update.institution = institution.trim();
+    if (typeof userType === 'string') update.userType = userType;
+
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      { name, bio, profilePicture },
-      { new: true }
+      update,
+      { new: true, runValidators: true }
     ).select('-password');
+    if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
