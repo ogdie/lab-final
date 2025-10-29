@@ -4,7 +4,8 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import TopicCard from "../../components/TopicCard";
 import TopicModal from "@/components/TopicModal";
-import { forumAPI } from "../../services/api";
+import { forumAPI, usersAPI } from "../../services/api";
+import { useThemeLanguage } from "../../context/ThemeLanguageContext";
 
 const getStyles = (theme) => {
   const isDark = theme === "dark";
@@ -157,6 +158,57 @@ const getStyles = (theme) => {
       flexDirection: "column",
       gap: "8px",
     },
+    searchResults: {
+      position: "fixed",
+      top: "80px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: backgroundCard,
+      border: `1px solid ${borderSubtle}`,
+      borderRadius: "8px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+      zIndex: 1000,
+      width: "90%",
+      maxWidth: "500px",
+      maxHeight: "400px",
+      overflowY: "auto",
+    },
+    searchHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "1rem",
+      borderBottom: `1px solid ${borderSubtle}`,
+      background: isDark ? "#3a3b3c" : "#f8f9fa",
+      color: textPrimary,
+    },
+    userResult: {
+      display: "flex",
+      alignItems: "center",
+      gap: "1rem",
+      padding: "1rem",
+      borderBottom: `1px solid ${borderSubtle}`,
+      color: textPrimary,
+    },
+    resultInfo: { flex: 1 },
+    resultAvatar: { width: "48px", height: "48px", borderRadius: "50%", objectFit: "cover" },
+    viewProfileButton: {
+      padding: "0.5rem 1rem",
+      background: blueAction,
+      color: "white",
+      border: "none",
+      borderRadius: "24px",
+      cursor: "pointer",
+      fontSize: "0.9rem",
+      fontWeight: "600",
+    },
+    closeButton: {
+      background: "none",
+      border: "none",
+      fontSize: "1.2rem",
+      cursor: "pointer",
+      color: textSecondary,
+    },
     loading: {
       textAlign: "center",
       padding: "2rem",
@@ -185,12 +237,14 @@ const getStyles = (theme) => {
 
 export default function Forum() {
   const router = useRouter();
+  const { t, theme } = useThemeLanguage();
   const [user, setUser] = useState(null);
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showTopicModal, setShowTopicModal] = useState(false);
-  const [theme, setTheme] = useState("light");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   const styles = getStyles(theme);
 
@@ -290,13 +344,34 @@ export default function Forum() {
     ]);
   };
 
+  const handleSearch = async (query) => {
+    if (!query?.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+    try {
+      const users = await usersAPI.searchUsers(query);
+      setSearchResults(Array.isArray(users) ? users : []);
+      setShowSearchResults(true);
+    } catch (err) {
+      console.error('Error searching users:', err);
+      setSearchResults([]);
+    }
+  };
+
+  const handleCloseSearch = () => {
+    setShowSearchResults(false);
+    setSearchResults([]);
+  };
+
   if (loading) {
     return (
       <div style={styles.container}>
         <Navbar user={user} />
         <div style={styles.layout}>
           <div style={styles.mainArea}>
-            <p style={styles.loading}>Carregando...</p>
+            <p style={styles.loading}>{t('loading')}</p>
           </div>
         </div>
         <Footer />
@@ -306,8 +381,30 @@ export default function Forum() {
 
   return (
     <div style={styles.container}>
-      <Navbar user={user} />
+      <Navbar user={user} onSearch={handleSearch} />
       <div style={styles.layout}>
+        {showSearchResults && (
+          <div style={styles.searchResults}>
+            <div style={styles.searchHeader}>
+              <h3 style={{ margin: 0 }}>{t('search_results')}</h3>
+              <button onClick={handleCloseSearch} style={styles.closeButton}>✖</button>
+            </div>
+            {searchResults.length === 0 ? (
+              <p style={{ padding: '1rem', color: styles.subtitle.color }}>{t('no_users_found')}</p>
+            ) : (
+              searchResults.map((u) => (
+                <div key={u._id} style={styles.userResult}>
+                  <img src={u.profilePicture || '/default-avatar.svg'} alt={u.name} style={styles.resultAvatar} />
+                  <div style={styles.resultInfo}>
+                    <h4 style={{ margin: 0, color: styles.title.color }}>{u.name}</h4>
+                    <p style={{ margin: '2px 0 0 0', color: styles.subtitle.color, fontSize: '0.85rem' }}>{u.email}</p>
+                  </div>
+                  <button onClick={() => router.push(`/profile?id=${u._id}`)} style={styles.viewProfileButton}>{t('view_profile')}</button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
         {user && (
           <aside style={styles.sidebar}>
             <div style={styles.sidebarHeader} />
@@ -317,20 +414,20 @@ export default function Forum() {
                 alt={user.name}
                 style={styles.avatar}
               />
-              <h3 style={styles.cardTitle}>{user.name || "Usuário"}</h3>
-              <p style={styles.cardSubtitle}>{user.title || "Desenvolvedor Júnior"}</p>
+              <h3 style={styles.cardTitle}>{user.name || t('user')}</h3>
+              <p style={styles.cardSubtitle}>{user.title || 'Developer'}</p>
             </div>
             <div style={styles.statsSection}>
                 <div style={styles.statItem}>
-                    <span>Quem viu seu perfil</span>
+                    <span>{'Who viewed your profile'}</span>
                     <strong style={styles.statValue}>12</strong>
                 </div>
                 <div style={styles.statItem}>
-                    <span>Visualizações do post</span>
+                    <span>{'Post views'}</span>
                     <strong style={styles.statValue}>42</strong>
                 </div>
                 <div style={styles.statItem} onClick={() => router.push("/forum/ranking")}>
-                    <span>⭐ XP no Fórum</span>
+                    <span>⭐ {t('xp')} in the Forum</span>
                     <strong style={styles.statValue}>{user.xp || 0}</strong>
                 </div>
             </div>
@@ -339,7 +436,7 @@ export default function Forum() {
                 style={styles.button}
                 onClick={() => router.push("/forum/ranking")}
               >
-                Ver Ranking
+                {t('view_discussion').replace('Discussion', 'Ranking')}
               </button>
             </div>
           </aside>
@@ -353,14 +450,14 @@ export default function Forum() {
                     style={{ ...styles.avatar, width: "48px", height: "48px" }}
                 />
                 <div style={styles.createPostInput} onClick={() => setShowTopicModal(true)}>
-                    Criar um novo tópico...
+                    {t('create_new_topic')}...
                 </div>
             </div>
             {error && <p style={styles.error}>⚠️ {error}</p>}
-            <h1 style={styles.title}>Tópicos Populares</h1>
+            <h1 style={styles.title}>{'Popular Topics'}</h1>
             <div style={styles.topics}>
                 {topics.length === 0 ? (
-                    <p style={styles.empty}>Nenhum tópico disponível no momento.</p>
+                    <p style={styles.empty}>{'No topics available at the moment.'}</p>
                 ) : (
                     topics.map((topic) => (
                         <TopicCard key={topic._id || Math.random()} topic={topic} />
