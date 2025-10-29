@@ -75,9 +75,9 @@ const getStyles = (theme) => {
       margin: "4px 0 0 0",
     },
     cardSubtitle: {
-        fontSize: "0.9rem",
-        color: textSecondary,
-        margin: "0 0 16px 0",
+      fontSize: "0.9rem",
+      color: textSecondary,
+      margin: "0 0 16px 0",
     },
     statsSection: {
       padding: "12px 16px",
@@ -135,22 +135,22 @@ const getStyles = (theme) => {
       margin: "0 0 16px 0",
     },
     createPostContainer: {
-        background: backgroundCard,
-        borderRadius: "12px",
-        boxShadow: "0 0 0 1px rgb(0 0 0 / 15%), 0 2px 3px rgb(0 0 0 / 20%)",
-        padding: "12px 16px",
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        border: `1px solid ${borderSubtle}`,
+      background: backgroundCard,
+      borderRadius: "12px",
+      boxShadow: "0 0 0 1px rgb(0 0 0 / 15%), 0 2px 3px rgb(0 0 0 / 20%)",
+      padding: "12px 16px",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      border: `1px solid ${borderSubtle}`,
     },
     createPostInput: {
-        flex: 1,
-        padding: "10px 16px",
-        borderRadius: "24px",
-        border: `1px solid ${textSecondary}`,
-        color: textPrimary,
-        cursor: "pointer",
+      flex: 1,
+      padding: "10px 16px",
+      borderRadius: "24px",
+      border: `1px solid ${textSecondary}`,
+      color: textPrimary,
+      cursor: "pointer",
     },
     topics: {
       display: "flex",
@@ -205,7 +205,8 @@ export default function Forum() {
     {
       _id: "2",
       name: "FullStack",
-      description: "Discussão sobre desenvolvimento com foco em FullStack (Frontend e Backend).",
+      description:
+        "Discussão sobre desenvolvimento com foco em FullStack (Frontend e Backend).",
       category: "Dev",
       posts: [],
     },
@@ -272,7 +273,9 @@ export default function Forum() {
     } catch (err) {
       console.error("Error loading topics:", err);
       setTopics(defaultTopics);
-      setError("Não foi possível carregar os tópicos do fórum. Exibindo dados padrão.");
+      setError(
+        "Não foi possível carregar os tópicos do fórum. Exibindo dados padrão."
+      );
     } finally {
       setLoading(false);
     }
@@ -318,21 +321,26 @@ export default function Forum() {
                 style={styles.avatar}
               />
               <h3 style={styles.cardTitle}>{user.name || "Usuário"}</h3>
-              <p style={styles.cardSubtitle}>{user.title || "Desenvolvedor Júnior"}</p>
+              <p style={styles.cardSubtitle}>
+                {user.title || "Desenvolvedor Júnior"}
+              </p>
             </div>
             <div style={styles.statsSection}>
-                <div style={styles.statItem}>
-                    <span>Quem viu seu perfil</span>
-                    <strong style={styles.statValue}>12</strong>
-                </div>
-                <div style={styles.statItem}>
-                    <span>Visualizações do post</span>
-                    <strong style={styles.statValue}>42</strong>
-                </div>
-                <div style={styles.statItem} onClick={() => router.push("/forum/ranking")}>
-                    <span>⭐ XP no Fórum</span>
-                    <strong style={styles.statValue}>{user.xp || 0}</strong>
-                </div>
+              <div style={styles.statItem}>
+                <span>Quem viu seu perfil</span>
+                <strong style={styles.statValue}>12</strong>
+              </div>
+              <div style={styles.statItem}>
+                <span>Visualizações do post</span>
+                <strong style={styles.statValue}>42</strong>
+              </div>
+              <div
+                style={styles.statItem}
+                onClick={() => router.push("/forum/ranking")}
+              >
+                <span>⭐ XP no Fórum</span>
+                <strong style={styles.statValue}>{user.xp || 0}</strong>
+              </div>
             </div>
             <div style={styles.userCardButtons}>
               <button
@@ -346,27 +354,26 @@ export default function Forum() {
         )}
 
         <main style={styles.mainArea}>
-            <div style={styles.createPostContainer}>
-                <img
-                    src={user?.profilePicture || "/default-avatar.svg"}
-                    alt={user?.name || "Usuário"}
-                    style={{ ...styles.avatar, width: "48px", height: "48px" }}
-                />
-                <div style={styles.createPostInput} onClick={() => setShowTopicModal(true)}>
-                    Criar um novo tópico...
-                </div>
-            </div>
-            {error && <p style={styles.error}>⚠️ {error}</p>}
-            <h1 style={styles.title}>Tópicos Populares</h1>
-            <div style={styles.topics}>
-                {topics.length === 0 ? (
-                    <p style={styles.empty}>Nenhum tópico disponível no momento.</p>
-                ) : (
-                    topics.map((topic) => (
-                        <TopicCard key={topic._id || Math.random()} topic={topic} />
-                    ))
-                )}
-            </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <button
+              style={styles.button}
+              onClick={() => setShowTopicModal(true)}
+            >
+              Criar novo tópico
+            </button>
+          </div>
+
+          {error && <p style={styles.error}>⚠️ {error}</p>}
+          <h1 style={styles.title}>Tópicos Populares</h1>
+          <div style={styles.topics}>
+            {topics.length === 0 ? (
+              <p style={styles.empty}>Nenhum tópico disponível no momento.</p>
+            ) : (
+              topics.map((topic) => (
+                <TopicCard key={topic._id || Math.random()} topic={topic} />
+              ))
+            )}
+          </div>
         </main>
         {/* Espaço para um feed lateral de "Sugestões para você" ou "Trending" no futuro, mantendo o layout LinkedIn de 3 colunas em telas grandes, mas só implementamos 2 colunas aqui (Sidebar + MainArea) */}
       </div>
