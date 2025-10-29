@@ -75,27 +75,16 @@ export default function FollowButton({
   };
 
   return (
-    <div style={styles.wrapper}>
-      <button
-        onClick={handleClick}
-        disabled={loading}
-        style={{
-          ...styles.button,
-          background: isFollowing ? "#4CAF50" : "#2196F3",
-          opacity: loading ? 0.7 : 1,
-        }}
-      >
-        {isFollowing ? "Deixar de seguir" : "Seguir"}
-      </button>
-
-      {/* Exibição opcional dos contadores, somente se fornecidos */}
-      {followerCount != null || followingCount != null ? (
-        <div style={styles.counters}>
-          {followerCount != null && <span>Seguidores: {followerCount}</span>}
-          {followingCount != null && <span> | Seguindo: {followingCount}</span>}
-        </div>
-      ) : null}
-    </div>
+    <button 
+      onClick={handleFollow}
+      style={{
+        ...styles.button,
+        background: isFollowing ? '#4CAF50' : '#2196F3',
+        color: 'white'
+      }}
+    >
+      {isFollowing ? 'Deixar de seguir' : 'Seguir'}
+    </button>
   );
 }
 
