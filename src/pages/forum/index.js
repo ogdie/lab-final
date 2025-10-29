@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { forumAPI } from '../../services/api';
+import TopicCard from '../../components/TopicCard';
 
 export default function Forum() {
   const router = useRouter();
@@ -82,20 +83,7 @@ export default function Forum() {
             <p style={styles.empty}>Nenhum tópico disponível no momento.</p>
           ) : (
             topics.map((topic) => (
-              <div key={topic._id || Math.random()} style={styles.topicCard}>
-                <h3>{topic.name || 'Tópico sem nome'}</h3>
-                <p>{topic.description || 'Sem descrição'}</p>
-                <div style={styles.meta}>
-                  <span>📝 {topic.category || 'Sem categoria'}</span>
-                  <span>💬 {topic.posts?.length || 0} posts</span>
-                </div>
-                <a
-                  href={`/forum/topic?id=${encodeURIComponent(topic._id)}`}
-                  style={styles.link}
-                >
-                  Ver Discussão →
-                </a>
-              </div>
+              <TopicCard key={topic._id || Math.random()} topic={topic} />
             ))
           )}
         </div>
@@ -131,26 +119,6 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
     gap: '1rem',
-  },
-  topicCard: {
-    background: 'white',
-    border: '1px solid #e0e0e0',
-    borderRadius: '8px',
-    padding: '1.5rem',
-  },
-  meta: {
-    display: 'flex',
-    gap: '1rem',
-    marginTop: '1rem',
-    fontSize: '0.9rem',
-    color: '#666',
-  },
-  link: {
-    display: 'inline-block',
-    marginTop: '1rem',
-    color: '#2196F3',
-    textDecoration: 'none',
-    fontWeight: 'bold',
   },
   loading: {
     textAlign: 'center',
