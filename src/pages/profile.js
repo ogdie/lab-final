@@ -6,6 +6,7 @@ import EditProfileModal from '../components/EditProfileModal';
 import FollowButton from '../components/FollowButton';
 import ConnectButton from '../components/ConnectButton';
 import AlertModal from '../components/AlertModal';
+import Notificacoes from '../components/Notificacoes';
 import { usersAPI } from '../services/api';
 
 export default function Profile() {
@@ -17,6 +18,9 @@ export default function Profile() {
   const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -62,7 +66,16 @@ export default function Profile() {
     if (!user?._id) return;
     try {
       await usersAPI.editProfile(user._id, formData);
+      const updatedUser = await usersAPI.getById(user._id);
       await loadUser(user._id);
+      
+      // Se estiver editando o próprio perfil, atualizar o currentUser e localStorage
+      if (currentUser && currentUser._id === user._id && updatedUser) {
+        const updatedCurrentUser = { ...currentUser, ...updatedUser };
+        setCurrentUser(updatedCurrentUser);
+        localStorage.setItem('user', JSON.stringify(updatedCurrentUser));
+      }
+      
       setAlert({
         isOpen: true,
         message: 'Perfil atualizado com sucesso!',
@@ -104,10 +117,36 @@ export default function Profile() {
     setAlert({ isOpen: false, message: '', title: 'Aviso' });
   };
 
+  const handleSearch = async (query) => {
+    if (!query?.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    try {
+      const users = await usersAPI.searchUsers(query);
+      setSearchResults(Array.isArray(users) ? users : []);
+      setShowSearchResults(true);
+    } catch (err) {
+      console.error('Error searching users:', err);
+      setSearchResults([]);
+    }
+  };
+
+  const handleCloseSearch = () => {
+    setShowSearchResults(false);
+    setSearchResults([]);
+  };
+
   if (loading) {
     return (
       <div style={styles.container}>
-        <Navbar user={currentUser} />
+        <Navbar 
+          user={currentUser} 
+          onSearch={handleSearch}
+          onNotificationsClick={() => setShowNotifications(!showNotifications)}
+        />
         <div style={styles.content}>
           <p style={styles.loadingText}>Carregando...</p>
         </div>
@@ -119,7 +158,11 @@ export default function Profile() {
   if (error) {
     return (
       <div style={styles.container}>
-        <Navbar user={currentUser} />
+        <Navbar 
+          user={currentUser} 
+          onSearch={handleSearch}
+          onNotificationsClick={() => setShowNotifications(!showNotifications)}
+        />
         <div style={styles.content}>
           <p style={styles.error}>{error}</p>
         </div>
@@ -131,7 +174,11 @@ export default function Profile() {
   if (!user) {
     return (
       <div style={styles.container}>
-        <Navbar user={currentUser} />
+        <Navbar 
+          user={currentUser} 
+          onSearch={handleSearch}
+          onNotificationsClick={() => setShowNotifications(!showNotifications)}
+        />
         <div style={styles.content}>
           <p style={styles.error}>Usuário não encontrado.</p>
         </div>
@@ -142,7 +189,50 @@ export default function Profile() {
 
   return (
     <div style={styles.container}>
-      <Navbar user={currentUser} />
+      <Navbar 
+        user={currentUser} 
+        onSearch={handleSearch}
+        onNotificationsClick={() => setShowNotifications(!showNotifications)}
+      />
+
+      {showNotifications && (
+        <Notificacoes userId={currentUser?._id} onClose={() => setShowNotifications(false)} />
+      )}
+
+      {showSearchResults && (
+        <div style={{ position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)', background: 'white', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', zIndex: 1000, width: '90%', maxWidth: '500px', maxHeight: '400px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid #e0e0e0', background: '#f8f9fa' }}>
+            <h3>Resultados da busca</h3>
+            <button onClick={handleCloseSearch} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#666' }}>
+              ✖
+            </button>
+          </div>
+          {searchResults.length === 0 ? (
+            <p style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>Nenhum usuário encontrado</p>
+          ) : (
+            searchResults.map((userResult) => (
+              <div key={userResult._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderBottom: '1px solid #f0f0f0' }}>
+                <img
+                  src={userResult.profilePicture || '/default-avatar.svg'}
+                  alt={userResult.name || 'Usuário'}
+                  style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }}
+                />
+                <div style={{ flex: 1 }}>
+                  <h4>{userResult.name || 'Nome indisponível'}</h4>
+                  <p>{userResult.email || 'Email indisponível'}</p>
+                  <p>⭐ {userResult.xp || 0} XP</p>
+                </div>
+                <button
+                  onClick={() => router.push(`/profile?id=${userResult._id}`)}
+                  style={{ padding: '0.5rem 1rem', background: '#1877f2', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
+                >
+                  Ver Perfil
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       <div style={styles.profileHeader}>
         <img
@@ -160,6 +250,25 @@ export default function Profile() {
             )}
           </div>
           <p style={styles.email}>{user.email || 'Email indisponível'}</p>
+          
+          {user.userType && (
+            <p style={styles.infoText}>
+              <strong>Tipo:</strong> {user.userType}
+            </p>
+          )}
+          
+          {user.institution && (
+            <p style={styles.infoText}>
+              <strong>Instituição:</strong> {user.institution}
+            </p>
+          )}
+          
+          {user.birthDate && (
+            <p style={styles.infoText}>
+              <strong>Data de Nascimento:</strong> {new Date(user.birthDate).toLocaleDateString('pt-PT')}
+            </p>
+          )}
+          
           <p style={styles.bio}>{user.bio || 'Sem bio'}</p>
           <div style={styles.stats}>
             <div>
@@ -279,6 +388,12 @@ const styles = {
     marginBottom: '0.5rem',
   },
   email: {
+    fontSize: '1rem',
+    color: '#666',
+    margin: 0,
+    marginBottom: '0.5rem',
+  },
+  infoText: {
     fontSize: '1rem',
     color: '#666',
     margin: 0,

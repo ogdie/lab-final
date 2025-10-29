@@ -3,7 +3,8 @@ import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ChatModal from '../components/ChatModal';
-import { chatAPI } from '../services/api';
+import Notificacoes from '../components/Notificacoes';
+import { chatAPI, usersAPI } from '../services/api';
 
 export default function Chat() {
   const router = useRouter();
@@ -13,6 +14,9 @@ export default function Chat() {
   const [showChatModal, setShowChatModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -59,10 +63,36 @@ export default function Chat() {
     setSelectedUser(null);
   };
 
+  const handleSearch = async (query) => {
+    if (!query?.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    try {
+      const users = await usersAPI.searchUsers(query);
+      setSearchResults(Array.isArray(users) ? users : []);
+      setShowSearchResults(true);
+    } catch (err) {
+      console.error('Error searching users:', err);
+      setSearchResults([]);
+    }
+  };
+
+  const handleCloseSearch = () => {
+    setShowSearchResults(false);
+    setSearchResults([]);
+  };
+
   if (loading) {
     return (
       <div style={styles.container}>
-        <Navbar user={user} />
+        <Navbar 
+          user={user} 
+          onSearch={handleSearch}
+          onNotificationsClick={() => setShowNotifications(!showNotifications)}
+        />
         <div style={styles.content}>
           <p style={styles.loading}>Carregando...</p>
         </div>
@@ -74,7 +104,11 @@ export default function Chat() {
   if (error) {
     return (
       <div style={styles.container}>
-        <Navbar user={user} />
+        <Navbar 
+          user={user} 
+          onSearch={handleSearch}
+          onNotificationsClick={() => setShowNotifications(!showNotifications)}
+        />
         <div style={styles.content}>
           <p style={styles.error}>{error}</p>
         </div>
@@ -85,7 +119,50 @@ export default function Chat() {
 
   return (
     <div style={styles.container}>
-      <Navbar user={user} />
+      <Navbar 
+        user={user} 
+        onSearch={handleSearch}
+        onNotificationsClick={() => setShowNotifications(!showNotifications)}
+      />
+
+      {showNotifications && (
+        <Notificacoes userId={user?._id} onClose={() => setShowNotifications(false)} />
+      )}
+
+      {showSearchResults && (
+        <div style={{ position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)', background: 'white', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', zIndex: 1000, width: '90%', maxWidth: '500px', maxHeight: '400px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid #e0e0e0', background: '#f8f9fa' }}>
+            <h3>Resultados da busca</h3>
+            <button onClick={handleCloseSearch} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#666' }}>
+              ✖
+            </button>
+          </div>
+          {searchResults.length === 0 ? (
+            <p style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>Nenhum usuário encontrado</p>
+          ) : (
+            searchResults.map((userResult) => (
+              <div key={userResult._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderBottom: '1px solid #f0f0f0' }}>
+                <img
+                  src={userResult.profilePicture || '/default-avatar.svg'}
+                  alt={userResult.name || 'Usuário'}
+                  style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }}
+                />
+                <div style={{ flex: 1 }}>
+                  <h4>{userResult.name || 'Nome indisponível'}</h4>
+                  <p>{userResult.email || 'Email indisponível'}</p>
+                  <p>⭐ {userResult.xp || 0} XP</p>
+                </div>
+                <button
+                  onClick={() => router.push(`/profile?id=${userResult._id}`)}
+                  style={{ padding: '0.5rem 1rem', background: '#1877f2', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
+                >
+                  Ver Perfil
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       <div style={styles.content}>
         <h1>Mensagens</h1>
