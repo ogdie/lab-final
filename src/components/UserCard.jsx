@@ -1,9 +1,8 @@
 import FollowButton from './FollowButton';
-import ConnectButton from './ConnectButton';
 
-export default function UserCard({ user, currentUser, onFollow, onConnect }) {
+export default function UserCard({ user, currentUser, onFollow }) {
   const isFollowing = currentUser?.following?.includes(user._id);
-  const isConnected = currentUser?.connections?.includes(user._id);
+  const isConnected = false;
 
   return (
     <div style={styles.card}>
@@ -22,11 +21,6 @@ export default function UserCard({ user, currentUser, onFollow, onConnect }) {
         
         {currentUser && user._id !== currentUser._id && (
           <div style={styles.actions}>
-            <ConnectButton 
-              userId={user._id}
-              currentUser={currentUser}
-              onConnect={onConnect}
-            />
             <FollowButton 
               userId={user._id}
               currentUser={currentUser}

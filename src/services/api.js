@@ -76,6 +76,12 @@ export const usersAPI = {
   getNotifications: (id) => fetchAPI(`/users/${id}/notifications`)
 };
 
+// Follow API
+usersAPI.toggleFollow = (targetUserId, followerId) => fetchAPI(`/users/${targetUserId}/follow`, {
+  method: 'POST',
+  body: JSON.stringify({ followerId })
+});
+
 // Posts API
 export const postsAPI = {
   getAll: () => fetchAPI('/posts'),

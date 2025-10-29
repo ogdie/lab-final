@@ -16,7 +16,7 @@ export default function FollowButton({ userId, currentUser, onFollow }) {
         color: 'white'
       }}
     >
-      {isFollowing ? 'Seguindo' : 'Seguir'}
+      {isFollowing ? 'Deixar de seguir' : 'Seguir'}
     </button>
   );
 }

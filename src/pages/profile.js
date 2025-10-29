@@ -4,7 +4,6 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import EditProfileModal from '../components/EditProfileModal';
 import FollowButton from '../components/FollowButton';
-import ConnectButton from '../components/ConnectButton';
 import AlertModal from '../components/AlertModal';
 import Notificacoes from '../components/Notificacoes';
 import { usersAPI } from '../services/api';
@@ -93,10 +92,13 @@ export default function Profile() {
   const handleFollow = async (userId) => {
     if (!userId || !currentUser?._id) return;
     try {
-      // Placeholder: substitua pelo serviço real quando implementado
-      console.log('Seguir usuário:', userId);
-      // Ex: await usersAPI.follow(currentUser._id, userId);
-      // loadUser(userId); // para atualizar contagem de seguidores
+      const resp = await usersAPI.toggleFollow(userId, currentUser._id);
+      // Atualiza o perfil que está sendo visualizado
+      await loadUser(userId);
+      // Atualiza o currentUser (seguindo) e persiste
+      const freshCurrent = await usersAPI.getById(currentUser._id);
+      setCurrentUser(freshCurrent);
+      localStorage.setItem('user', JSON.stringify(freshCurrent));
     } catch (err) {
       console.error('Error following user:', err);
     }
@@ -291,11 +293,6 @@ export default function Profile() {
                 userId={user._id}
                 currentUser={currentUser}
                 onFollow={handleFollow}
-              />
-              <ConnectButton
-                userId={user._id}
-                currentUser={currentUser}
-                onConnect={handleConnect}
               />
             </div>
           )}
