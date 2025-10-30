@@ -49,7 +49,7 @@ export const ThemeLanguageProvider = ({ children }) => {
             clear: 'Limpar',
             search: 'Buscar',
             notifications: 'Notificações',
-            connection_notifications: 'Solicitações de Conexão',
+            connection_followers: 'Solicitações de Seguidores',
             no_requests: 'Nenhuma solicitação pendente',
             accept: 'Aceitar',
             decline: 'Recusar',
@@ -135,7 +135,7 @@ export const ThemeLanguageProvider = ({ children }) => {
             error_loading_profile: 'Não foi possível carregar o perfil.',
             followers_label: 'Seguidores',
             following_label: 'Seguindo',
-            connections: 'Conexões',
+            followers: 'Seguidores',
         },
         en: {
             search_placeholder: 'Search posts and users...',
@@ -228,7 +228,7 @@ export const ThemeLanguageProvider = ({ children }) => {
             error_loading_profile: 'Could not load the profile.',
             followers_label: 'Followers',
             following_label: 'Following',
-            connections: 'Connections',
+            followers: 'Followers',
         }
     };
 
