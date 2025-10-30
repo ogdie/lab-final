@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 export default function TopicModal({ isOpen, onClose, onSubmit }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const { t } = useThemeLanguage();
 
   useEffect(() => {
     if (!isOpen) {
@@ -22,27 +24,27 @@ export default function TopicModal({ isOpen, onClose, onSubmit }) {
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2 style={styles.title}>Criar Novo Tópico</h2>
+        <h2 style={styles.title}>{t('create_new_topic')}</h2>
         <input
           type="text"
-          placeholder="Nome do Tópico"
+          placeholder={t('topic_name')}
           value={name}
           onChange={(e) => setName(e.target.value)}
           style={styles.input}
         />
         <input
           type="text"
-          placeholder="Descrição (opcional)"
+          placeholder={t('description_optional')}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           style={styles.input}
         />
         <div style={styles.buttons}>
           <button style={{ ...styles.button, ...styles.cancel }} onClick={onClose}>
-            Cancelar
+            {t('cancel')}
           </button>
           <button style={{ ...styles.button, ...styles.confirm }} onClick={handleSubmit}>
-            Criar
+            {t('create')}
           </button>
         </div>
       </div>

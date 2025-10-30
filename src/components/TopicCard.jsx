@@ -1,43 +1,63 @@
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
+
 export default function TopicCard({ topic }) {
+  const { t, theme } = useThemeLanguage();
+  const isDark = theme === 'dark';
+  const styles = getStyles(theme);
   return (
     <div style={styles.topicCard}>
-      <h3>{topic.name || 'Tópico sem nome'}</h3>
-      <p>{topic.description || 'Sem descrição'}</p>
+      <h3>{topic.name || t('topic_no_name')}</h3>
+      <p style={styles.desc}>{topic.description || t('no_description')}</p>
 
       <div style={styles.meta}>
-        <span>📝 {topic.category || 'Sem categoria'}</span>
-        <span>💬 {topic.posts?.length || 0} posts</span>
+        <span>📝 {topic.category || t('no_category')}</span>
+        <span>💬 {topic.posts?.length || 0} {t('posts_label')}</span>
       </div>
 
       <a
         href={`/forum/topic?id=${encodeURIComponent(topic._id || '')}&name=${encodeURIComponent(topic.name || '')}`}
         style={styles.link}
       >
-        Ver Discussão →
+        {t('view_discussion')}
       </a>
     </div>
   );
 }
 
-const styles = {
-  topicCard: {
-    background: 'white',
-    border: '1px solid #e0e0e0',
-    borderRadius: '8px',
-    padding: '1.5rem',
-  },
-  meta: {
-    display: 'flex',
-    gap: '1rem',
-    marginTop: '1rem',
-    fontSize: '0.9rem',
-    color: '#666',
-  },
-  link: {
-    display: 'inline-block',
-    marginTop: '1rem',
-    color: '#2196F3',
-    textDecoration: 'none',
-    fontWeight: 'bold',
-  },
+const getStyles = (theme) => {
+  const isDark = theme === 'dark';
+  const backgroundCard = isDark ? '#2c2f33' : 'white';
+  const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
+  const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
+  const textSecondary = isDark ? '#b0b3b8' : '#666';
+  const blueAction = '#0a66c2';
+
+  return {
+    topicCard: {
+      background: backgroundCard,
+      border: `1px solid ${borderSubtle}`,
+      borderRadius: '8px',
+      padding: '1.5rem',
+      color: textPrimary,
+    },
+    desc: {
+      color: textSecondary,
+      margin: 0,
+      marginTop: '0.5rem',
+    },
+    meta: {
+      display: 'flex',
+      gap: '1rem',
+      marginTop: '1rem',
+      fontSize: '0.9rem',
+      color: textSecondary,
+    },
+    link: {
+      display: 'inline-block',
+      marginTop: '1rem',
+      color: blueAction,
+      textDecoration: 'none',
+      fontWeight: 'bold',
+    },
+  };
 };

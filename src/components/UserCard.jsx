@@ -1,6 +1,8 @@
 import FollowButton from './FollowButton';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 export default function UserCard({ user, currentUser, onFollow }) {
+  const { t } = useThemeLanguage();
   const isFollowing = currentUser?.following?.includes(user._id);
   const isConnected = false;
 
@@ -16,7 +18,7 @@ export default function UserCard({ user, currentUser, onFollow }) {
         <p style={styles.email}>{user.email}</p>
         <p style={styles.bio}>{user.bio}</p>
         <div style={styles.xp}>
-          ⭐ {user.xp || 0} XP | {user.userType}
+          ⭐ {user.xp || 0} {t('xp')} | {user.userType}
         </div>
         
         {currentUser && user._id !== currentUser._id && (

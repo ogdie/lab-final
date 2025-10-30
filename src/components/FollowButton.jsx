@@ -1,5 +1,8 @@
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
+
 export default function FollowButton({ userId, currentUser, onFollow }) {
   const isFollowing = currentUser?.following?.includes(userId);
+  const { t } = useThemeLanguage();
 
   const handleFollow = () => {
     if (onFollow) {
@@ -16,7 +19,7 @@ export default function FollowButton({ userId, currentUser, onFollow }) {
         color: 'white'
       }}
     >
-      {isFollowing ? 'Deixar de seguir' : 'Seguir'}
+      {isFollowing ? t('unfollow') : t('follow')}
     </button>
   );
 }

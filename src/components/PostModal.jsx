@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 export default function PostModal({ isOpen, onClose, onSubmit }) {
   const [content, setContent] = useState('');
   const [image, setImage] = useState('');
+  const { t } = useThemeLanguage();
 
   if (!isOpen) return null;
 
@@ -19,11 +21,11 @@ export default function PostModal({ isOpen, onClose, onSubmit }) {
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2 style={styles.title}>Criar Post</h2>
+        <h2 style={styles.title}>{t('create_post')}</h2>
         
         <form onSubmit={handleSubmit}>
           <textarea
-            placeholder="O que você está pensando?"
+            placeholder={t('what_are_you_thinking')}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             style={styles.textarea}
@@ -33,7 +35,7 @@ export default function PostModal({ isOpen, onClose, onSubmit }) {
           
           <input
             type="text"
-            placeholder="URL da imagem (opcional)"
+            placeholder={t('image_url_optional')}
             value={image}
             onChange={(e) => setImage(e.target.value)}
             style={styles.input}
@@ -41,10 +43,10 @@ export default function PostModal({ isOpen, onClose, onSubmit }) {
           
           <div style={styles.actions}>
             <button type="button" onClick={onClose} style={styles.cancelButton}>
-              Cancelar
+              {t('cancel')}
             </button>
             <button type="submit" style={styles.submitButton}>
-              Publicar
+              {t('publish')}
             </button>
           </div>
         </form>

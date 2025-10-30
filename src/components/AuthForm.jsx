@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import BackButton from './BackButton';
 
 const INSTITUTIONS = [
   "Faculdade de Engenharia da Universidade do Porto (FEUP)",
@@ -97,6 +98,11 @@ export default function AuthForm({ onLogin, onRegister }) {
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
+      {!isLogin && (
+        <div style={{ marginBottom: '8px' }}>
+          <BackButton to="/" onClick={() => setIsLogin(true)} />
+        </div>
+      )}
       <h2 style={styles.title}>{isLogin ? 'Login' : 'Cadastro'}</h2>
 
       {!!error && <div style={styles.error}>{error}</div>}

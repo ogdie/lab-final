@@ -1,28 +1,25 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-// 1. IMPORTAR O HOOK DO CONTEXTO GLOBAL
 import { useThemeLanguage } from '../context/ThemeLanguageContext'; 
+import Notificacoes from './Notificacoes';
+import CodemiaLogo from './CodemiaLogo'; 
 
-import ConnectionNotification from './ConnectionNotification';
-
-// --- FUNÇÃO DE ESTILO DINÂMICO ---
 const getStyles = (theme) => {
     const isDark = theme === 'dark';
-    // Paleta de cores (Consistente com o Settings.js)
     const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
     const textSecondary = isDark ? '#b0b3b8' : '#606770';
-    const backgroundNavbar = isDark ? '#202124' : 'white'; // Fundo da Navbar
-    const borderNavbar = isDark ? '#3e4042' : '#e0e0e0'; // Borda e separadores
-    const backgroundSearch = isDark ? '#3a3b3c' : '#eef3f8'; // Fundo da Busca (LinkedIn)
-    const blueAction = '#0a66c2'; // Azul de ação
+    const backgroundNavbar = isDark ? '#202124' : 'white';
+    const borderNavbar = isDark ? '#3e4042' : '#e0e0e0';
+    const backgroundSearch = isDark ? '#3a3b3c' : '#eef3f8';
+    const blueAction = '#0a66c2';
+    const logoColor = isDark ? textPrimary : blueAction; 
 
     return {
-        // Estilo principal da Navbar
         navbar: {
             backgroundColor: backgroundNavbar,
             borderBottom: `1px solid ${borderNavbar}`,
-            padding: '0.75rem 0', // Um pouco mais compacto
+            padding: '0.4rem 0', 
             position: 'sticky',
             top: 0,
             zIndex: 1000,
@@ -36,19 +33,24 @@ const getStyles = (theme) => {
             margin: '0 auto',
             padding: '0 1rem'
         },
-        // Logo (Cor primária)
         logo: {
-            fontSize: '1.5rem',
-            fontWeight: 'bold',
-            color: blueAction, // Logo com cor de destaque
-            textDecoration: 'none'
+            display: 'flex',
+            alignItems: 'center',
+            height: '50px', 
+            textDecoration: 'none',
+            color: logoColor 
+        },
+        svgLogoStyle: { // ESTILOS AGRESSIVOS DE DIMENSIONAMENTO PARA O SVG INLINE
+            height: '120px',
+            width: '200px', 
+            display: 'block',
         },
         searchContainer: {
             flex: 1,
-            maxWidth: '400px', // Um pouco menor
-            margin: '0 2rem'
+            maxWidth: '400px',
+            margin: '0 2rem',
+            position: 'relative'
         },
-        // Campo de Busca
         searchInput: {
             width: '100%',
             padding: '0.5rem 1rem',
@@ -56,7 +58,7 @@ const getStyles = (theme) => {
             borderRadius: '4px',
             fontSize: '1rem',
             paddingRight: '2rem',
-            backgroundColor: backgroundSearch, // Fundo cinza claro/escuro
+            backgroundColor: backgroundSearch,
             color: textPrimary,
         },
         clearButton: {
@@ -75,15 +77,14 @@ const getStyles = (theme) => {
             alignItems: 'center',
             gap: '1rem'
         },
-        // Botões de Ícones
         iconButton: {
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            fontSize: '1.4rem', // Ícones um pouco maiores
+            fontSize: '1.4rem',
             position: 'relative',
             padding: '0.5rem',
-            color: textSecondary, // Cor dos ícones
+            color: textSecondary,
             transition: 'color 0.2s',
         },
         badge: {
@@ -100,13 +101,12 @@ const getStyles = (theme) => {
             alignItems: 'center',
             justifyContent: 'center'
         },
-        // Informações do Usuário
         userInfo: {
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
             textDecoration: 'none',
-            color: textPrimary, // Cor do texto
+            color: textPrimary,
         },
         avatar: {
             width: '32px',
@@ -114,9 +114,8 @@ const getStyles = (theme) => {
             borderRadius: '50%',
             objectFit: 'cover'
         },
-        // Botão de Logout
         logoutButton: {
-            padding: '0.4rem 0.8rem', // Mais compacto
+            padding: '0.4rem 0.8rem',
             background: isDark ? '#5c0000' : '#d32f2f', 
             color: 'white',
             border: 'none',
@@ -126,48 +125,44 @@ const getStyles = (theme) => {
         }
     };
 };
-// --- FIM DA FUNÇÃO DE ESTILO DINÂMICO ---
-
 
 export default function Navbar({ user, onSearch = () => {}, onNotificationsClick }) {
-    // 2. OBTER O TEMA DO CONTEXTO
-    const { theme } = useThemeLanguage();
+    const { theme, t } = useThemeLanguage();
     const styles = getStyles(theme);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [notificationsCount, setNotificationsCount] = useState(0);
-    const [showConnectionNotifications, setShowConnectionNotifications] = useState(false);
+    const [showConnectionNotifications, setShowConnectionNotifications] = useState(false); 
 
-    // Debounce e Notificações (Lógica inalterada)
+    // Lógica para alternar a visibilidade das notificações
+    const handleNotificationsClick = () => {
+        setShowConnectionNotifications(prev => !prev);
+    };
+    
+    // Busca ao digitar (debounce curto)
     useEffect(() => {
-        const handler = setTimeout(() => {
-            if (searchTerm.trim()) {
-                onSearch(searchTerm.trim());
+        const term = searchTerm.trim();
+        const id = setTimeout(() => {
+            if (term) {
+                onSearch(term);
             }
-        }, 500);
-        return () => clearTimeout(handler);
+        }, 250);
+        return () => clearTimeout(id);
     }, [searchTerm, onSearch]);
-
-    useEffect(() => {
-        if (user?._id) {
-            const fetchCount = async () => {
-                // ... (Sua lógica de fetch de notificação permanece a mesma)
-            };
-            fetchCount();
-            const interval = setInterval(fetchCount, 30000);
-            return () => clearInterval(interval);
-        }
-    }, [user]);
 
     return (
         <nav style={styles.navbar}>
             <div style={styles.container}>
-                <Link href="/home" style={styles.logo}>CodeConnect</Link>
-                
-                <div style={{ ...styles.searchContainer, position: 'relative' }}>
+                {/* USA O NOVO COMPONENTE */}
+                <Link href="/home" style={styles.logo}>
+                    <CodemiaLogo style={styles.svgLogoStyle} />
+                </Link>
+
+                {/* Search Bar */}
+                <div style={styles.searchContainer}>
                     <input
                         type="text"
-                        placeholder="Buscar posts e usuários..."
+                        placeholder={t('search_placeholder')}
                         aria-label="Buscar posts e usuários"
                         style={styles.searchInput}
                         value={searchTerm}
@@ -178,44 +173,58 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                                 onSearch('');
                             }
                         }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                const q = searchTerm.trim();
+                                onSearch(q);
+                            }
+                        }}
                     />
                     {searchTerm && (
-                        <button
-                            style={styles.clearButton}
-                            onClick={() => {
-                                setSearchTerm('');
-                                onSearch('');
-                            }}
-                            aria-label="Limpar busca"
-                        >
-                            ✖️
-                        </button>
+                        <>
+                            <button
+                                style={{ ...styles.clearButton, right: '2rem' }}
+                                onClick={() => {
+                                    const q = searchTerm.trim();
+                                    onSearch(q);
+                                }}
+                                aria-label="Executar busca"
+                                title="Buscar"
+                            >
+                                🔍
+                            </button>
+                            <button
+                                style={styles.clearButton}
+                                onClick={() => {
+                                    setSearchTerm('');
+                                    onSearch('');
+                                }}
+                                aria-label={t('clear')}
+                                title={t('clear')}
+                            >
+                                ✖️
+                            </button>
+                        </>
                     )}
                 </div>
 
+                {/* Ícones e Perfil */}
                 <div style={styles.rightSection}>
-                    {/* Botões de Ícones */}
+                    {/* Botão de Notificações com badge */}
                     <button 
                         style={styles.iconButton}
-                        onClick={onNotificationsClick}
-                        title="Notificações"
+                        onClick={handleNotificationsClick} 
+                        title={t('notifications')}
                     >
                         🔔 {notificationsCount > 0 && <span style={styles.badge}>{notificationsCount}</span>}
                     </button>
                     
-                    <Link href="/chat" style={styles.iconButton} title="Chat">
-                        💬
-                    </Link>
+                    {/* Outros Ícones */}
+                    <Link href="/chat" style={styles.iconButton} title={t('chat')}>💬</Link>
+                    <Link href="/forum" style={styles.iconButton} title={t('forum')}>📢</Link>
+                    <Link href="/settings" style={styles.iconButton} title={t('settings')}>⚙️</Link>
 
-                    <Link href="/forum" style={styles.iconButton} title="Fórum">
-                        📢
-                    </Link>
-
-                    <Link href="/settings" style={styles.iconButton} title="Configurações">
-                        ⚙️
-                    </Link>
-
-                    {/* Informações do Usuário */}
+                    {/* Informações do Usuário (Avatar e Nome) */}
                     {user && (
                         <Link href={`/profile?id=${user._id}`} style={styles.userInfo} title="Meu perfil">
                             <img 
@@ -227,7 +236,7 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                         </Link>
                     )}
                     
-                    {/* Botão de Logout */}
+                    {/* Botão de Sair */}
                     {user && (
                         <button 
                             onClick={() => {
@@ -235,16 +244,17 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                                 window.location.href = '/';
                             }}
                             style={styles.logoutButton}
-                            title="Sair"
+                            title={t('logout')}
                         >
-                            Sair
+                            {t('logout')}
                         </button>
                     )}
                 </div>
             </div>
-            
+
+            {/* Componente de Notificações de Conexão */}
             {showConnectionNotifications && (
-                <ConnectionNotification 
+                <Notificacoes 
                     userId={user?._id} 
                     onClose={() => setShowConnectionNotifications(false)} 
                 />

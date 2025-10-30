@@ -1,16 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../../components/Navbar';
+import BackButton from '../../components/BackButton';
 import Footer from '../../components/Footer';
-import { rankingAPI } from '../../services/api';
+import { rankingAPI, usersAPI } from '../../services/api';
+import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 
 export default function Ranking() {
   const router = useRouter();
+  const { t, theme } = useThemeLanguage();
   const [user, setUser] = useState(null);
   const [ranking, setRanking] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [infoHover, setInfoHover] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -43,12 +48,35 @@ export default function Ranking() {
     }
   };
 
+  const handleSearch = async (query) => {
+    if (!query?.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+    try {
+      const users = await usersAPI.searchUsers(query);
+      setSearchResults(Array.isArray(users) ? users : []);
+      setShowSearchResults(true);
+    } catch (err) {
+      console.error('Error searching users:', err);
+      setSearchResults([]);
+    }
+  };
+
+  const handleCloseSearch = () => {
+    setShowSearchResults(false);
+    setSearchResults([]);
+  };
+
+  const styles = getStyles(theme);
+
   if (loading) {
     return (
       <div style={styles.container}>
         <Navbar user={user} />
         <div style={styles.content}>
-          <p style={styles.loading}>Carregando...</p>
+          <p style={styles.loading}>{t('loading')}</p>
         </div>
         <Footer />
       </div>
@@ -71,10 +99,35 @@ export default function Ranking() {
 
   return (
     <div style={styles.container}>
-      <Navbar user={user} />
+      <Navbar user={user} onSearch={handleSearch} />
 
       <div style={styles.content}>
-        <h1 style={styles.title}>🏆 Ranking de XP</h1>
+        <div style={{ marginBottom: '12px' }}>
+          <BackButton to="/forum" />
+        </div>
+        {showSearchResults && (
+          <div style={styles.searchResults}>
+            <div style={styles.searchHeader}>
+              <h3 style={{ margin: 0 }}>{t('search_results')}</h3>
+              <button onClick={handleCloseSearch} style={styles.closeButton}>✖</button>
+            </div>
+            {searchResults.length === 0 ? (
+              <p style={{ padding: '1rem' }}>{t('no_users_found')}</p>
+            ) : (
+              searchResults.map((u) => (
+                <div key={u._id} style={styles.userResult}>
+                  <img src={u.profilePicture || '/default-avatar.svg'} alt={u.name} style={styles.resultAvatar} />
+                  <div style={styles.resultInfo}>
+                    <h4 style={{ margin: 0 }}>{u.name}</h4>
+                    <p style={{ margin: '2px 0 0 0', color: '#606770', fontSize: '0.85rem' }}>{u.email}</p>
+                  </div>
+                  <button onClick={() => router.push(`/profile?id=${u._id}`)} style={styles.viewProfileButton}>{t('view_profile')}</button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+        <h1 style={styles.title}>🏆 {t('xp')} Ranking</h1>
 
         <div
           style={{
@@ -85,13 +138,13 @@ export default function Ranking() {
           onMouseLeave={() => setInfoHover(false)}
         >
           <p style={styles.infoText}>
-            Ao final de cada mês, os participantes que alcançarem o topo do ranking receberão um prêmio exclusivo da Codemia!
-            Participe, dê o seu melhor e conquiste recompensas especiais por sua dedicação e desempenho.
+            At the end of each month, participants who reach the top of the ranking will receive an exclusive prize from Codemia!
+            Join in, do your best, and earn special rewards for your dedication and performance.
           </p>
         </div>
 
         {top10.length === 0 ? (
-          <p style={styles.empty}>Nenhum usuário no ranking ainda.</p>
+          <p style={styles.empty}>{'Nenhum usuário no ranking ainda.'}</p>
         ) : (
           <div style={styles.ranking}>
             {top10.map((rankedUser, index) => (
@@ -99,7 +152,7 @@ export default function Ranking() {
                 <div style={styles.position}>{index + 1}º</div>
                 <img
                   src={rankedUser.profilePicture || '/default-avatar.svg'}
-                  alt={rankedUser.name || 'Usuário'}
+                  alt={rankedUser.name || t('user')}
                   style={styles.avatar}
                 />
                 <div style={styles.info}>
@@ -107,7 +160,10 @@ export default function Ranking() {
                     {rankedUser.name || 'Nome indisponível'}
                   </div>
                   <div style={styles.type}>
-                    {rankedUser.userType || 'Tipo não definido'}
+                    {(() => {
+                      const type = (rankedUser.userType || '').toString();
+                      return type.toLowerCase() === 'estudante' ? 'Student' : (type || 'Tipo não definido');
+                    })()}
                   </div>
                 </div>
                 <div style={styles.xp}>⭐ {rankedUser.xp || 0} XP</div>
@@ -122,100 +178,165 @@ export default function Ranking() {
   );
 }
 
-const styles = {
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  content: {
-    maxWidth: '800px',
-    margin: '0 auto',
-    padding: '2rem',
-    flex: 1,
-  },
-  title: {
-    fontSize: '2rem',
-    marginBottom: '1rem',
-    textAlign: 'center',
-  },
-  infoBox: {
-    background: 'white',
-    border: '1px solid #e0e0e0',
-    borderRadius: '8px',
-    padding: '1rem',
-    marginBottom: '1.5rem',
-    textAlign: 'center',
-    transition: 'background 150ms ease, border-color 150ms ease',
-  },
-  infoBoxHover: {
-    background: '#e7f3ff',
-    borderColor: '#b3d4ff',
-  },
-  infoText: {
-    margin: 0,
-    fontSize: '1rem',
-    color: '#333',
-    lineHeight: 1.5,
-  },
-  ranking: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem',
-  },
-  item: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem',
-    background: 'white',
-    border: '1px solid #e0e0e0',
-    borderRadius: '8px',
-    padding: '1rem',
-  },
-  position: {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    color: '#2196F3',
-    minWidth: '50px',
-  },
-  avatar: {
-    width: '64px',
-    height: '64px',
-    borderRadius: '50%',
-    objectFit: 'cover',
-  },
-  info: {
-    flex: 1,
-  },
-  name: {
-    fontWeight: 'bold',
-    fontSize: '1.1rem',
-  },
-  type: {
-    fontSize: '0.9rem',
-    color: '#666',
-  },
-  xp: {
-    fontSize: '1.1rem',
-    fontWeight: 'bold',
-    color: '#FF9800',
-  },
-  loading: {
-    textAlign: 'center',
-    padding: '2rem',
-    fontSize: '1.2rem',
-    color: '#555',
-  },
-  error: {
-    textAlign: 'center',
-    padding: '2rem',
-    fontSize: '1.2rem',
-    color: '#d32f2f',
-  },
-  empty: {
-    textAlign: 'center',
-    padding: '2rem',
-    color: '#666',
-    fontStyle: 'italic',
-  },
+const getStyles = (theme) => {
+  const isDark = theme === 'dark';
+  const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
+  const textSecondary = isDark ? '#b0b3b8' : '#666';
+  const backgroundPrimary = isDark ? '#1d2226' : '#f3f2ef';
+  const backgroundCard = isDark ? '#2c2f33' : 'white';
+  const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
+  const blueAction = '#2196F3';
+
+  return {
+    container: {
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      background: backgroundPrimary,
+    },
+    content: {
+      maxWidth: '800px',
+      margin: '0 auto',
+      padding: '2rem',
+      flex: 1,
+      color: textPrimary,
+    },
+    searchResults: {
+      position: 'fixed',
+      top: '80px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      background: backgroundCard,
+      border: `1px solid ${borderSubtle}`,
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+      zIndex: 1000,
+      width: '90%',
+      maxWidth: '500px',
+      maxHeight: '400px',
+      overflowY: 'auto',
+      color: textPrimary,
+    },
+    searchHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '1rem',
+      borderBottom: `1px solid ${borderSubtle}`,
+      background: isDark ? '#3a3b3c' : '#f8f9fa',
+      color: textPrimary,
+    },
+    closeButton: {
+      background: 'none',
+      border: 'none',
+      fontSize: '1.2rem',
+      cursor: 'pointer',
+      color: textSecondary,
+    },
+    userResult: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '1rem',
+      padding: '1rem',
+      borderBottom: `1px solid ${borderSubtle}`,
+    },
+    resultInfo: { flex: 1 },
+    resultAvatar: { width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' },
+    viewProfileButton: {
+      padding: '0.5rem 1rem',
+      background: '#0a66c2',
+      color: 'white',
+      border: 'none',
+      borderRadius: '24px',
+      cursor: 'pointer',
+      fontSize: '0.9rem',
+      fontWeight: '600',
+    },
+    title: {
+      fontSize: '2rem',
+      marginBottom: '1rem',
+      textAlign: 'center',
+      color: textPrimary,
+    },
+    infoBox: {
+      background: backgroundCard,
+      border: `1px solid ${borderSubtle}`,
+      borderRadius: '8px',
+      padding: '1rem',
+      marginBottom: '1.5rem',
+      textAlign: 'center',
+      transition: 'background 150ms ease, border-color 150ms ease',
+    },
+    infoBoxHover: {
+      background: isDark ? '#314255' : '#e7f3ff',
+      borderColor: isDark ? '#3e5a78' : '#b3d4ff',
+    },
+    infoText: {
+      margin: 0,
+      fontSize: '1rem',
+      color: textPrimary,
+      lineHeight: 1.5,
+    },
+    ranking: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1rem',
+    },
+    item: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '1rem',
+      background: backgroundCard,
+      border: `1px solid ${borderSubtle}`,
+      borderRadius: '8px',
+      padding: '1rem',
+    },
+    position: {
+      fontSize: '1.5rem',
+      fontWeight: 'bold',
+      color: blueAction,
+      minWidth: '50px',
+    },
+    avatar: {
+      width: '64px',
+      height: '64px',
+      borderRadius: '50%',
+      objectFit: 'cover',
+    },
+    info: {
+      flex: 1,
+    },
+    name: {
+      fontWeight: 'bold',
+      fontSize: '1.1rem',
+      color: textPrimary,
+    },
+    type: {
+      fontSize: '0.9rem',
+      color: textSecondary,
+    },
+    xp: {
+      fontSize: '1.1rem',
+      fontWeight: 'bold',
+      color: '#FF9800',
+    },
+    loading: {
+      textAlign: 'center',
+      padding: '2rem',
+      fontSize: '1.2rem',
+      color: textSecondary,
+    },
+    error: {
+      textAlign: 'center',
+      padding: '2rem',
+      fontSize: '1.2rem',
+      color: '#d32f2f',
+    },
+    empty: {
+      textAlign: 'center',
+      padding: '2rem',
+      color: textSecondary,
+      fontStyle: 'italic',
+    },
+  };
 };

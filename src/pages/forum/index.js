@@ -4,120 +4,287 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import TopicCard from "../../components/TopicCard";
 import TopicModal from "@/components/TopicModal";
-import { forumAPI } from "../../services/api";
+import { forumAPI, usersAPI } from "../../services/api";
+import { useThemeLanguage } from "../../context/ThemeLanguageContext";
 
 const getStyles = (theme) => {
   const isDark = theme === "dark";
   const textPrimary = isDark ? "#e4e6eb" : "#1d2129";
-  const textSecondary = isDark ? "#b0b3b8" : "#606770";
-  const backgroundPrimary = isDark ? "#18191a" : "#f0f2f5";
-  const backgroundCard = isDark ? "#242526" : "white";
-  const borderSubtle = isDark ? "#3e4042" : "#e0e0e0";
+  const textSecondary = isDark ? "#b0b3b8" : "#5e5e5e";
+  const backgroundPrimary = isDark ? "#1d2226" : "#f3f2ef";
+  const backgroundCard = isDark ? "#2c2f33" : "#ffffff";
+  const borderSubtle = isDark ? "#3e4042" : "#d1d1d1";
   const blueAction = "#0a66c2";
-  const blueActionLight = isDark ? "#1d3e66" : "#e7f3ff";
 
   return {
-    container: { minHeight: "100vh", display: "flex", flexDirection: "column", background: backgroundPrimary },
+    container: {
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      background: backgroundPrimary,
+      fontFamily:
+        "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
+    },
     layout: {
       display: "flex",
       maxWidth: "1200px",
       margin: "0 auto",
-      padding: "1rem 0",
+      padding: "16px 0",
       flex: 1,
-      gap: "2rem",
+      gap: "24px",
+      alignItems: "flex-start",
+      width: "100%",
     },
     sidebar: {
       position: "sticky",
       top: "72px",
-      width: "280px",
-      padding: "12px 16px",
+      width: "240px",
+      flexShrink: 0,
+      background: backgroundCard,
+      borderRadius: "12px",
+      boxShadow: "0 0 0 1px rgb(0 0 0 / 15%), 0 2px 3px rgb(0 0 0 / 20%)",
+      border: `1px solid ${borderSubtle}`,
+      overflow: "hidden",
       display: "flex",
       flexDirection: "column",
-      gap: "16px",
-      height: "calc(100vh - 72px - 2rem)",
-      overflowY: "auto",
+      textAlign: "center",
       zIndex: 10,
     },
+    sidebarHeader: {
+      height: "54px",
+      background: blueAction,
+      marginBottom: "-32px",
+    },
     userCard: {
-      background: backgroundCard,
-      borderRadius: "8px",
       padding: "16px",
-      boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-      border: `1px solid ${borderSubtle}`,
       display: "flex",
       flexDirection: "column",
-      gap: "16px",
+      alignItems: "center",
+      gap: "8px",
+    },
+    avatar: {
+      width: "72px",
+      height: "72px",
+      borderRadius: "50%",
+      objectFit: "cover",
+      border: `2px solid ${backgroundCard}`,
     },
     cardTitle: {
-      fontSize: "1rem",
+      fontSize: "1.2rem",
       fontWeight: "600",
       color: textPrimary,
-      margin: 0,
-      borderBottom: `1px solid ${borderSubtle}`,
-      paddingBottom: "8px",
+      margin: "4px 0 0 0",
+    },
+    cardSubtitle: {
+      fontSize: "0.9rem",
+      color: textSecondary,
+      margin: "0 0 16px 0",
+    },
+    statsSection: {
+      padding: "12px 16px",
+      borderTop: `1px solid ${borderSubtle}`,
+      width: "100%",
     },
     statItem: {
       display: "flex",
       justifyContent: "space-between",
-      fontSize: "0.95rem",
+      alignItems: "center",
+      fontSize: "0.9rem",
       color: textSecondary,
+      width: "100%",
+      padding: "4px 0",
+      cursor: "pointer",
     },
     statValue: {
-      color: textPrimary,
+      color: blueAction,
       fontWeight: "bold",
     },
-    userCardButtons: { display: "flex", flexDirection: "column", gap: "0.5rem" },
+    userCardButtons: {
+      padding: "12px 16px",
+      borderTop: `1px solid ${borderSubtle}`,
+      width: "100%",
+    },
     button: {
       width: "100%",
-      padding: "12px 16px",
+      padding: "8px 16px",
       background: backgroundCard,
-      border: `1px solid ${borderSubtle}`,
-      borderRadius: "8px",
+      border: `1px solid ${blueAction}`,
+      borderRadius: "24px",
       fontSize: "1rem",
       fontWeight: "600",
-      color: textPrimary,
+      color: blueAction,
       cursor: "pointer",
-      transition: "background 0.2s",
+      transition: "background 0.2s, border-color 0.2s",
+      marginBottom: "8px",
     },
     mainArea: {
       flex: 1,
       display: "flex",
       flexDirection: "column",
-      gap: "16px",
-      padding: "0 16px",
-      maxWidth: "650px",
-      margin: "0 auto",
+      gap: "12px",
+      maxWidth: "560px",
     },
-    title: { fontSize: "2rem", marginBottom: "0.5rem", color: textPrimary },
-    subtitle: { fontSize: "1.1rem", color: textSecondary, marginBottom: "1rem" },
+    title: {
+      fontSize: "1.5rem",
+      color: textPrimary,
+      fontWeight: "600",
+      margin: "0 0 8px 0",
+    },
+    subtitle: {
+      fontSize: "1rem",
+      color: textSecondary,
+      margin: "0 0 16px 0",
+    },
+    createPostContainer: {
+      background: backgroundCard,
+      borderRadius: "12px",
+      boxShadow: "0 0 0 1px rgb(0 0 0 / 15%), 0 2px 3px rgb(0 0 0 / 20%)",
+      padding: "12px 16px",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      border: `1px solid ${borderSubtle}`,
+    },
+    createPostInput: {
+      flex: 1,
+      padding: "10px 16px",
+      borderRadius: "24px",
+      border: `1px solid ${textSecondary}`,
+      color: textPrimary,
+      cursor: "pointer",
+    },
     topics: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-      gap: "1rem",
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px",
     },
-    loading: { textAlign: "center", padding: "2rem", fontSize: "1.2rem", color: textPrimary },
-    error: { textAlign: "center", padding: "2rem", fontSize: "1.2rem", color: "#d32f2f" },
-    empty: { textAlign: "center", padding: "2rem", color: textSecondary, fontStyle: "italic" },
+    searchResults: {
+      position: "fixed",
+      top: "80px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: backgroundCard,
+      border: `1px solid ${borderSubtle}`,
+      borderRadius: "8px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+      zIndex: 1000,
+      width: "90%",
+      maxWidth: "500px",
+      maxHeight: "400px",
+      overflowY: "auto",
+    },
+    searchHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "1rem",
+      borderBottom: `1px solid ${borderSubtle}`,
+      background: isDark ? "#3a3b3c" : "#f8f9fa",
+      color: textPrimary,
+    },
+    userResult: {
+      display: "flex",
+      alignItems: "center",
+      gap: "1rem",
+      padding: "1rem",
+      borderBottom: `1px solid ${borderSubtle}`,
+      color: textPrimary,
+    },
+    resultInfo: { flex: 1 },
+    resultAvatar: { width: "48px", height: "48px", borderRadius: "50%", objectFit: "cover" },
+    viewProfileButton: {
+      padding: "0.5rem 1rem",
+      background: blueAction,
+      color: "white",
+      border: "none",
+      borderRadius: "24px",
+      cursor: "pointer",
+      fontSize: "0.9rem",
+      fontWeight: "600",
+    },
+    closeButton: {
+      background: "none",
+      border: "none",
+      fontSize: "1.2rem",
+      cursor: "pointer",
+      color: textSecondary,
+    },
+    loading: {
+      textAlign: "center",
+      padding: "2rem",
+      fontSize: "1.2rem",
+      color: textPrimary,
+    },
+    error: {
+      textAlign: "center",
+      padding: "1rem",
+      fontSize: "1rem",
+      color: "#d32f2f",
+      background: `${backgroundCard}80`,
+      borderRadius: "8px",
+    },
+    empty: {
+      textAlign: "center",
+      padding: "2rem",
+      color: textSecondary,
+      fontStyle: "italic",
+      background: backgroundCard,
+      borderRadius: "12px",
+      boxShadow: "0 0 0 1px rgb(0 0 0 / 15%), 0 2px 3px rgb(0 0 0 / 20%)",
+    },
   };
 };
 
 export default function Forum() {
   const router = useRouter();
+  const { t, theme, language } = useThemeLanguage();
   const [user, setUser] = useState(null);
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showTopicModal, setShowTopicModal] = useState(false);
-  const [theme, setTheme] = useState("light"); // Ajuste para dark/light se tiver context
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   const styles = getStyles(theme);
 
   const defaultTopics = [
-    { _id: "1", name: "Reports", description: "Discussão sobre relatórios", category: "Geral", posts: [] },
-    { _id: "2", name: "FullStack", description: "Tudo sobre desenvolvimento FullStack", category: "Dev", posts: [] },
-    { _id: "3", name: "C", description: "Programação em C", category: "Linguagem", posts: [] },
-    { _id: "4", name: "Python", description: "Programação em Python", category: "Linguagem", posts: [] },
-    { _id: "5", name: "Outros", description: "Tópicos diversos", category: "Geral", posts: [] },
+    {
+      _id: "1",
+      name: "Reports",
+      description: "Discussão sobre relatórios e métricas de desempenho.",
+      category: "Geral",
+      posts: [],
+    },
+    {
+      _id: "2",
+      name: "FullStack",
+      description:
+        "Discussão sobre desenvolvimento com foco em FullStack (Frontend e Backend).",
+      category: "Dev",
+      posts: [],
+    },
+    {
+      _id: "3",
+      name: "C",
+      description: "Programação em C: dúvidas, projetos e boas práticas.",
+      category: "Linguagem",
+      posts: [],
+    },
+    {
+      _id: "4",
+      name: "Python",
+      description: "Comunidade Python: Data Science, Web, Automação e mais.",
+      category: "Linguagem",
+      posts: [],
+    },
+    {
+      _id: "5",
+      name: "Outros",
+      description: "Tópicos diversos que não se encaixam em outras categorias.",
+      category: "Geral",
+      posts: [],
+    },
   ];
 
   useEffect(() => {
@@ -146,22 +313,23 @@ export default function Forum() {
     try {
       const data = await forumAPI.getTopics();
       const backendTopics = Array.isArray(data) ? data : [];
-      // Mesclar por nome (case-insensitive), preferindo os do backend quando existirem
       const byName = new Map();
       backendTopics.forEach((t) => {
-        const key = (t?.name || '').toLowerCase();
+        const key = (t?.name || "").toLowerCase();
         if (!byName.has(key)) byName.set(key, t);
       });
       const merged = [...byName.values()];
       defaultTopics.forEach((t) => {
-        const key = (t?.name || '').toLowerCase();
+        const key = (t?.name || "").toLowerCase();
         if (!byName.has(key)) merged.push(t);
       });
       setTopics(merged);
     } catch (err) {
       console.error("Error loading topics:", err);
       setTopics(defaultTopics);
-      setError("Não foi possível carregar os tópicos do fórum.");
+      setError(
+        "Não foi possível carregar os tópicos do fórum. Exibindo dados padrão."
+      );
     } finally {
       setLoading(false);
     }
@@ -169,17 +337,45 @@ export default function Forum() {
 
   const handleCreateTopic = (topic) => {
     setTopics([
-      { _id: Math.random().toString(36).substr(2, 9), ...topic, posts: [], category: "Geral" },
+      {
+        _id: Math.random().toString(36).substr(2, 9),
+        ...topic,
+        posts: [],
+        category: "Geral",
+      },
       ...topics,
     ]);
+  };
+
+  const handleSearch = async (query) => {
+    if (!query?.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+    try {
+      const users = await usersAPI.searchUsers(query);
+      setSearchResults(Array.isArray(users) ? users : []);
+      setShowSearchResults(true);
+    } catch (err) {
+      console.error('Error searching users:', err);
+      setSearchResults([]);
+    }
+  };
+
+  const handleCloseSearch = () => {
+    setShowSearchResults(false);
+    setSearchResults([]);
   };
 
   if (loading) {
     return (
       <div style={styles.container}>
         <Navbar user={user} />
-        <div style={styles.mainArea}>
-          <p style={styles.loading}>Carregando...</p>
+        <div style={styles.layout}>
+          <div style={styles.mainArea}>
+            <p style={styles.loading}>{t('loading')}</p>
+          </div>
         </div>
         <Footer />
       </div>
@@ -188,45 +384,102 @@ export default function Forum() {
 
   return (
     <div style={styles.container}>
-      <Navbar user={user} />
-
+      <Navbar user={user} onSearch={handleSearch} />
       <div style={styles.layout}>
-        {/* Sidebar lateral esquerda */}
-        <aside style={styles.sidebar}>
-          {user && (
+        {showSearchResults && (
+          <div style={styles.searchResults}>
+            <div style={styles.searchHeader}>
+              <h3 style={{ margin: 0 }}>{t('search_results')}</h3>
+              <button onClick={handleCloseSearch} style={styles.closeButton}>✖</button>
+            </div>
+            {searchResults.length === 0 ? (
+              <p style={{ padding: '1rem', color: styles.subtitle.color }}>{t('no_users_found')}</p>
+            ) : (
+              searchResults.map((u) => (
+                <div key={u._id} style={styles.userResult}>
+                  <img src={u.profilePicture || '/default-avatar.svg'} alt={u.name} style={styles.resultAvatar} />
+                  <div style={styles.resultInfo}>
+                    <h4 style={{ margin: 0, color: styles.title.color }}>{u.name}</h4>
+                    <p style={{ margin: '2px 0 0 0', color: styles.subtitle.color, fontSize: '0.85rem' }}>{u.email}</p>
+                  </div>
+                  <button onClick={() => router.push(`/profile?id=${u._id}`)} style={styles.viewProfileButton}>{t('view_profile')}</button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+        {user && (
+          <aside style={styles.sidebar}>
+            <div style={styles.sidebarHeader} />
             <div style={styles.userCard}>
-              <h3 style={styles.cardTitle}>Seu Desempenho</h3>
+              <img
+                src={user.profilePicture || "/default-avatar.svg"}
+                alt={user.name}
+                style={styles.avatar}
+              />
+              <h3 style={styles.cardTitle}>{user.name || t('user')}</h3>
+              <p style={styles.cardSubtitle}>
+                {user.title || 'Developer'}
+              </p>
+            </div>
+            <div style={styles.statsSection}>
               <div style={styles.statItem}>
-                <span>⭐ XP</span>
+                <span>{language === 'pt' ? 'Quem viu seu perfil' : 'Who viewed your profile'}</span>
+                <strong style={styles.statValue}>12</strong>
+              </div>
+              <div style={styles.statItem}>
+                <span>{language === 'pt' ? 'Visualizações do post' : 'Post views'}</span>
+                <strong style={styles.statValue}>42</strong>
+              </div>
+              <div
+                style={styles.statItem}
+                onClick={() => router.push("/forum/ranking")}
+              >
+                <span>⭐ {t('xp')} {language === 'pt' ? 'no Fórum' : 'in the Forum'}</span>
                 <strong style={styles.statValue}>{user.xp || 0}</strong>
               </div>
-              <div style={styles.userCardButtons}>
-                <button style={styles.button} onClick={() => router.push("/forum/ranking")}>
-                  Ver Ranking
-                </button>
-              </div>
             </div>
-          )}
-        </aside>
+            <div style={styles.userCardButtons}>
+              <button
+                style={styles.button}
+                onClick={() => router.push("/forum/ranking")}
+              >
+                {language === 'pt' ? 'Ir para Ranking' : 'Go to Ranking'}
+              </button>
+            </div>
+          </aside>
+        )}
 
-        {/* Área principal */}
         <main style={styles.mainArea}>
-          <h1 style={styles.title}>Fórum</h1>
-          <p style={styles.subtitle}>Escolha um tópico para participar</p>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <button
+              style={styles.button}
+              onClick={() => setShowTopicModal(true)}
+            >
+              {t('create_new_topic')}
+            </button>
+          </div>
 
+          {error && <p style={styles.error}>⚠️ {error}</p>}
+          <h1 style={styles.title}>Tópicos Populares</h1>
           <div style={styles.topics}>
             {topics.length === 0 ? (
               <p style={styles.empty}>Nenhum tópico disponível no momento.</p>
             ) : (
-              topics.map((topic) => <TopicCard key={topic._id || Math.random()} topic={topic} />)
+              topics.map((topic) => (
+                <TopicCard key={topic._id || Math.random()} topic={topic} />
+              ))
             )}
           </div>
-
-          {error && <p style={styles.error}>{error}</p>}
         </main>
+        {/* Espaço para um feed lateral de "Sugestões para você" ou "Trending" no futuro, mantendo o layout LinkedIn de 3 colunas em telas grandes, mas só implementamos 2 colunas aqui (Sidebar + MainArea) */}
       </div>
 
-      <TopicModal isOpen={showTopicModal} onClose={() => setShowTopicModal(false)} onSubmit={handleCreateTopic} />
+      <TopicModal
+        isOpen={showTopicModal}
+        onClose={() => setShowTopicModal(false)}
+        onSubmit={handleCreateTopic}
+      />
 
       <Footer />
     </div>

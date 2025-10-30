@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 const INSTITUTIONS = [
     "Faculdade de Engenharia da Universidade do Porto (FEUP)",
@@ -140,6 +141,7 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
     
     // Obter estilos dinâmicos baseados no tema
     const styles = getStyles(theme);
+    const { t } = useThemeLanguage();
 
     // Carrega os dados do usuário quando o modal abre ou o usuário muda
     useEffect(() => {
@@ -175,11 +177,11 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
         // Oculta o modal clicando no overlay, mas não no modal em si
         <div style={styles.overlay} onClick={onClose}>
             <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-                <h2 style={styles.title}>Editar Perfil</h2>
+                <h2 style={styles.title}>{t('edit_profile')}</h2>
                 
                 <form onSubmit={handleSubmit}>
                     <div style={styles.field}>
-                        <label style={styles.label}>Nome</label>
+                        <label style={styles.label}>{t('name')}</label>
                         <input
                             name="name"
                             type="text"
@@ -191,31 +193,31 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
                     </div>
                     
                     <div style={styles.field}>
-                        <label style={styles.label}>Resumo/Bio</label>
+                        <label style={styles.label}>{t('bio_label')}</label>
                         <textarea
                             name="bio"
                             value={formData.bio}
                             onChange={handleChange}
                             style={styles.textarea}
                             rows={4}
-                            placeholder="Descreva sua experiência profissional e objetivos..."
+                            placeholder={t('bio_placeholder')}
                         />
                     </div>
                     
                     <div style={styles.field}>
-                        <label style={styles.label}>Foto de Perfil (URL)</label>
+                        <label style={styles.label}>{t('profile_picture_url')}</label>
                         <input
                             name="profilePicture"
                             type="url"
                             value={formData.profilePicture}
                             onChange={handleChange}
                             style={styles.input}
-                            placeholder="https://exemplo.com/foto.jpg"
+                            placeholder={t('example_url')}
                         />
                     </div>
                     
                     <div style={styles.field}>
-                        <label style={styles.label}>Tipo de Usuário</label>
+                        <label style={styles.label}>{t('user_type')}</label>
                         <select
                             name="userType"
                             value={formData.userType}
@@ -229,7 +231,7 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
                     </div>
 
                     <div style={styles.field}>
-                        <label style={styles.label}>Instituição</label>
+                        <label style={styles.label}>{t('institution')}</label>
                         <select
                             name="institution"
                             value={formData.institution}
@@ -244,10 +246,10 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
 
                     <div style={styles.actions}>
                         <button type="button" onClick={onClose} style={styles.cancelButton}>
-                            Cancelar
+                            {t('cancel')}
                         </button>
                         <button type="submit" style={styles.saveButton}>
-                            Salvar
+                            {t('save')}
                         </button>
                     </div>
                 </form>
