@@ -8,8 +8,6 @@ const applyGlobalStyles = (theme) => {
     const isDark = theme === 'dark';
     const backgroundPrimary = isDark ? '#18191a' : '#f0f2f5';
     const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
-    
-    // Aplica o background e a cor de texto ao body para afetar toda a aplicação
     document.body.style.backgroundColor = backgroundPrimary;
     document.body.style.color = textPrimary;
 };
@@ -19,32 +17,36 @@ export const ThemeLanguageProvider = ({ children }) => {
     const [theme, setThemeState] = useState('light');
     const [language, setLanguageState] = useState('pt');
 
-    // Carrega tema e idioma salvos no localStorage na montagem
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme') || 'light';
         const savedLanguage = localStorage.getItem('language') || 'pt';
-
         setThemeState(savedTheme);
         setLanguageState(savedLanguage);
         applyGlobalStyles(savedTheme);
     }, []);
 
-    // Função global para mudar o tema
     const setTheme = useCallback((newTheme) => {
         setThemeState(newTheme);
         localStorage.setItem('theme', newTheme);
-        applyGlobalStyles(newTheme); // Aplica as cores globalmente
+        applyGlobalStyles(newTheme);
     }, []);
 
-    // Função global para mudar o idioma
     const setLanguage = useCallback((newLang) => {
         setLanguageState(newLang);
         localStorage.setItem('language', newLang);
     }, []);
 
-    // Traduções globais básicas para componentes comuns
     const translations = {
         pt: {
+            // ▼ ADIÇÕES PARA A SIDEBAR
+            connections: 'Seguidores',
+            Connections: 'Seguidores',
+            'conexões': 'Seguidores',
+            'Conexões': 'Seguidores',
+            conexoes: 'Seguidores',
+            Conexoes: 'Seguidores',
+            // ▲
+
             search_placeholder: 'Buscar posts e usuários...',
             clear: 'Limpar',
             search: 'Buscar',
@@ -61,8 +63,8 @@ export const ThemeLanguageProvider = ({ children }) => {
             no_notifications: 'Sem notificações',
             likes_post: 'curtiu seu post',
             comments_post: 'comentou em seu post',
-            connection_request: 'solicitou sua conexão',
-            connection_accepted: 'aceitou sua conexão',
+            connection_request: 'solicitou para te seguir',
+            connection_accepted: 'aceitou te seguir',
             follower_notifications: 'Novos Seguidores',
             started_following_you: 'começou a te seguir',
             footer_rights: '© 2025 Codemia. Todos os direitos reservados.',
@@ -73,7 +75,6 @@ export const ThemeLanguageProvider = ({ children }) => {
             publish: 'Publicar',
             warning: 'Aviso',
             confirm: 'Confirmar',
-            close: 'Fechar',
             send: 'Enviar',
             type_a_message: 'Digite uma mensagem...',
             comments: 'comentários',
@@ -138,11 +139,16 @@ export const ThemeLanguageProvider = ({ children }) => {
             followers: 'Seguidores',
         },
         en: {
+            // ▼ ADIÇÕES PARA A SIDEBAR
+            connections: 'Followers',
+            Connections: 'Followers',
+            // ▲
+
             search_placeholder: 'Search posts and users...',
             clear: 'Clear',
             search: 'Search',
             notifications: 'Notifications',
-            connection_notifications: 'Connection Requests',
+            connection_notifications: 'Follower Requests',
             no_requests: 'No pending requests',
             accept: 'Accept',
             decline: 'Decline',
@@ -154,8 +160,8 @@ export const ThemeLanguageProvider = ({ children }) => {
             no_notifications: 'No notifications',
             likes_post: 'liked your post',
             comments_post: 'commented on your post',
-            connection_request: 'requested to connect',
-            connection_accepted: 'accepted your connection',
+            connection_request: 'requested to follow you',
+            connection_accepted: 'accepted to follow you',
             follower_notifications: 'New Followers',
             started_following_you: 'started following you',
             footer_rights: '© 2025 Codemia. All rights reserved.',
@@ -166,7 +172,6 @@ export const ThemeLanguageProvider = ({ children }) => {
             publish: 'Publish',
             warning: 'Notice',
             confirm: 'Confirm',
-            close: 'Close',
             send: 'Send',
             type_a_message: 'Type a message...',
             comments: 'comments',
@@ -237,7 +242,6 @@ export const ThemeLanguageProvider = ({ children }) => {
         return table[key] || key;
     }, [language]);
 
-    // Objeto de valor fornecido ao contexto
     const contextValue = {
         theme,
         setTheme,
