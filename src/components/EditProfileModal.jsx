@@ -27,7 +27,7 @@ const getStyles = (theme) => {
     const textSecondary = isDark ? '#b0b3b8' : '#606770';
     const backgroundModal = isDark ? '#242526' : 'white';
     const borderInput = isDark ? '#3e4042' : '#ddd';
-    const blueAction = '#0a66c2'; // Azul de ação principal (Salvar)
+    const blueAction = '#4F46E5'; // Azul de ação principal (Salvar)
     const grayCancel = isDark ? '#474a4d' : '#e7e7e7'; // Cinza de cancelamento
 
     return {

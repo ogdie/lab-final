@@ -17,8 +17,8 @@ const getStyles = (theme) => {
     const backgroundPrimary = isDark ? '#1d2226' : '#f3f2ef'; // Fundo do LinkedIn
     const backgroundCard = isDark ? '#2c2f33' : '#ffffff';
     const borderSubtle = isDark ? '#3e4042' : '#d1d1d1';
-    const blueAction = '#0a66c2';
-    const blueActionLight = isDark ? '#1d3e66' : '#e7f3ff';
+    const blueAction = '#4F46E5';
+    const blueActionLight = isDark ? '#4F46E5' : '#e7f3ff';
     const colorError = isDark ? '#ff7979' : '#d32f2f';
     const linkedInShadow = "0 0 0 1px rgb(0 0 0 / 15%), 0 2px 3px rgb(0 0 0 / 20%)"; // Sombra discreta do LinkedIn
 

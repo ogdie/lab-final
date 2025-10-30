@@ -147,7 +147,7 @@ export default function Chat() {
                 </div>
                 <button
                   onClick={() => router.push(`/profile?id=${userResult._id}`)}
-                  style={{ padding: '0.5rem 1rem', background: '#1877f2', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
+                  style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
                 >
                   Ver Perfil
                 </button>
@@ -259,7 +259,7 @@ const styles = {
     fontSize: '0.9rem',
   },
   badge: {
-    background: '#2196F3',
+    background: '#4F46E5',
     color: 'white',
     borderRadius: '50%',
     width: '24px',
