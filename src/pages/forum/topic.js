@@ -12,8 +12,8 @@ const getStyles = (theme) => {
   const textSecondary = isDark ? '#b0b3b8' : '#606770';
   const backgroundPrimary = isDark ? '#18191a' : '#f0f2f5';
   const backgroundCard = isDark ? '#242526' : 'white';
-  const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
-  const blueAction = '#0a66c2';
+  const borderSubtle = isDark ? '#42423eff' : '#e0e0e0';
+  const blueAction = '#4F46E5';
   return {
     container: { minHeight: '100vh', display: 'flex', flexDirection: 'column', background: backgroundPrimary },
     main: { maxWidth: '760px', width: '100%', margin: '0 auto', padding: '1rem', flex: 1 },
@@ -215,7 +215,7 @@ export default function TopicPage() {
                     <h4 style={{ margin: 0 }}>{u.name}</h4>
                     <p style={{ margin: '2px 0 0 0', color: '#606770', fontSize: '0.85rem' }}>{u.email}</p>
                   </div>
-                  <button onClick={() => router.push(`/profile?id=${u._id}`)} style={{ padding: '0.5rem 1rem', background: '#0a66c2', color: 'white', border: 'none', borderRadius: 24, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>Ver perfil</button>
+                  <button onClick={() => router.push(`/profile?id=${u._id}`)} style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: 24, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>Ver perfil</button>
                 </div>
               ))
             )}

@@ -241,7 +241,7 @@ const styles = {
   },
   button: {
     padding: '0.75rem',
-    background: '#2196F3',
+    background: '#4F46E5',
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -252,7 +252,7 @@ const styles = {
   toggleButton: {
     background: 'none',
     border: 'none',
-    color: '#2196F3',
+    color: '#4F46E5',
     cursor: 'pointer',
     textDecoration: 'underline'
   },

@@ -94,7 +94,7 @@ const styles = {
     color: '#333'
   },
   confirmButton: {
-    background: '#2196F3',
+    background: '#4F46E5',
     color: 'white'
   }
 };

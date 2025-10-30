@@ -185,7 +185,7 @@ const getStyles = (theme) => {
   const backgroundPrimary = isDark ? '#1d2226' : '#f3f2ef';
   const backgroundCard = isDark ? '#2c2f33' : 'white';
   const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
-  const blueAction = '#2196F3';
+  const blueAction = '#4F46E5';
 
   return {
     container: {
@@ -244,7 +244,7 @@ const getStyles = (theme) => {
     resultAvatar: { width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' },
     viewProfileButton: {
       padding: '0.5rem 1rem',
-      background: '#0a66c2',
+      background: '#4F46E5',
       color: 'white',
       border: 'none',
       borderRadius: '24px',

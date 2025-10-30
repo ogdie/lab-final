@@ -57,7 +57,7 @@ export default function ChatModal({ isOpen, onClose, currentUser, otherUser }) {
               style={{
                 ...styles.message,
                 alignSelf: msg.sender._id === currentUser._id ? 'flex-end' : 'flex-start',
-                background: msg.sender._id === currentUser._id ? '#2196F3' : '#f0f0f0',
+                background: msg.sender._id === currentUser._id ? '#4F46E5' : '#f0f0f0',
                 color: msg.sender._id === currentUser._id ? 'white' : 'black'
               }}
             >
@@ -144,7 +144,7 @@ const styles = {
   },
   sendButton: {
     padding: '0.75rem 1.5rem',
-    background: '#2196F3',
+    background: '#4F46E5',
     color: 'white',
     border: 'none',
     borderRadius: '0 4px 4px 0',

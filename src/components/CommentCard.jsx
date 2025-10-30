@@ -33,8 +33,8 @@ const getStyles = (theme) => {
     const textSecondary = isDark ? '#b0b3b8' : '#606770';
     // Cor de fundo do 'balão' do comentário
     const backgroundComment = isDark ? '#3a3b3c' : '#f0f2f5'; 
-    const blueAction = '#0a66c2';
-    const redLike = '#378fe9';
+    const blueAction = '#4F46E5';
+    const redLike = '#6860f9ff';
 
     return {
         commentContainer: {

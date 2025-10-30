@@ -16,6 +16,19 @@ const ALLOWED_INSTITUTIONS = [
   "Outros"
 ];
 
+// Schema para conquistas
+const achievementSchema = new mongoose.Schema({
+  title: { type: String, required: true, trim: true },
+  type: {
+    type: String,
+    enum: ["certification", "course", "project", "competition", "publication", "other"],
+    required: true
+  },
+  description: { type: String, default: "" },
+  date: { type: Date, required: true }, // data da conquista (ex: conclusão do curso)
+  technologies: [{ type: String, trim: true }], // array de strings
+}, { _id: true }); // mantém o _id automático do Mongoose
+
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -37,7 +50,6 @@ const userSchema = new mongoose.Schema(
     oauthProvider: String,
     language: { type: String, enum: ["pt", "en"], default: "pt" },
     theme: { type: String, enum: ["light", "dark"], default: "light" },
-
     institution: {
       type: String,
       enum: ALLOWED_INSTITUTIONS,
@@ -54,7 +66,8 @@ const userSchema = new mongoose.Schema(
       },
       min: new Date("1900-01-01"),
       max: Date.now
-    }
+    },
+    achievements: [achievementSchema]
   },
   { timestamps: true }
 );

@@ -16,7 +16,7 @@ const getStyles = (theme) => {
     const backgroundPrimary = isDark ? '#18191a' : '#f0f2f5';
     const backgroundCard = isDark ? '#242526' : 'white';
     const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
-    const blueAction = '#0a66c2';
+    const blueAction = '#4F46E5';
 
     return {
         // --- Layout Geral ---
@@ -270,7 +270,7 @@ export default function Settings() {
                                 </div>
                                 <button
                                     onClick={() => router.push(`/profile?id=${userResult._id}`)}
-                                    style={{ padding: '0.5rem 1rem', background: '#1877f2', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
+                                    style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
                                 >
                                     Ver Perfil
                                 </button>
