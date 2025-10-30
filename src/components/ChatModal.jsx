@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 export default function ChatModal({ isOpen, onClose, currentUser, otherUser }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const { t } = useThemeLanguage();
 
   useEffect(() => {
     if (isOpen && otherUser?._id) {
@@ -69,11 +71,11 @@ export default function ChatModal({ isOpen, onClose, currentUser, otherUser }) {
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Digite uma mensagem..."
+            placeholder={t('type_a_message')}
             style={styles.input}
           />
           <button type="submit" style={styles.sendButton}>
-            Enviar
+            {t('send')}
           </button>
         </form>
       </div>

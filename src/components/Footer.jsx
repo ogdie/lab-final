@@ -1,7 +1,10 @@
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
+
 export default function Footer() {
+  const { t } = useThemeLanguage();
   return (
     <footer style={styles.footer}>
-      <div style={styles.inner}>© 2025 Codemia. Todos os direitos reservados.</div>
+      <div style={styles.inner}>{t('footer_rights')}</div>
     </footer>
   );
 }

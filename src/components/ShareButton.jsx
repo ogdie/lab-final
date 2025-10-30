@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import AlertModal from './AlertModal';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 export default function ShareButton({ post }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const { t } = useThemeLanguage();
 
   const handleShare = (platform) => {
     const url = window.location.origin + `/post/${post._id}`;
@@ -54,24 +56,24 @@ export default function ShareButton({ post }) {
         style={styles.shareButton}
         onClick={() => setShowMenu(!showMenu)}
       >
-        📤 Compartilhar
+        📤 {t('share')}
       </button>
       
       {showMenu && (
         <div style={styles.shareMenu}>
-          <button onClick={() => handleShare('twitter')} style={styles.shareOption}>🐦 Twitter</button>
-          <button onClick={() => handleShare('facebook')} style={styles.shareOption}>📘 Facebook</button>
-          <button onClick={() => handleShare('linkedin')} style={styles.shareOption}>💼 LinkedIn</button>
-          <button onClick={() => handleShare('whatsapp')} style={styles.shareOption}>📱 WhatsApp</button>
-          <button onClick={() => handleShare('copy')} style={styles.shareOption}>📋 Copiar Link</button>
+          <button onClick={() => handleShare('twitter')} style={styles.shareOption}>🐦 {t('twitter')}</button>
+          <button onClick={() => handleShare('facebook')} style={styles.shareOption}>📘 {t('facebook')}</button>
+          <button onClick={() => handleShare('linkedin')} style={styles.shareOption}>💼 {t('linkedin')}</button>
+          <button onClick={() => handleShare('whatsapp')} style={styles.shareOption}>📱 {t('whatsapp')}</button>
+          <button onClick={() => handleShare('copy')} style={styles.shareOption}>📋 {t('copy_link')}</button>
         </div>
       )}
 
       <AlertModal 
         isOpen={showAlert}
         onClose={() => setShowAlert(false)}
-        message="✅ Link copiado para a área de transferência!"
-        title="Sucesso"
+        message={t('link_copied')}
+        title={t('success')}
         showCancel={false}
       />
     </div>

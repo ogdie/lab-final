@@ -2,6 +2,7 @@ import { useState } from 'react';
 import CommentCard from './CommentCard';
 import ShareButton from './ShareButton';
 import EditPostModal from './EditPostModal';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 // Formata a diferença de tempo de forma resumida (estilo LinkedIn)
 function formatRelativeTime(dateInput) {
@@ -223,6 +224,7 @@ const getStyles = (theme, post = {}) => {
 export default function PostCard({ post, currentUser, onLike, onComment, onEdit, onDelete, theme }) {
     // CORREÇÃO: Passando o objeto 'post' para o getStyles
     const styles = getStyles(theme || 'light', post); 
+    const { t } = useThemeLanguage();
     
     const [commentText, setCommentText] = useState('');
     const [showComments, setShowComments] = useState(false);
@@ -285,8 +287,8 @@ export default function PostCard({ post, currentUser, onLike, onComment, onEdit,
                     style={styles.avatar}
                 />
                 <div style={styles.authorInfo}>
-                    <div style={styles.name}>{post.author?.name || 'Usuário'}</div>
-                    <div style={styles.title}>{post.author?.title || 'Usuário da Rede'}</div> 
+                    <div style={styles.name}>{post.author?.name || t('user')}</div>
+                    <div style={styles.title}>{post.author?.title || t('network_user')}</div> 
                     <div style={styles.date}>
                         {formatRelativeTime(post.createdAt)}
                     </div>
@@ -307,18 +309,18 @@ export default function PostCard({ post, currentUser, onLike, onComment, onEdit,
                 {shouldTruncate && !showFullContent && '... '}
                 {shouldTruncate && (
                     <button onClick={toggleContent} style={styles.toggleButton}>
-                        {showFullContent ? ' ver menos' : '... ver mais'}
+                        {showFullContent ? t('see_less') : t('see_more')}
                     </button>
                 )}
             </div>
 
             {post.image && (
-                <img src={post.image} alt="Conteúdo" style={styles.image} />
+                <img src={post.image} alt={t('content_alt')} style={styles.image} />
             )}
 
             <div style={styles.statsBar}>
                 <span>{post.likes?.length || 0} {ICONS.Like}</span>
-                <span>{post.comments?.length || 0} comentários</span>
+                <span>{post.comments?.length || 0} {t('comments')}</span>
             </div>
 
             <div style={styles.actions}>
@@ -329,13 +331,13 @@ export default function PostCard({ post, currentUser, onLike, onComment, onEdit,
                         ...(isLiked && styles.actionButtonLiked)
                     }}
                 >
-                    {ICONS.Like} Curtir
+                    {ICONS.Like} {t('like')}
                 </button>
                 <button
                     onClick={() => setShowComments(!showComments)}
                     style={styles.actionButton}
                 >
-                    {ICONS.Comment} Comentar
+                    {ICONS.Comment} {t('comment')}
                 </button>
                 <div style={{flex: 1}}> 
                     <ShareButton post={post} style={styles.actionButton} icon={ICONS.Share} />
@@ -355,13 +357,13 @@ export default function PostCard({ post, currentUser, onLike, onComment, onEdit,
                                 name="comment"
                                 value={commentText}
                                 onChange={(e) => setCommentText(e.target.value)}
-                                placeholder="Adicione um comentário..."
+                                placeholder={t('add_a_comment')}
                                 style={styles.commentInput}
                                 rows={1}
                             />
                             {commentText.trim().length > 0 && (
                                 <button type="submit" style={styles.commentButton}>
-                                    Enviar
+                                    {t('send')}
                                 </button>
                             )}
                         </form>

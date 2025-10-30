@@ -1,23 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '../components/Navbar';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import Footer from '../components/Footer';
 import EditProfileModal from '../components/EditProfileModal';
 import FollowButton from '../components/FollowButton';
 import AlertModal from '../components/AlertModal';
-import Notificacoes from '../components/Notificacoes';
 import { usersAPI } from '../services/api';
 
 export default function Profile() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t, theme } = useThemeLanguage();
   const [currentUser, setCurrentUser] = useState(null);
   const [user, setUser] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
 
@@ -147,10 +147,9 @@ export default function Profile() {
         <Navbar 
           user={currentUser} 
           onSearch={handleSearch}
-          onNotificationsClick={() => setShowNotifications(!showNotifications)}
         />
         <div style={styles.content}>
-          <p style={styles.loadingText}>Carregando...</p>
+          <p style={styles.loadingText}>{t('loading')}</p>
         </div>
         <Footer />
       </div>
@@ -163,10 +162,9 @@ export default function Profile() {
         <Navbar 
           user={currentUser} 
           onSearch={handleSearch}
-          onNotificationsClick={() => setShowNotifications(!showNotifications)}
         />
         <div style={styles.content}>
-          <p style={styles.error}>{error}</p>
+          <p style={styles.error}>{t('error_loading_profile')}</p>
         </div>
         <Footer />
       </div>
@@ -179,10 +177,9 @@ export default function Profile() {
         <Navbar 
           user={currentUser} 
           onSearch={handleSearch}
-          onNotificationsClick={() => setShowNotifications(!showNotifications)}
         />
         <div style={styles.content}>
-          <p style={styles.error}>Usuário não encontrado.</p>
+          <p style={styles.error}>{t('user_not_found')}</p>
         </div>
         <Footer />
       </div>
@@ -194,12 +191,7 @@ export default function Profile() {
       <Navbar 
         user={currentUser} 
         onSearch={handleSearch}
-        onNotificationsClick={() => setShowNotifications(!showNotifications)}
       />
-
-      {showNotifications && (
-        <Notificacoes userId={currentUser?._id} onClose={() => setShowNotifications(false)} />
-      )}
 
       {showSearchResults && (
         <div style={{ position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)', background: 'white', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', zIndex: 1000, width: '90%', maxWidth: '500px', maxHeight: '400px', overflowY: 'auto' }}>
@@ -236,7 +228,11 @@ export default function Profile() {
         </div>
       )}
 
-      <div style={styles.profileHeader}>
+      <div style={{
+        ...styles.profileHeader,
+        background: theme === 'dark' ? '#1d2226' : 'white',
+        borderBottom: `1px solid ${theme === 'dark' ? '#3e4042' : '#e0e0e0'}`
+      }}>
         <img
           src={user.profilePicture || '/default-avatar.svg'}
           alt={user.name || 'Usuário'}
@@ -247,7 +243,7 @@ export default function Profile() {
             <h1 style={styles.name}>{user.name || 'Nome indisponível'}</h1>
             {currentUser && currentUser._id === user._id && (
               <button onClick={() => setShowEditModal(true)} style={styles.editButton}>
-                ✏️ Editar Perfil
+                ✏️ {t('edit_profile')}
               </button>
             )}
           </div>
@@ -275,15 +271,15 @@ export default function Profile() {
           <div style={styles.stats}>
             <div>
               <strong>{user.xp || 0}</strong>
-              <span>XP</span>
+              <span>{t('xp')}</span>
             </div>
             <div>
               <strong>{user.followers?.length || 0}</strong>
-              <span>Seguidores</span>
+              <span>{t('followers_label')}</span>
             </div>
             <div>
               <strong>{user.following?.length || 0}</strong>
-              <span>Seguindo</span>
+              <span>{t('following_label')}</span>
             </div>
           </div>
 

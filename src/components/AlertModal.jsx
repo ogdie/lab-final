@@ -1,14 +1,20 @@
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
+
 export default function AlertModal({ 
   isOpen, 
   onClose, 
   message, 
-  title = 'Aviso',
+  title,
   onConfirm,
   showCancel = false,
-  confirmText = 'Confirmar',
-  cancelText = 'Cancelar'
+  confirmText,
+  cancelText
 }) {
   if (!isOpen) return null;
+  const { t } = useThemeLanguage();
+  const finalTitle = title || t('warning');
+  const finalConfirm = confirmText || t('confirm');
+  const finalCancel = cancelText || t('cancel');
 
   const handleConfirm = () => {
     if (onConfirm) onConfirm();
@@ -18,19 +24,19 @@ export default function AlertModal({
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2 style={styles.title}>{title}</h2>
+        <h2 style={styles.title}>{finalTitle}</h2>
         <p style={styles.message}>{message}</p>
         <div style={styles.buttonContainer}>
           {showCancel && (
             <button onClick={onClose} style={{ ...styles.button, ...styles.cancelButton }}>
-              {cancelText}
+              {finalCancel}
             </button>
           )}
           <button 
             onClick={handleConfirm} 
             style={showCancel ? { ...styles.button, ...styles.confirmButton } : styles.button}
           >
-            {showCancel ? confirmText : 'Fechar'}
+            {showCancel ? finalConfirm : t('close')}
           </button>
         </div>
       </div>

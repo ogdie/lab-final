@@ -5,7 +5,6 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import EditProfileModal from '../components/EditProfileModal';
 import AlertModal from '../components/AlertModal';
-import Notificacoes from '../components/Notificacoes';
 import { usersAPI } from '../services/api';
 
 // --- Função de Estilo (getStyles) ---
@@ -123,7 +122,6 @@ export default function Settings() {
     const [showEditModal, setShowEditModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
-    const [showNotifications, setShowNotifications] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
     
@@ -142,6 +140,11 @@ export default function Settings() {
             english: 'Inglês',
             saveSuccess: 'Configurações salvas!',
             profileUpdateSuccess: 'Perfil atualizado!',
+            profileAdjust: 'Ajuste seu nome, título, resumo e outras informações públicas do perfil.',
+            loading: 'Carregando...',
+            searchResults: 'Resultados da busca',
+            noUsersFound: 'Nenhum usuário encontrado',
+            close: 'Fechar',
         },
         en: {
             settings: 'Settings',
@@ -156,6 +159,11 @@ export default function Settings() {
             english: 'English',
             saveSuccess: 'Settings saved!',
             profileUpdateSuccess: 'Profile updated!',
+            profileAdjust: 'Adjust your name, title, summary and other public profile info.',
+            loading: 'Loading...',
+            searchResults: 'Search results',
+            noUsersFound: 'No users found',
+            close: 'Close',
         }
     };
 
@@ -219,11 +227,10 @@ export default function Settings() {
                 <Navbar 
                   user={user} 
                   onSearch={handleSearch}
-                  onNotificationsClick={() => setShowNotifications(!showNotifications)}
                 />
                 <div style={styles.content}>
                     <div style={styles.mainContent}>
-                        <p style={styles.loading}>Carregando...</p>
+                        <p style={styles.loading}>{t('loading')}</p>
                     </div>
                 </div>
                 <Footer />
@@ -236,23 +243,18 @@ export default function Settings() {
             <Navbar 
               user={user} 
               onSearch={handleSearch}
-              onNotificationsClick={() => setShowNotifications(!showNotifications)}
             />
-
-            {showNotifications && (
-                <Notificacoes userId={user?._id} onClose={() => setShowNotifications(false)} theme={theme} />
-            )}
 
             {showSearchResults && (
                 <div style={{ position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)', background: 'white', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', zIndex: 1000, width: '90%', maxWidth: '500px', maxHeight: '400px', overflowY: 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid #e0e0e0', background: '#f8f9fa' }}>
-                        <h3>Resultados da busca</h3>
+                        <h3>{t('searchResults')}</h3>
                         <button onClick={handleCloseSearch} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#666' }}>
                             ✖
                         </button>
                     </div>
                     {searchResults.length === 0 ? (
-                        <p style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>Nenhum usuário encontrado</p>
+                        <p style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>{t('noUsersFound')}</p>
                     ) : (
                         searchResults.map((userResult) => (
                             <div key={userResult._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderBottom: '1px solid #f0f0f0' }}>
@@ -345,7 +347,7 @@ export default function Settings() {
                     <div style={styles.section}>
                         <h2 style={styles.sectionTitle}>{t('profile')}</h2>
                         <p style={{ color: styles.textSecondary, marginBottom: '1rem' }}>
-                            Ajuste seu nome, título, resumo e outras informações públicas do perfil.
+                            {t('profileAdjust')}
                         </p>
                         <button 
                             onClick={() => setShowEditModal(true)}

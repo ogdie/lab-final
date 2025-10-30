@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 // Modal component for editing a post
 export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete }) {
   const [content, setContent] = useState('');
   const [image, setImage] = useState('');
+  const { t } = useThemeLanguage();
 
   useEffect(() => {
     if (isOpen) {
@@ -29,10 +31,10 @@ export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete 
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2 style={styles.title}>Editar Post</h2>
+        <h2 style={styles.title}>{t('edit_post')}</h2>
         <form onSubmit={handleSubmit}>
           <textarea
-            placeholder="O que você está pensando?"
+            placeholder={t('what_are_you_thinking')}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             style={styles.textarea}
@@ -41,22 +43,22 @@ export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete 
           />
           <input
             type="text"
-            placeholder="URL da imagem (opcional)"
+            placeholder={t('image_url_optional')}
             value={image}
             onChange={(e) => setImage(e.target.value)}
             style={styles.input}
           />
           <div style={styles.actions}>
             <button type="button" onClick={onClose} style={styles.cancelButton}>
-              Cancelar
+              {t('cancel')}
             </button>
             <button type="submit" style={styles.submitButton}>
-              Salvar
+              {t('save')}
             </button>
           </div>
         </form>
         <button onClick={handleDelete} style={styles.deleteButton}>
-          Excluir Post
+          {t('delete_post')}
         </button>
       </div>
     </div>

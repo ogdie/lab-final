@@ -6,7 +6,6 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PostCard from '../components/PostCard';
 import PostModal from '../components/PostModal';
-import Notificacoes from '../components/Notificacoes';
 import ChatModal from '../components/ChatModal';
 import AlertModal from '../components/AlertModal';
 import { postsAPI, usersAPI } from '../services/api';
@@ -236,13 +235,12 @@ const getStyles = (theme) => {
 
 export default function Home() {
     const router = useRouter();
-    const { theme } = useThemeLanguage(); 
+    const { theme, t } = useThemeLanguage(); 
     const styles = getStyles(theme);
 
     const [user, setUser] = useState(null);
     const [posts, setPosts] = useState([]);
     const [showPostModal, setShowPostModal] = useState(false);
-    const [showNotifications, setShowNotifications] = useState(false);
     const [showChatModal, setShowChatModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchResults, setSearchResults] = useState([]);
@@ -412,9 +410,9 @@ export default function Home() {
     if (loading) {
         return (
             <div style={styles.container}>
-                <Navbar user={user} onSearch={handleSearch} onNotificationsClick={() => setShowNotifications(!showNotifications)} />
+                <Navbar user={user} onSearch={handleSearch} />
                 <div style={styles.mainArea}>
-                    <p style={styles.loading}>Carregando...</p>
+                    <p style={styles.loading}>{t('loading')}</p>
                 </div>
                 <Footer theme={theme} />
             </div>
@@ -424,9 +422,9 @@ export default function Home() {
     if (error) {
         return (
             <div style={styles.container}>
-                <Navbar user={user} onSearch={handleSearch} onNotificationsClick={() => setShowNotifications(!showNotifications)} />
+                <Navbar user={user} onSearch={handleSearch} />
                 <div style={styles.mainArea}>
-                    <p style={styles.error}>{error}</p>
+                    <p style={styles.error}>{t('error_loading_posts')}</p>
                 </div>
                 <Footer theme={theme} />
             </div>
@@ -438,22 +436,18 @@ export default function Home() {
             <Navbar
                 user={user}
                 onSearch={handleSearch}
-                onNotificationsClick={() => setShowNotifications(!showNotifications)}
             />
 
-            {showNotifications && (
-                <Notificacoes userId={user?._id} onClose={() => setShowNotifications(false)} theme={theme} />
-            )}
             {showSearchResults && (
                 <div style={styles.searchResults}>
                     <div style={styles.searchHeader}>
-                        <h3 style={{color: styles.textPrimary}}>Resultados da busca</h3>
+                        <h3 style={{color: styles.textPrimary}}>{t('search_results')}</h3>
                         <button onClick={handleCloseSearch} style={styles.closeButton}>
                             ✖
                         </button>
                     </div>
                     {searchResults.length === 0 ? (
-                        <p style={{padding: '1rem', color: styles.textSecondary}}>Nenhum usuário encontrado</p>
+                        <p style={{padding: '1rem', color: styles.textSecondary}}>{t('no_users_found')}</p>
                     ) : (
                         searchResults.map((userResult) => (
                             <div key={userResult._id} style={styles.userResult}>
@@ -470,7 +464,7 @@ export default function Home() {
                                     onClick={() => router.push(`/profile?id=${userResult._id}`)}
                                     style={styles.viewProfileButton}
                                 >
-                                    Ver Perfil
+                                    {t('view_profile')}
                                 </button>
                             </div>
                         ))
@@ -508,7 +502,7 @@ export default function Home() {
                         </div>
                         <div style={styles.statsSection}>
                             <div style={styles.statItem}>
-                                <span>👥 Conexões</span>
+                                <span>👥 {t('connections')}</span>
                                 <strong style={styles.statValue}>{user?.followers?.length || 0}</strong>
                             </div>
                             <div style={styles.statItem}>
@@ -523,7 +517,7 @@ export default function Home() {
                         style={styles.createPostButton}
                     >
                         <span style={{...styles.sidebarAvatar, width: '32px', height: '32px'}}>+</span>
-                        <span>Iniciar uma publicação</span>
+                        <span>{t('start_post')}</span>
                     </div>
 
                     {/* Você pode adicionar mais cards laterais aqui, como "Grupos" ou "Sugestões" */}
@@ -533,8 +527,8 @@ export default function Home() {
                 <main style={styles.mainArea}>
                     {posts.length === 0 ? (
                         <div style={styles.emptyFeedCard}>
-                            <p style={styles.emptyFeedText}>Nenhum post no feed ainda.</p>
-                            <p style={styles.emptyFeedHint}>Siga outros usuários ou publique algo para começar!</p>
+                            <p style={styles.emptyFeedText}>{t('empty_feed')}</p>
+                            <p style={styles.emptyFeedHint}>{t('empty_feed_hint')}</p>
                         </div>
                     ) : (
                         posts.map((post) => (

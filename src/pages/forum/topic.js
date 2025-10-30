@@ -3,6 +3,8 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import PostCard from "../../components/PostCard";
 import { forumAPI, postsAPI, usersAPI } from "../../services/api";
+import { useThemeLanguage } from "../../context/ThemeLanguageContext";
+import BackButton from "../../components/BackButton";
 
 const getStyles = (theme) => {
   const isDark = theme === 'dark';
@@ -33,7 +35,7 @@ const getStyles = (theme) => {
 };
 
 export default function TopicPage() {
-  const [theme, setTheme] = useState('light');
+  const { theme } = useThemeLanguage();
   const styles = getStyles(theme);
   const [user, setUser] = useState(null);
   const [topic, setTopic] = useState(null);
@@ -42,6 +44,8 @@ export default function TopicPage() {
   const [showModal, setShowModal] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   const topicId = useMemo(() => {
     if (typeof window === 'undefined') return '';
@@ -167,10 +171,56 @@ export default function TopicPage() {
     } catch {}
   };
 
+  const handleSearch = async (query) => {
+    if (!query?.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+    try {
+      const users = await usersAPI.searchUsers(query);
+      setSearchResults(Array.isArray(users) ? users : []);
+      setShowSearchResults(true);
+    } catch (err) {
+      console.error('Error searching users:', err);
+      setSearchResults([]);
+    }
+  };
+
+  const handleCloseSearch = () => {
+    setShowSearchResults(false);
+    setSearchResults([]);
+  };
+
   return (
     <div style={styles.container}>
-      <Navbar user={user} />
+      <Navbar user={user} onSearch={handleSearch} />
       <main style={styles.main}>
+        <div style={{ margin: '12px 0' }}>
+          <BackButton to="/forum" />
+        </div>
+        {showSearchResults && (
+          <div style={{ position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '90%', maxWidth: 500, maxHeight: 400, overflowY: 'auto', background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid #e0e0e0', background: '#f8f9fa' }}>
+              <h3 style={{ margin: 0 }}>Resultados da pesquisa</h3>
+              <button onClick={handleCloseSearch} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#606770' }}>✖</button>
+            </div>
+            {searchResults.length === 0 ? (
+              <p style={{ padding: '1rem' }}>Nenhum usuário encontrado.</p>
+            ) : (
+              searchResults.map((u) => (
+                <div key={u._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderBottom: '1px solid #e0e0e0' }}>
+                  <img src={u.profilePicture || '/default-avatar.svg'} alt={u.name} style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} />
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: 0 }}>{u.name}</h4>
+                    <p style={{ margin: '2px 0 0 0', color: '#606770', fontSize: '0.85rem' }}>{u.email}</p>
+                  </div>
+                  <button onClick={() => router.push(`/profile?id=${u._id}`)} style={{ padding: '0.5rem 1rem', background: '#0a66c2', color: 'white', border: 'none', borderRadius: 24, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>Ver perfil</button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
         {loading && <div style={styles.loading}>Carregando...</div>}
         {!loading && error && <div style={styles.error}>{error}</div>}
         {!loading && topic && (

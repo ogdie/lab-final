@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useThemeLanguage } from '../context/ThemeLanguageContext'; 
-import ConnectionNotification from './ConnectionNotification';
+import Notificacoes from './Notificacoes';
 import CodemiaLogo from './CodemiaLogo'; 
 
 const getStyles = (theme) => {
@@ -127,7 +127,7 @@ const getStyles = (theme) => {
 };
 
 export default function Navbar({ user, onSearch = () => {}, onNotificationsClick }) {
-    const { theme } = useThemeLanguage();
+    const { theme, t } = useThemeLanguage();
     const styles = getStyles(theme);
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -137,9 +137,6 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
     // Lógica para alternar a visibilidade das notificações
     const handleNotificationsClick = () => {
         setShowConnectionNotifications(prev => !prev);
-        if (onNotificationsClick) {
-            onNotificationsClick();
-        }
     };
     
     // Busca ao digitar (debounce curto)
@@ -165,7 +162,7 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                 <div style={styles.searchContainer}>
                     <input
                         type="text"
-                        placeholder="Buscar posts e usuários..."
+                        placeholder={t('search_placeholder')}
                         aria-label="Buscar posts e usuários"
                         style={styles.searchInput}
                         value={searchTerm}
@@ -202,8 +199,8 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                                     setSearchTerm('');
                                     onSearch('');
                                 }}
-                                aria-label="Limpar busca"
-                                title="Limpar"
+                                aria-label={t('clear')}
+                                title={t('clear')}
                             >
                                 ✖️
                             </button>
@@ -217,15 +214,15 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                     <button 
                         style={styles.iconButton}
                         onClick={handleNotificationsClick} 
-                        title="Notificações de Conexão"
+                        title={t('notifications')}
                     >
                         🔔 {notificationsCount > 0 && <span style={styles.badge}>{notificationsCount}</span>}
                     </button>
                     
                     {/* Outros Ícones */}
-                    <Link href="/chat" style={styles.iconButton} title="Chat">💬</Link>
-                    <Link href="/forum" style={styles.iconButton} title="Fórum">📢</Link>
-                    <Link href="/settings" style={styles.iconButton} title="Configurações">⚙️</Link>
+                    <Link href="/chat" style={styles.iconButton} title={t('chat')}>💬</Link>
+                    <Link href="/forum" style={styles.iconButton} title={t('forum')}>📢</Link>
+                    <Link href="/settings" style={styles.iconButton} title={t('settings')}>⚙️</Link>
 
                     {/* Informações do Usuário (Avatar e Nome) */}
                     {user && (
@@ -247,9 +244,9 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                                 window.location.href = '/';
                             }}
                             style={styles.logoutButton}
-                            title="Sair"
+                            title={t('logout')}
                         >
-                            Sair
+                            {t('logout')}
                         </button>
                     )}
                 </div>
@@ -257,7 +254,7 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
 
             {/* Componente de Notificações de Conexão */}
             {showConnectionNotifications && (
-                <ConnectionNotification 
+                <Notificacoes 
                     userId={user?._id} 
                     onClose={() => setShowConnectionNotifications(false)} 
                 />

@@ -123,14 +123,17 @@ const getStyles = (theme) => {
 };
 
 
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
+
 export default function CommentCard({ comment, currentUser, onLike, onDelete, theme = 'light' }) {
     // Inicialização dos estilos com o tema
     const styles = getStyles(theme);
+    const { t } = useThemeLanguage();
 
     const isLiked = currentUser && comment.likes?.includes(currentUser._id);
     const canDelete = currentUser && (comment.author._id === currentUser._id);
     // Para fins de demonstração, assumimos que 'author' pode ter um campo 'title'
-    const authorTitle = comment.author?.title || 'Membro da Rede';
+    const authorTitle = comment.author?.title || t('member_of_network');
 
     const handleLike = () => {
         if (onLike) {
@@ -139,7 +142,7 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, th
     };
 
     const handleDelete = () => {
-        if (onDelete && window.confirm('Tem certeza que deseja deletar este comentário?')) {
+        if (onDelete && window.confirm(t('delete_confirm'))) {
             onDelete(comment._id);
         }
     };
@@ -155,7 +158,7 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, th
             <div style={styles.bubble}>
                 <div style={styles.header}>
                     <div style={styles.authorInfo}>
-                        <div style={styles.name}>{comment.author?.name || 'Usuário'}</div>
+                        <div style={styles.name}>{comment.author?.name || t('user')}</div>
                         <div style={styles.title}>{authorTitle}</div> 
                     </div>
                 </div>
@@ -171,18 +174,18 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, th
                         onClick={handleLike}
                         style={{ ...styles.actionButton, ...(isLiked && styles.actionButtonLiked) }}
                     >
-                        Curtir ({comment.likes?.length || 0})
+                        {t('like')} ({comment.likes?.length || 0})
                     </button>
 
                     <button 
                         // Ação de Responder. Não tem implementação, mas é comum no LI.
                         style={styles.actionButton}
                     >
-                        Responder
+                        {t('reply')}
                     </button>
 
                     {canDelete && (
-                        <button onClick={handleDelete} style={styles.deleteButton} title="Deletar">
+                        <button onClick={handleDelete} style={styles.deleteButton} title={t('delete')}>
                             ✕
                         </button>
                     )}

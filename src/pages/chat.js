@@ -1,20 +1,20 @@
 import { useState, useEffect } from 'react';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ChatModal from '../components/ChatModal';
-import Notificacoes from '../components/Notificacoes';
 import { chatAPI, usersAPI } from '../services/api';
 
 export default function Chat() {
   const router = useRouter();
+  const { t } = useThemeLanguage();
   const [user, setUser] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showChatModal, setShowChatModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
 
@@ -91,10 +91,9 @@ export default function Chat() {
         <Navbar 
           user={user} 
           onSearch={handleSearch}
-          onNotificationsClick={() => setShowNotifications(!showNotifications)}
         />
         <div style={styles.content}>
-          <p style={styles.loading}>Carregando...</p>
+          <p style={styles.loading}>{t('loading')}</p>
         </div>
         <Footer />
       </div>
@@ -107,7 +106,6 @@ export default function Chat() {
         <Navbar 
           user={user} 
           onSearch={handleSearch}
-          onNotificationsClick={() => setShowNotifications(!showNotifications)}
         />
         <div style={styles.content}>
           <p style={styles.error}>{error}</p>
@@ -122,12 +120,7 @@ export default function Chat() {
       <Navbar 
         user={user} 
         onSearch={handleSearch}
-        onNotificationsClick={() => setShowNotifications(!showNotifications)}
       />
-
-      {showNotifications && (
-        <Notificacoes userId={user?._id} onClose={() => setShowNotifications(false)} />
-      )}
 
       {showSearchResults && (
         <div style={{ position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)', background: 'white', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', zIndex: 1000, width: '90%', maxWidth: '500px', maxHeight: '400px', overflowY: 'auto' }}>
@@ -165,11 +158,11 @@ export default function Chat() {
       )}
 
       <div style={styles.content}>
-        <h1>Mensagens</h1>
+        <h1>{t('messages_title')}</h1>
 
         <div style={styles.conversations}>
           {conversations.length === 0 ? (
-            <p style={styles.empty}>Nenhuma conversa ainda</p>
+            <p style={styles.empty}>{t('no_conversations')}</p>
           ) : (
             conversations.map((conv) => (
               <div
@@ -187,7 +180,7 @@ export default function Chat() {
                     {conv.user?.name || 'Usuário desconhecido'}
                   </h3>
                   <p style={styles.lastMessage}>
-                    {conv.lastMessage?.content || 'Sem mensagens'}
+                    {conv.lastMessage?.content || t('no_messages')}
                   </p>
                 </div>
                 {conv.unread > 0 && (
