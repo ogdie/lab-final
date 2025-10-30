@@ -14,7 +14,7 @@ const getStyles = (theme) => {
   const backgroundPrimary = isDark ? "#1d2226" : "#f3f2ef";
   const backgroundCard = isDark ? "#2c2f33" : "#ffffff";
   const borderSubtle = isDark ? "#3e4042" : "#d1d1d1";
-  const blueAction = "#0a66c2";
+  const blueAction = "#4F46E5";
 
   return {
     container: {

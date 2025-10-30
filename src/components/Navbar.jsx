@@ -12,7 +12,7 @@ const getStyles = (theme) => {
     const backgroundNavbar = isDark ? '#202124' : 'white';
     const borderNavbar = isDark ? '#3e4042' : '#e0e0e0';
     const backgroundSearch = isDark ? '#3a3b3c' : '#eef3f8';
-    const blueAction = '#0a66c2';
+    const blueAction = '#4F46E5';
     const logoColor = isDark ? textPrimary : blueAction; 
 
     return {

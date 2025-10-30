@@ -87,6 +87,7 @@ const styles = {
   },
   shareButton: {
     background: 'none',
+    color: 'gray',
     border: 'none',
     cursor: 'pointer',
     fontSize: '1rem',
