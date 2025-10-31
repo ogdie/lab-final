@@ -138,9 +138,29 @@ const getPageStyles = (theme) => {
 export default function Profile() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t, theme } = useThemeLanguage();
+  const { t, theme, language } = useThemeLanguage();
   const isDark = theme === 'dark';
   const styles = getPageStyles(theme);
+
+  // Função helper para traduzir userType
+  const translateUserType = (userType) => {
+    if (!userType) return userType;
+    const typeMap = {
+      'Estudante': 'user_type_student',
+      'Professor': 'user_type_professor',
+      'Recrutador': 'user_type_recruiter'
+    };
+    return t(typeMap[userType]) || userType;
+  };
+
+  // Função helper para traduzir institution
+  const translateInstitution = (institution) => {
+    if (!institution) return institution;
+    if (institution === 'Outros') {
+      return t('institution_others');
+    }
+    return institution;
+  };
 
   const [currentUser, setCurrentUser] = useState(null);
   const [user, setUser] = useState(null);
@@ -452,7 +472,7 @@ export default function Profile() {
                       background: "#8B5CF6",
                     }}
                   >
-                    🏆 Adicionar conquista
+                    🏆 {t('add_achievement')}
                   </button>
                 </div>
               )}
@@ -460,21 +480,21 @@ export default function Profile() {
               <p style={styles.email}>{user.email || "Email indisponível"}</p>
               {user.userType && (
                 <p style={styles.infoText}>
-                  <strong>Tipo:</strong> {user.userType}
+                  <strong>{t('type_label')}</strong> {translateUserType(user.userType)}
                 </p>
               )}
               {user.institution && (
                 <p style={styles.infoText}>
-                  <strong>Instituição:</strong> {user.institution}
+                  <strong>{t('institution_label')}</strong> {translateInstitution(user.institution)}
                 </p>
               )}
               {user.birthDate && (
                 <p style={styles.infoText}>
-                  <strong>Data de Nascimento:</strong>{" "}
-                  {new Date(user.birthDate).toLocaleDateString("pt-PT")}
+                  <strong>{t('date_of_birth')}</strong>{" "}
+                  {new Date(user.birthDate).toLocaleDateString(language === 'en' ? 'en-US' : 'pt-PT')}
                 </p>
               )}
-              <p style={styles.bio}>{user.bio || "Sem bio"}</p>
+              <p style={styles.bio}>{user.bio || t('no_bio')}</p>
 
               <div style={styles.stats}>
                 <div style={styles.statsItem}>
@@ -510,7 +530,7 @@ export default function Profile() {
               {/* Conquistas */}
               {Array.isArray(user.achievements) && user.achievements.length > 0 && (
                 <div style={styles.achievementsSection}>
-                  <h2 style={styles.achievementsTitle}>Conquistas</h2>
+                  <h2 style={styles.achievementsTitle}>{t('achievements')}</h2>
                   <div>
                     {user.achievements
                       .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -530,12 +550,12 @@ export default function Profile() {
                 (!user.achievements || user.achievements.length === 0) && (
                   <div style={styles.noAchievements}>
                     <p>
-                      Você ainda não adicionou nenhuma conquista.
+                      {t('no_achievements_yet')}
                       <button
                         onClick={() => setShowAchievementModal(true)}
                         style={styles.addAchievementLink}
                       >
-                        Adicione agora
+                        {t('add_now')}
                       </button>
                     </p>
                   </div>
@@ -574,7 +594,7 @@ export default function Profile() {
                           background: "#8B5CF6",
                         }}
                       >
-                        🏆 Adicionar conquista
+                        🏆 {t('add_achievement')}
                       </button>
                     </div>
                   )}
@@ -584,21 +604,21 @@ export default function Profile() {
                 <p style={styles.email}>{user.email || "Email indisponível"}</p>
                 {user.userType && (
                   <p style={styles.infoText}>
-                    <strong>Tipo:</strong> {user.userType}
+                    <strong>{t('type_label')}</strong> {translateUserType(user.userType)}
                   </p>
                 )}
                 {user.institution && (
                   <p style={styles.infoText}>
-                    <strong>Instituição:</strong> {user.institution}
+                    <strong>{t('institution_label')}</strong> {translateInstitution(user.institution)}
                   </p>
                 )}
                 {user.birthDate && (
                   <p style={styles.infoText}>
-                    <strong>Data de Nascimento:</strong>{" "}
-                    {new Date(user.birthDate).toLocaleDateString("pt-PT")}
+                    <strong>{t('date_of_birth')}</strong>{" "}
+                    {new Date(user.birthDate).toLocaleDateString(language === 'en' ? 'en-US' : 'pt-PT')}
                   </p>
                 )}
-                <p style={styles.bio}>{user.bio || "Sem bio"}</p>
+                <p style={styles.bio}>{user.bio || t('no_bio')}</p>
 
                 <div style={styles.stats}>
                   <div style={styles.statsItem}>
@@ -626,7 +646,7 @@ export default function Profile() {
                       onClick={() => router.push(`/chat?userId=${user._id}`)}
                       style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
                     >
-                      Enviar mensagem
+                      {t('send_message')}
                     </button>
                   </div>
                 )}

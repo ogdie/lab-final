@@ -3,6 +3,8 @@ import { useRouter } from 'next/navigation';
 import CommentCard from './CommentCard';
 import ShareButton from './ShareButton';
 import EditPostModal from './EditPostModal';
+import MentionTextarea from './MentionTextarea';
+import { renderTextWithMentions } from '../utils/mentionRenderer';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 // Formata a diferença de tempo de forma resumida (estilo LinkedIn)
@@ -222,7 +224,7 @@ const getStyles = (theme, post = {}) => {
 };
 
 
-export default function PostCard({ post, currentUser, onLike, onComment, onEdit, onDelete, onEditComment, onDeleteComment, theme }) {
+export default function PostCard({ post, currentUser, onLike, onComment, onEdit, onDelete, onEditComment, onDeleteComment, onLikeComment, onReplyComment, theme, topicId = null }) {
     // CORREÇÃO: Passando o objeto 'post' para o getStyles
     const styles = getStyles(theme || 'light', post); 
     const { t } = useThemeLanguage();
@@ -313,7 +315,10 @@ export default function PostCard({ post, currentUser, onLike, onComment, onEdit,
             </div>
 
             <div style={styles.content}>
-                {visibleContent}
+                {renderTextWithMentions(visibleContent, (userName) => {
+                    // Navegar para perfil quando clicar na menção
+                    router.push(`/profile?name=${encodeURIComponent(userName)}`);
+                })}
                 {shouldTruncate && !showFullContent && '... '}
                 {shouldTruncate && (
                     <button onClick={toggleContent} style={styles.toggleButton}>
@@ -348,7 +353,7 @@ export default function PostCard({ post, currentUser, onLike, onComment, onEdit,
                     {ICONS.Comment} {t('comment')}
                 </button>
                 <div style={{flex: 1}}> 
-                    <ShareButton post={post} style={styles.actionButton} icon={ICONS.Share} />
+                    <ShareButton post={post} topicId={topicId} style={styles.actionButton} icon={ICONS.Share} />
                 </div>
             </div>
 
@@ -361,13 +366,14 @@ export default function PostCard({ post, currentUser, onLike, onComment, onEdit,
                                 alt={currentUser.name || 'Você'}
                                 style={styles.commentAvatar}
                             />
-                            <textarea
+                            <MentionTextarea
                                 name="comment"
                                 value={commentText}
                                 onChange={(e) => setCommentText(e.target.value)}
                                 placeholder={t('add_a_comment')}
                                 style={styles.commentInput}
                                 rows={1}
+                                theme={theme}
                             />
                             {commentText.trim().length > 0 && (
                                 <button type="submit" style={styles.commentButton}>
@@ -377,28 +383,101 @@ export default function PostCard({ post, currentUser, onLike, onComment, onEdit,
                         </form>
                     )}
                     
-                    {(post.comments || []).map((rawComment) => {
-                        const normalizedComment = {
-                            ...rawComment,
-                            // Alguns backends usam outras chaves para o conteúdo
-                            content: (rawComment?.content ?? rawComment?.text ?? rawComment?.body ?? ''),
-                            createdAt: rawComment?.createdAt || rawComment?.created_at || rawComment?.date || Date.now(),
-                            author:
-                                (typeof rawComment?.author === 'string' && currentUser && rawComment.author === currentUser._id)
-                                    ? currentUser
-                                    : rawComment.author
+                    {(() => {
+                        // Separar comentários principais (sem parentComment) de replies
+                        const allComments = post.comments || [];
+                        
+                        // Função auxiliar para obter o ID do parentComment
+                        const getParentId = (comment) => {
+                            if (!comment.parentComment) return null;
+                            if (typeof comment.parentComment === 'string') return comment.parentComment;
+                            if (comment.parentComment._id) return String(comment.parentComment._id);
+                            return String(comment.parentComment);
                         };
-                        return (
-                            <CommentCard
-                                key={normalizedComment._id}
-                                comment={normalizedComment}
-                                currentUser={currentUser}
-                                onEdit={onEditComment}
-                                onDelete={onDeleteComment}
-                                theme={theme}
-                            />
-                        );
-                    })}
+                        
+                        // Filtrar comentários principais
+                        const mainComments = allComments.filter(c => {
+                            const parentId = getParentId(c);
+                            return !parentId || parentId === 'null' || parentId === 'undefined' || parentId === '';
+                        });
+                        
+                        // Agrupar replies por comentário pai
+                        const repliesMap = {};
+                        
+                        allComments.forEach(comment => {
+                            const parentId = getParentId(comment);
+                            if (parentId && parentId !== 'null' && parentId !== 'undefined' && parentId !== '') {
+                                if (!repliesMap[parentId]) {
+                                    repliesMap[parentId] = [];
+                                }
+                                repliesMap[parentId].push(comment);
+                            }
+                        });
+                        
+                        return mainComments.map((rawComment) => {
+                            const normalizedComment = {
+                                ...rawComment,
+                                content: (rawComment?.content ?? rawComment?.text ?? rawComment?.body ?? ''),
+                                createdAt: rawComment?.createdAt || rawComment?.created_at || rawComment?.date || Date.now(),
+                                author:
+                                    (typeof rawComment?.author === 'string' && currentUser && rawComment.author === currentUser._id)
+                                        ? currentUser
+                                        : rawComment.author
+                            };
+                            
+                            // Obter replies deste comentário
+                            const commentId = String(normalizedComment._id);
+                            const replies = repliesMap[commentId] || [];
+                            
+                            return (
+                                <div key={normalizedComment._id}>
+                                    <CommentCard
+                                        comment={normalizedComment}
+                                        currentUser={currentUser}
+                                        onEdit={onEditComment}
+                                        onDelete={onDeleteComment}
+                                        onLike={onLikeComment}
+                                        onReply={onReplyComment}
+                                        postId={post._id}
+                                        theme={theme}
+                                    />
+                                    {/* Renderizar replies indentados */}
+                                    {replies
+                                        .sort((a, b) => {
+                                            const dateA = new Date(a.createdAt || a.created_at || a.date || 0);
+                                            const dateB = new Date(b.createdAt || b.created_at || b.date || 0);
+                                            return dateA - dateB; // Ordenar do mais antigo para o mais recente
+                                        })
+                                        .map((reply) => {
+                                            const normalizedReply = {
+                                                ...reply,
+                                                content: (reply?.content ?? reply?.text ?? reply?.body ?? ''),
+                                                createdAt: reply?.createdAt || reply?.created_at || reply?.date || Date.now(),
+                                                parentComment: reply.parentComment, // Preservar parentComment
+                                                author:
+                                                    (typeof reply?.author === 'string' && currentUser && reply.author === currentUser._id)
+                                                        ? currentUser
+                                                        : reply.author
+                                            };
+                                            return (
+                                                <CommentCard
+                                                    key={normalizedReply._id}
+                                                    comment={normalizedReply}
+                                                    currentUser={currentUser}
+                                                    onEdit={onEditComment}
+                                                    onDelete={onDeleteComment}
+                                                    onLike={onLikeComment}
+                                                    onReply={onReplyComment}
+                                                    postId={post._id}
+                                                    theme={theme}
+                                                    isReply={true}
+                                                />
+                                            );
+                                        })}
+                                </div>
+                            );
+                        });
+                    })()}
                     
                 </div>
             )}

@@ -3,6 +3,7 @@ import Post from "../models/post.js";
 import Comment from "../models/comment.js";
 import User from "../models/user.js";
 import Notification from "../models/notification.js";
+import { processMentions } from "../lib/mentionUtils.js";
 
 const router = express.Router();
 
@@ -11,7 +12,13 @@ router.get('/', async (req, res) => {
   try {
     const posts = await Post.find({ topic: null })
       .populate('author', 'name profilePicture')
-      .populate({ path: 'comments', populate: { path: 'author', select: 'name profilePicture' } })
+      .populate({ 
+        path: 'comments', 
+        populate: [
+          { path: 'author', select: 'name profilePicture' },
+          { path: 'parentComment', select: '_id' }
+        ]
+      })
       .sort({ createdAt: -1 });
     res.json(posts);
   } catch (error) {
@@ -28,6 +35,11 @@ router.post('/', async (req, res) => {
     // Gamificação: não conceder XP para posts do feed.
     // Posts de fórum recebem XP via rotas de fórum.
     
+    // Processar menções no conteúdo do post
+    if (content) {
+      await processMentions(content, author, post._id, null);
+    }
+    
     const populatedPost = await Post.findById(post._id)
       .populate('author', 'name profilePicture');
     
@@ -42,7 +54,13 @@ router.get('/:id', async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
       .populate('author', 'name profilePicture')
-      .populate({ path: 'comments', populate: { path: 'author', select: 'name profilePicture' } });
+      .populate({ 
+        path: 'comments', 
+        populate: [
+          { path: 'author', select: 'name profilePicture' },
+          { path: 'parentComment', select: '_id' }
+        ]
+      });
     if (!post) return res.status(404).json({ error: 'Post não encontrado' });
     res.json(post);
   } catch (error) {
@@ -101,7 +119,8 @@ router.post('/:id/like', async (req, res) => {
           user: post.author,
           from: userId,
           type: 'like',
-          relatedPost: post._id
+          relatedPost: post._id,
+          relatedTopic: post.topic || null
         });
       }
       // Gamificação: somente curtidas em posts do fórum geram XP
@@ -120,12 +139,17 @@ router.post('/:id/like', async (req, res) => {
 // Add comment
 router.post('/:id/comments', async (req, res) => {
   try {
-    const { author, content } = req.body;
+    const { author, content, parentComment } = req.body;
     const post = await Post.findById(req.params.id);
     
     if (!post) return res.status(404).json({ error: 'Post não encontrado' });
     
-    const comment = await Comment.create({ author, content, post: req.params.id });
+    const commentData = { author, content, post: req.params.id };
+    if (parentComment) {
+      commentData.parentComment = parentComment;
+    }
+    
+    const comment = await Comment.create(commentData);
     post.comments.push(comment._id);
     await post.save();
     
@@ -134,19 +158,42 @@ router.post('/:id/comments', async (req, res) => {
       await User.findByIdAndUpdate(author, { $inc: { xp: 3 } });
     }
     
-    // Notify post author
-    if (post.author.toString() !== author) {
-      await Notification.create({
-        user: post.author,
-        from: author,
-        type: 'comment',
-        relatedPost: post._id,
-        relatedComment: comment._id
-      });
+    // Processar menções no conteúdo do comentário
+    if (content) {
+      await processMentions(content, author, post._id, comment._id);
+    }
+    
+    // Notify post author (if not a reply) or parent comment author (if a reply)
+    if (parentComment) {
+      // É uma resposta a outro comentário
+      const parent = await Comment.findById(parentComment);
+      if (parent && parent.author.toString() !== author) {
+        await Notification.create({
+          user: parent.author,
+          from: author,
+          type: 'comment',
+          relatedPost: post._id,
+          relatedComment: comment._id,
+          relatedTopic: post.topic || null
+        });
+      }
+    } else {
+      // É um comentário no post
+      if (post.author.toString() !== author) {
+        await Notification.create({
+          user: post.author,
+          from: author,
+          type: 'comment',
+          relatedPost: post._id,
+          relatedComment: comment._id,
+          relatedTopic: post.topic || null
+        });
+      }
     }
     
     const populatedComment = await Comment.findById(comment._id)
-      .populate('author', 'name profilePicture');
+      .populate('author', 'name profilePicture')
+      .populate('parentComment', '_id');
     
     res.status(201).json(populatedComment);
   } catch (error) {

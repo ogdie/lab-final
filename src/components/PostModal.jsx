@@ -1,12 +1,21 @@
 import { useState } from 'react';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import MentionTextarea from './MentionTextarea';
+import ImageUpload from './ImageUpload';
 
-export default function PostModal({ isOpen, onClose, onSubmit }) {
+export default function PostModal({ isOpen, onClose, onSubmit, theme = 'light' }) {
   const [content, setContent] = useState('');
   const [image, setImage] = useState('');
   const { t } = useThemeLanguage();
 
-  if (!isOpen) return null;
+  // Limpar campos quando o modal fecha
+  if (!isOpen) {
+    if (content || image) {
+      setContent('');
+      setImage('');
+    }
+    return null;
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -18,31 +27,59 @@ export default function PostModal({ isOpen, onClose, onSubmit }) {
     }
   };
 
+  const handleClose = () => {
+    setContent('');
+    setImage('');
+    onClose();
+  };
+
   return (
-    <div style={styles.overlay} onClick={onClose}>
+    <div style={styles.overlay} onClick={handleClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h2 style={styles.title}>{t('create_post')}</h2>
         
         <form onSubmit={handleSubmit}>
-          <textarea
+          <MentionTextarea
             placeholder={t('what_are_you_thinking')}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             style={styles.textarea}
             rows={5}
+            theme={theme}
             required
           />
           
-          <input
-            type="text"
-            placeholder={t('image_url_optional')}
-            value={image}
-            onChange={(e) => setImage(e.target.value)}
-            style={styles.input}
-          />
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: '500' }}>
+              {t('image_optional') || 'Imagem (opcional)'}
+            </label>
+            <ImageUpload
+              value={image}
+              onChange={setImage}
+              placeholder={t('select_image') || "Selecione uma imagem do computador"}
+              theme={theme}
+            />
+            {!image && (
+              <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#666' }}>
+                Ou{' '}
+                <input
+                  type="text"
+                  placeholder={t('image_url_optional') || 'Cole uma URL de imagem'}
+                  value={image}
+                  onChange={(e) => setImage(e.target.value)}
+                  style={{
+                    ...styles.input,
+                    marginTop: '0.5rem',
+                    fontSize: '0.85rem',
+                    padding: '0.5rem'
+                  }}
+                />
+              </div>
+            )}
+          </div>
           
           <div style={styles.actions}>
-            <button type="button" onClick={onClose} style={styles.cancelButton}>
+            <button type="button" onClick={handleClose} style={styles.cancelButton}>
               {t('cancel')}
             </button>
             <button type="submit" style={styles.submitButton}>

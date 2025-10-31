@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import AlertModal from './AlertModal';
+import { chatAPI } from '../services/api';
 
-export default function ChatPane({ currentUser, otherUser, onConversationDeleted }) {
+export default function ChatPane({ currentUser, otherUser, onConversationDeleted, onMessageSent, onMessagesRead }) {
   const { t } = useThemeLanguage();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -11,15 +12,75 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
   useEffect(() => {
     if (currentUser?._id && otherUser?._id) {
       fetchMessages();
+      
+      // Polling para atualizar mensagens em tempo real (a cada 2 segundos)
+      const interval = setInterval(() => {
+        fetchMessages();
+      }, 2000);
+      
+      return () => clearInterval(interval);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?._id, otherUser?._id]);
 
+  useEffect(() => {
+    // Quando o componente monta ou muda de conversa, marcar mensagens como lidas
+    if (currentUser?._id && otherUser?._id && messages.length > 0) {
+      markMessagesAsRead();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?._id, otherUser?._id, messages.length]);
+
+  const markMessagesAsRead = async () => {
+    if (!currentUser?._id || !otherUser?._id) return;
+    try {
+      // Verificar se há mensagens não lidas
+      const hasUnread = messages.some(msg => !msg.read && msg.sender._id === otherUser._id);
+      if (!hasUnread) return;
+
+      // Marcar como lidas no backend
+      await chatAPI.markAsRead(otherUser._id, currentUser._id);
+      
+      // Atualizar estado local
+      setMessages(prev => prev.map(msg => 
+        msg.sender._id === otherUser._id && !msg.read 
+          ? { ...msg, read: true }
+          : msg
+      ));
+
+      // Notificar componente pai para atualizar lista de conversas
+      if (typeof onMessagesRead === 'function') {
+        onMessagesRead();
+      }
+    } catch (err) {
+      console.error('Error marking messages as read:', err);
+    }
+  };
+
   const fetchMessages = async () => {
+    if (!currentUser?._id || !otherUser?._id) return;
     try {
       const res = await fetch(`/api/chat/${otherUser._id}/messages?currentUserId=${currentUser._id}`);
       const data = await res.json();
-      setMessages(Array.isArray(data) ? data : []);
+      const newMessages = Array.isArray(data) ? data : [];
+      
+      // Verificar se há novas mensagens comparando com as existentes
+      setMessages(prevMessages => {
+        // Se não há mensagens anteriores, retornar as novas
+        if (prevMessages.length === 0) return newMessages;
+        
+        // Verificar se há novas mensagens comparando IDs
+        const prevIds = new Set(prevMessages.map(m => m._id?.toString()));
+        const hasNewMessages = newMessages.some(m => !prevIds.has(m._id?.toString()));
+        
+        // Se há novas mensagens, atualizar
+        if (hasNewMessages || newMessages.length !== prevMessages.length) {
+          return newMessages;
+        }
+        
+        // Se não há mudanças, manter o estado anterior (evita re-renders desnecessários)
+        return prevMessages;
+      });
     } catch (err) {
       console.error('Error fetching messages:', err);
     }
@@ -37,6 +98,10 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
       const message = await res.json();
       setMessages((prev) => [...prev, message]);
       setNewMessage('');
+      // Notificar o componente pai para atualizar a lista de conversas
+      if (typeof onMessageSent === 'function') {
+        onMessageSent(otherUser, message);
+      }
     } catch (err) {
       console.error('Error sending message:', err);
     }

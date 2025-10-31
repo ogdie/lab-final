@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import BackButton from './BackButton';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 const INSTITUTIONS = [
   "Faculdade de Engenharia da Universidade do Porto (FEUP)",
@@ -17,6 +18,7 @@ const INSTITUTIONS = [
 ];
 
 export default function AuthForm({ onLogin, onRegister }) {
+  const { t } = useThemeLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
@@ -147,9 +149,9 @@ export default function AuthForm({ onLogin, onRegister }) {
             onChange={handleChange}
             style={styles.input}
           >
-            <option value="Estudante">Estudante</option>
-            <option value="Professor">Professor</option>
-            <option value="Recrutador">Recrutador</option>
+            <option value="Estudante">{t('user_type_student')}</option>
+            <option value="Professor">{t('user_type_professor')}</option>
+            <option value="Recrutador">{t('user_type_recruiter')}</option>
           </select>
 
           <select
@@ -160,7 +162,9 @@ export default function AuthForm({ onLogin, onRegister }) {
             required
           >
             {INSTITUTIONS.map((inst) => (
-              <option key={inst} value={inst}>{inst}</option>
+              <option key={inst} value={inst}>
+                {inst === 'Outros' ? t('institution_others') : inst}
+              </option>
             ))}
           </select>
 

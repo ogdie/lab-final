@@ -4,6 +4,8 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import PostCard from "../../components/PostCard";
 import AlertModal from "../../components/AlertModal";
+import MentionTextarea from "../../components/MentionTextarea";
+import ImageUpload from "../../components/ImageUpload";
 import { forumAPI, postsAPI, usersAPI, commentsAPI } from "../../services/api";
 import { useThemeLanguage } from "../../context/ThemeLanguageContext";
 import BackButton from "../../components/BackButton";
@@ -48,6 +50,7 @@ export default function TopicPage() {
   const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso', onConfirm: null, showCancel: false });
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [image, setImage] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
 
@@ -132,10 +135,11 @@ export default function TopicPage() {
     if (!user?._id || !title.trim()) return;
     const content = description ? `${title.trim()}\n\n${description.trim()}` : title.trim();
     try {
-      await forumAPI.addReply(topicId, { author: user._id, content });
+      await forumAPI.addReply(topicId, { author: user._id, content, image: image || undefined });
       setShowModal(false);
       setTitle('');
       setDescription('');
+      setImage('');
       await loadTopic();
       await refreshUser();
     } catch (err) {
@@ -146,35 +150,70 @@ export default function TopicPage() {
   const handleLike = async (postId) => {
     if (!user?._id) return;
     try {
-      await postsAPI.like(postId, user._id);
-      await loadTopic();
-    } catch {}
-  };
-
-  const handleComment = async (postId, content) => {
-    if (!user?._id || !content?.trim()) return;
-    try {
-      // Otimista: insere comentário imediatamente na UI
-      const optimistic = {
-        _id: `tmp-${Date.now()}`,
-        author: user,
-        content: content.trim(),
-        createdAt: new Date().toISOString(),
-        likes: [],
-      };
+      const updatedPost = await postsAPI.like(postId, user._id);
+      // Atualizar apenas o post específico no estado, sem recarregar todo o tópico
+      // Normalizar likes para strings para garantir compatibilidade
+      const normalizedLikes = (updatedPost.likes || []).map(id => String(id));
       setTopic((prev) => {
         if (!prev) return prev;
         const updatedPosts = (prev.posts || []).map((p) =>
-          p._id === postId
-            ? { ...p, comments: [ ...(p.comments || []), optimistic ] }
-            : p
+          p._id === postId ? { ...p, likes: normalizedLikes } : p
         );
         return { ...prev, posts: updatedPosts };
       });
+    } catch {}
+  };
 
-      await postsAPI.addComment(postId, { author: user._id, content: content.trim() });
-      await loadTopic();
+  const handleComment = async (postId, content, parentComment = null) => {
+    if (!user?._id || !content?.trim()) return;
+    try {
+      const newComment = await postsAPI.addComment(postId, { author: user._id, content: content.trim(), parentComment });
+      
+      // Atualização otimista - atualizar apenas o post específico no estado, sem recarregar todo o tópico
+      // Isso mantém o scroll no lugar, como nas curtidas
+      setTopic((prev) => {
+        if (!prev) return prev;
+        const updatedPosts = (prev.posts || []).map((post) => {
+          if (post._id === postId) {
+            // Garantir que o novo comentário tem a estrutura correta
+            const commentWithDefaults = {
+              ...newComment,
+              likes: newComment.likes || [],
+              createdAt: newComment.createdAt || new Date().toISOString(),
+              parentComment: parentComment || null
+            };
+            const updatedComments = [...(post.comments || []), commentWithDefaults];
+            return { ...post, comments: updatedComments };
+          }
+          return post;
+        });
+        return { ...prev, posts: updatedPosts };
+      });
+      
       await refreshUser();
+    } catch (err) {
+      console.error('Error adding comment:', err);
+    }
+  };
+
+  const handleLikeComment = async (commentId) => {
+    if (!commentId || !user?._id) return;
+    try {
+      const updatedComment = await commentsAPI.like(commentId, user._id);
+      // Atualizar apenas o comentário específico no estado, sem recarregar todo o tópico
+      const normalizedLikes = (updatedComment.likes || []).map(id => String(id));
+      setTopic((prev) => {
+        if (!prev) return prev;
+        const updatedPosts = (prev.posts || []).map((post) => ({
+          ...post,
+          comments: (post.comments || []).map((comment) =>
+            comment._id === commentId
+              ? { ...comment, likes: normalizedLikes }
+              : comment
+          )
+        }));
+        return { ...prev, posts: updatedPosts };
+      });
     } catch {}
   };
 
@@ -294,7 +333,10 @@ export default function TopicPage() {
                   onDelete={handleDeletePost}
                   onEditComment={handleEditComment}
                   onDeleteComment={handleDeleteComment}
+                  onLikeComment={handleLikeComment}
+                  onReplyComment={(commentId, content) => handleComment(post._id, content, commentId)}
                   theme={theme}
+                  topicId={topicId}
                 />
               ))
             ) : (
@@ -321,7 +363,20 @@ export default function TopicPage() {
             <label style={styles.label}>{t('thread_title')}</label>
             <input style={styles.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('thread_title_placeholder')} />
             <label style={styles.label}>{t('thread_description')}</label>
-            <textarea style={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('thread_desc_placeholder')} />
+            <MentionTextarea 
+              style={styles.textarea} 
+              value={description} 
+              onChange={(e) => setDescription(e.target.value)} 
+              placeholder={t('thread_desc_placeholder')}
+              theme={theme}
+            />
+            <label style={styles.label}>{t('image_optional') || 'Imagem (opcional)'}</label>
+            <ImageUpload
+              value={image}
+              onChange={setImage}
+              placeholder={t('select_image') || "Selecione uma imagem do computador"}
+              theme={theme}
+            />
             <div style={styles.actions}>
               <button style={styles.cancel} onClick={() => setShowModal(false)}>{t('cancel')}</button>
               <button style={styles.save} onClick={handleCreateThread}>{t('create')}</button>

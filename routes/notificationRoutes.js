@@ -6,11 +6,15 @@ const router = express.Router();
 // Get all notifications
 router.get('/', async (req, res) => {
   try {
-    const notifications = await Notification.find()
+    const { userId } = req.query;
+    const query = userId ? { user: userId } : {};
+    
+    const notifications = await Notification.find(query)
       .populate('user', 'name')
       .populate('from', 'name profilePicture')
-      .populate('relatedPost')
-      .populate('relatedComment')
+      .populate('relatedPost', '_id topic')
+      .populate('relatedComment', '_id')
+      .populate('relatedTopic', '_id')
       .sort({ createdAt: -1 });
     res.json(notifications);
   } catch (error) {
