@@ -27,6 +27,7 @@ const achievementSchema = new mongoose.Schema({
   description: { type: String, default: "" },
   date: { type: Date, required: true }, // data da conquista (ex: conclusão do curso)
   technologies: [{ type: String, trim: true }], // array de strings
+  image: { type: String, default: "" }, // URL da imagem da conquista
 }, { _id: true }); // mantém o _id automático do Mongoose
 
 const userSchema = new mongoose.Schema(

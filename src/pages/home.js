@@ -6,9 +6,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PostCard from '../components/PostCard';
 import PostModal from '../components/PostModal';
-import ChatModal from '../components/ChatModal';
 import AlertModal from '../components/AlertModal';
-import { postsAPI, usersAPI } from '../services/api';
+import { postsAPI, usersAPI, commentsAPI } from '../services/api';
 
 const getStyles = (theme) => {
     const isDark = theme === 'dark';
@@ -260,7 +259,9 @@ export default function Home() {
         setError(null);
         try {
             const data = await postsAPI.getAll();
-            setPosts(Array.isArray(data) ? data : []);
+            const list = Array.isArray(data) ? data : [];
+            list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setPosts(list);
         } catch (err) {
             console.error('Error loading posts:', err);
             setError('Não foi possível carregar os posts.');
@@ -272,8 +273,8 @@ export default function Home() {
     const handleCreatePost = async (data) => {
         if (!user?._id) return;
         try {
-            await postsAPI.create({ ...data, author: user._id });
-            loadPosts();
+            const created = await postsAPI.create({ ...data, author: user._id });
+            setPosts(prev => [{ ...(created || {}), author: created?.author || user }, ...prev]);
         } catch (err) {
             showAlert({ 
                 message: 'Erro ao criar post: ' + (err.message || 'Erro desconhecido'), 
@@ -285,20 +286,84 @@ export default function Home() {
     const handleLike = async (postId, userId) => {
         if (!postId || !userId) return;
         try {
-            await postsAPI.like(postId, userId);
-            loadPosts();
+            const updatedPost = await postsAPI.like(postId, userId);
+            // Atualizar apenas o post específico no estado, sem recarregar todos
+            // Normalizar likes para strings para garantir compatibilidade
+            const normalizedLikes = (updatedPost.likes || []).map(id => String(id));
+            setPosts(prevPosts => 
+                prevPosts.map(p => 
+                    p._id === postId ? { ...p, likes: normalizedLikes } : p
+                )
+            );
         } catch (err) {
             console.error('Error liking post:', err);
         }
     };
 
-    const handleComment = async (postId, content) => {
+    const handleComment = async (postId, content, parentComment = null) => {
         if (!postId || !content?.trim() || !user?._id) return;
+        
         try {
-            await postsAPI.addComment(postId, { author: user._id, content });
-            loadPosts();
+            const newComment = await postsAPI.addComment(postId, { author: user._id, content, parentComment });
+            
+            // Atualizar apenas o post específico no estado, sem recarregar todos (atualização otimista)
+            // Isso mantém o scroll no lugar, como nas curtidas
+            setPosts(prevPosts => 
+                prevPosts.map(post => {
+                    if (post._id === postId) {
+                        // Garantir que o novo comentário tem a estrutura correta
+                        const commentWithDefaults = {
+                            ...newComment,
+                            likes: newComment.likes || [],
+                            createdAt: newComment.createdAt || new Date().toISOString()
+                        };
+                        const updatedComments = [...(post.comments || []), commentWithDefaults];
+                        return { ...post, comments: updatedComments };
+                    }
+                    return post;
+                })
+            );
         } catch (err) {
             console.error('Error adding comment:', err);
+        }
+    };
+
+    const handleLikeComment = async (commentId) => {
+        if (!commentId || !user?._id) return;
+        try {
+            const updatedComment = await commentsAPI.like(commentId, user._id);
+            // Atualizar apenas o comentário específico no estado, sem recarregar todos os posts
+            const normalizedLikes = (updatedComment.likes || []).map(id => String(id));
+            setPosts(prevPosts => 
+                prevPosts.map(post => ({
+                    ...post,
+                    comments: (post.comments || []).map(comment =>
+                        comment._id === commentId
+                            ? { ...comment, likes: normalizedLikes }
+                            : comment
+                    )
+                }))
+            );
+        } catch (err) {
+            console.error('Error liking comment:', err);
+        }
+    };
+
+    const handleEditComment = async (commentId, updated) => {
+        try {
+            await commentsAPI.update(commentId, updated);
+            loadPosts();
+        } catch (err) {
+            console.error('Error editing comment:', err);
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        try {
+            await commentsAPI.delete(commentId);
+            loadPosts();
+        } catch (err) {
+            console.error('Error deleting comment:', err);
         }
     };
 
@@ -540,6 +605,10 @@ export default function Home() {
                                     onComment={handleComment}
                                     onEdit={handleEditPost}
                                     onDelete={handleDeletePost}
+                                    onEditComment={handleEditComment}
+                                    onDeleteComment={handleDeleteComment}
+                                    onLikeComment={handleLikeComment}
+                                    onReplyComment={(commentId, content) => handleComment(post._id, content, commentId)}
                                     theme={theme}
                                 />
                             </div>

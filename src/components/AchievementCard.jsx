@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 // Ícones simples baseados em emoji (sem dependência externa)
@@ -12,30 +13,31 @@ const getIconByType = (type) => {
   }
 };
 
-// Labels amigáveis (pode internacionalizar depois com t())
-const typeLabels = {
-  certification: 'Certificação',
-  course: 'Curso',
-  project: 'Projeto',
-  competition: 'Competição',
-  publication: 'Publicação',
-  other: 'Outro'
-};
-
 export default function AchievementCard({ achievement, theme = 'light' }) {
+  const [imageError, setImageError] = useState(false);
+  const { t, language } = useThemeLanguage();
   const isDark = theme === 'dark';
   const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
   const textSecondary = isDark ? '#b0b3b8' : '#606770';
   const background = isDark ? '#3e4042' : '#f6f8fa';
   const border = isDark ? '#4e5052' : '#dddfe2';
 
+  // Labels traduzidos
+  const getTypeLabel = (type) => {
+    const key = `achievement_type_${type}`;
+    return t(key) || type;
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('pt-BR', {
+    const locale = language === 'en' ? 'en-US' : 'pt-BR';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long'
     });
   };
+
+  const showImage = achievement.image && !imageError;
 
   return (
     <div style={{
@@ -47,12 +49,27 @@ export default function AchievementCard({ achievement, theme = 'light' }) {
       display: 'flex',
       gap: '1rem'
     }}>
-      <div style={{
-        fontSize: '2rem',
-        flexShrink: 0
-      }}>
-        {getIconByType(achievement.type)}
-      </div>
+      {showImage ? (
+        <img 
+          src={achievement.image} 
+          alt={achievement.title}
+          style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '8px',
+            objectFit: 'cover',
+            flexShrink: 0
+          }}
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <div style={{
+          fontSize: '2rem',
+          flexShrink: 0
+        }}>
+          {getIconByType(achievement.type)}
+        </div>
+      )}
       <div style={{ flex: 1 }}>
         <div style={{
           display: 'flex',
@@ -82,7 +99,7 @@ export default function AchievementCard({ achievement, theme = 'light' }) {
           color: textSecondary,
           margin: '0.25rem 0'
         }}>
-          {typeLabels[achievement.type] || achievement.type}
+          {getTypeLabel(achievement.type)}
         </p>
 
         {achievement.description && (

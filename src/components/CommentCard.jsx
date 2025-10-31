@@ -1,3 +1,8 @@
+import { useState } from 'react';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import MentionTextarea from './MentionTextarea';
+import { renderTextWithMentions } from '../utils/mentionRenderer';
+
 // Formata a diferença de tempo de forma sucinta (reutilizando lógica do PostCard)
 function formatRelativeTime(dateInput) {
     const now = new Date();
@@ -43,9 +48,24 @@ const getStyles = (theme) => {
             marginBottom: '12px',
             alignItems: 'flex-start',
         },
+        replyContainer: {
+            display: 'flex',
+            gap: '6px',
+            marginBottom: '8px',
+            marginLeft: '48px', // Indentação para replies
+            alignItems: 'flex-start',
+        },
         avatar: {
             width: '40px',
             height: '40px',
+            borderRadius: '50%',
+            objectFit: 'cover',
+            flexShrink: 0,
+            cursor: 'pointer',
+        },
+        replyAvatar: {
+            width: '32px',
+            height: '32px',
             borderRadius: '50%',
             objectFit: 'cover',
             flexShrink: 0,
@@ -57,6 +77,14 @@ const getStyles = (theme) => {
             borderRadius: '12px',
             padding: '8px 12px',
             position: 'relative',
+        },
+        replyBubble: {
+            flex: 1,
+            background: backgroundComment,
+            borderRadius: '8px',
+            padding: '6px 10px',
+            position: 'relative',
+            fontSize: '0.85rem',
         },
         header: {
             display: 'flex',
@@ -122,16 +150,17 @@ const getStyles = (theme) => {
     };
 };
 
-
-import { useThemeLanguage } from '../context/ThemeLanguageContext';
-
-export default function CommentCard({ comment, currentUser, onLike, onDelete, theme = 'light' }) {
+export default function CommentCard({ comment, currentUser, onLike, onDelete, onEdit, onReply, postId, theme = 'light', isReply = false }) {
     // Inicialização dos estilos com o tema
     const styles = getStyles(theme);
     const { t } = useThemeLanguage();
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(comment.content || '');
+    const [showReplyForm, setShowReplyForm] = useState(false);
+    const [replyText, setReplyText] = useState('');
 
-    const isLiked = currentUser && comment.likes?.includes(currentUser._id);
-    const canDelete = currentUser && (comment.author._id === currentUser._id);
+    const isLiked = currentUser && comment.likes?.map(id => String(id)).includes(String(currentUser._id));
+    const canModify = currentUser && (comment.author?._id === currentUser._id || String(comment.author?._id) === String(currentUser._id));
     // Para fins de demonstração, assumimos que 'author' pode ter um campo 'title'
     const authorTitle = comment.author?.title || t('member_of_network');
 
@@ -141,21 +170,42 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, th
         }
     };
 
+    const handleReply = () => {
+        if (showReplyForm && replyText.trim() && onReply) {
+            onReply(comment._id, replyText.trim());
+            setReplyText('');
+            setShowReplyForm(false);
+        } else {
+            setShowReplyForm(!showReplyForm);
+        }
+    };
+
     const handleDelete = () => {
         if (onDelete && window.confirm(t('delete_confirm'))) {
             onDelete(comment._id);
         }
     };
 
+    const handleSave = () => {
+        if (onEdit && editText.trim()) {
+            onEdit(comment._id, { content: editText.trim() });
+            setIsEditing(false);
+        }
+    };
+
+    const containerStyle = isReply ? styles.replyContainer : styles.commentContainer;
+    const avatarStyle = isReply ? styles.replyAvatar : styles.avatar;
+    const bubbleStyle = isReply ? styles.replyBubble : styles.bubble;
+
     return (
-        <div style={styles.commentContainer}>
+        <div style={containerStyle}>
             <img 
                 src={comment.author?.profilePicture || '/default-avatar.svg'} 
                 alt={comment.author?.name || 'Autor'}
-                style={styles.avatar}
+                style={avatarStyle}
             />
             
-            <div style={styles.bubble}>
+            <div style={bubbleStyle}>
                 <div style={styles.header}>
                     <div style={styles.authorInfo}>
                         <div style={styles.name}>{comment.author?.name || t('user')}</div>
@@ -163,7 +213,21 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, th
                     </div>
                 </div>
 
-                <div style={styles.content}>{comment.content}</div>
+                <div style={styles.content}>
+                    {isEditing ? (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <input
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                style={{ flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid #ccc' }}
+                            />
+                            <button onClick={handleSave} style={{ padding: '6px 10px' }}>{t('save') || 'Salvar'}</button>
+                            <button onClick={() => { setIsEditing(false); setEditText(comment.content || ''); }} style={{ padding: '6px 10px' }}>{t('cancel')}</button>
+                        </div>
+                    ) : (
+                        renderTextWithMentions(comment.content)
+                    )}
+                </div>
 
                 <div style={styles.footer}>
                     <span style={styles.dateText}>
@@ -177,19 +241,85 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, th
                         {t('like')} ({comment.likes?.length || 0})
                     </button>
 
-                    <button 
-                        // Ação de Responder. Não tem implementação, mas é comum no LI.
-                        style={styles.actionButton}
-                    >
-                        {t('reply')}
-                    </button>
-
-                    {canDelete && (
-                        <button onClick={handleDelete} style={styles.deleteButton} title={t('delete')}>
-                            ✕
+                    {onReply && (
+                        <button 
+                            onClick={handleReply}
+                            style={styles.actionButton}
+                        >
+                            {t('reply')}
                         </button>
                     )}
+
+                    {canModify && (
+                        <>
+                            <button onClick={() => setIsEditing(true)} style={styles.actionButton}>
+                                {t('edit_post')}
+                            </button>
+                            <button onClick={handleDelete} style={styles.deleteButton} title={t('delete')}>
+                                ✕
+                            </button>
+                        </>
+                    )}
                 </div>
+
+                {showReplyForm && onReply && (
+                    <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: `1px solid ${styles.actionButton.color}20` }}>
+                        <MentionTextarea
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            placeholder={t('write_a_reply') || 'Escreva uma resposta...'}
+                            style={{
+                                width: '100%',
+                                padding: '8px',
+                                borderRadius: '8px',
+                                border: `1px solid ${styles.actionButton.color}40`,
+                                background: theme === 'dark' ? '#3a3b3c' : '#f0f2f5',
+                                color: theme === 'dark' ? '#e4e6eb' : '#1d2129',
+                                fontSize: '0.9rem',
+                                minHeight: '60px',
+                                resize: 'vertical',
+                                fontFamily: 'inherit'
+                            }}
+                            rows={2}
+                            theme={theme}
+                        />
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px', justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={() => {
+                                    setShowReplyForm(false);
+                                    setReplyText('');
+                                }}
+                                style={{
+                                    padding: '6px 12px',
+                                    background: 'none',
+                                    border: `1px solid ${styles.actionButton.color}40`,
+                                    borderRadius: '6px',
+                                    color: styles.actionButton.color,
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem'
+                                }}
+                            >
+                                {t('cancel')}
+                            </button>
+                            <button
+                                onClick={handleReply}
+                                disabled={!replyText.trim()}
+                                style={{
+                                    padding: '6px 12px',
+                                    background: replyText.trim() ? '#4F46E5' : '#ccc',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    color: 'white',
+                                    cursor: replyText.trim() ? 'pointer' : 'not-allowed',
+                                    fontSize: '0.85rem',
+                                    fontWeight: '600'
+                                }}
+                            >
+                                {t('reply')}
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

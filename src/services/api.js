@@ -76,7 +76,11 @@ export const usersAPI = {
   getFollowing: (id) => fetchAPI(`/users/${id}/following`),
   getConnections: (id) => fetchAPI(`/users/${id}/connections`),
   getUserPosts: (id) => fetchAPI(`/users/${id}/posts`),
-  getNotifications: (id) => fetchAPI(`/users/${id}/notifications`)
+  getNotifications: (id) => fetchAPI(`/users/${id}/notifications`),
+  addAchievement: (id, data) => fetchAPI(`/users/${id}/achievements`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  })
 };
 
 // Follow API
@@ -117,7 +121,11 @@ export const commentsAPI = {
     method: 'PUT',
     body: JSON.stringify(data)
   }),
-  delete: (id) => fetchAPI(`/comments/${id}`, { method: 'DELETE' })
+  delete: (id) => fetchAPI(`/comments/${id}`, { method: 'DELETE' }),
+  like: (id, userId) => fetchAPI(`/comments/${id}/like`, {
+    method: 'POST',
+    body: JSON.stringify({ userId })
+  })
 };
 
 // Notifications API
@@ -155,6 +163,9 @@ export const chatAPI = {
   sendMessage: (userId, data) => fetchAPI(`/chat/${userId}/messages`, {
     method: 'POST',
     body: JSON.stringify(data)
+  }),
+  markAsRead: (userId, currentUserId) => fetchAPI(`/chat/${userId}/read?currentUserId=${encodeURIComponent(currentUserId)}`, {
+    method: 'PUT'
   }),
   deleteConversation: (userId, currentUserId) => fetchAPI(`/chat/${userId}?currentUserId=${currentUserId}`, {
     method: 'DELETE'

@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import PostCard from "../../components/PostCard";
-import { forumAPI, postsAPI, usersAPI } from "../../services/api";
+import AlertModal from "../../components/AlertModal";
+import MentionTextarea from "../../components/MentionTextarea";
+import ImageUpload from "../../components/ImageUpload";
+import { forumAPI, postsAPI, usersAPI, commentsAPI } from "../../services/api";
 import { useThemeLanguage } from "../../context/ThemeLanguageContext";
 import BackButton from "../../components/BackButton";
 
@@ -35,15 +39,18 @@ const getStyles = (theme) => {
 };
 
 export default function TopicPage() {
-  const { theme } = useThemeLanguage();
+  const router = useRouter();
+  const { theme, t } = useThemeLanguage();
   const styles = getStyles(theme);
   const [user, setUser] = useState(null);
   const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso', onConfirm: null, showCancel: false });
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [image, setImage] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
 
@@ -128,10 +135,11 @@ export default function TopicPage() {
     if (!user?._id || !title.trim()) return;
     const content = description ? `${title.trim()}\n\n${description.trim()}` : title.trim();
     try {
-      await forumAPI.addReply(topicId, { author: user._id, content });
+      await forumAPI.addReply(topicId, { author: user._id, content, image: image || undefined });
       setShowModal(false);
       setTitle('');
       setDescription('');
+      setImage('');
       await loadTopic();
       await refreshUser();
     } catch (err) {
@@ -142,17 +150,84 @@ export default function TopicPage() {
   const handleLike = async (postId) => {
     if (!user?._id) return;
     try {
-      await postsAPI.like(postId, user._id);
+      const updatedPost = await postsAPI.like(postId, user._id);
+      // Atualizar apenas o post específico no estado, sem recarregar todo o tópico
+      // Normalizar likes para strings para garantir compatibilidade
+      const normalizedLikes = (updatedPost.likes || []).map(id => String(id));
+      setTopic((prev) => {
+        if (!prev) return prev;
+        const updatedPosts = (prev.posts || []).map((p) =>
+          p._id === postId ? { ...p, likes: normalizedLikes } : p
+        );
+        return { ...prev, posts: updatedPosts };
+      });
+    } catch {}
+  };
+
+  const handleComment = async (postId, content, parentComment = null) => {
+    if (!user?._id || !content?.trim()) return;
+    try {
+      const newComment = await postsAPI.addComment(postId, { author: user._id, content: content.trim(), parentComment });
+      
+      // Atualização otimista - atualizar apenas o post específico no estado, sem recarregar todo o tópico
+      // Isso mantém o scroll no lugar, como nas curtidas
+      setTopic((prev) => {
+        if (!prev) return prev;
+        const updatedPosts = (prev.posts || []).map((post) => {
+          if (post._id === postId) {
+            // Garantir que o novo comentário tem a estrutura correta
+            const commentWithDefaults = {
+              ...newComment,
+              likes: newComment.likes || [],
+              createdAt: newComment.createdAt || new Date().toISOString(),
+              parentComment: parentComment || null
+            };
+            const updatedComments = [...(post.comments || []), commentWithDefaults];
+            return { ...post, comments: updatedComments };
+          }
+          return post;
+        });
+        return { ...prev, posts: updatedPosts };
+      });
+      
+      await refreshUser();
+    } catch (err) {
+      console.error('Error adding comment:', err);
+    }
+  };
+
+  const handleLikeComment = async (commentId) => {
+    if (!commentId || !user?._id) return;
+    try {
+      const updatedComment = await commentsAPI.like(commentId, user._id);
+      // Atualizar apenas o comentário específico no estado, sem recarregar todo o tópico
+      const normalizedLikes = (updatedComment.likes || []).map(id => String(id));
+      setTopic((prev) => {
+        if (!prev) return prev;
+        const updatedPosts = (prev.posts || []).map((post) => ({
+          ...post,
+          comments: (post.comments || []).map((comment) =>
+            comment._id === commentId
+              ? { ...comment, likes: normalizedLikes }
+              : comment
+          )
+        }));
+        return { ...prev, posts: updatedPosts };
+      });
+    } catch {}
+  };
+
+  const handleEditComment = async (commentId, updated) => {
+    try {
+      await commentsAPI.update(commentId, updated);
       await loadTopic();
     } catch {}
   };
 
-  const handleComment = async (postId, content) => {
-    if (!user?._id || !content?.trim()) return;
+  const handleDeleteComment = async (commentId) => {
     try {
-      await postsAPI.addComment(postId, { author: user._id, content });
+      await commentsAPI.delete(commentId);
       await loadTopic();
-      await refreshUser();
     } catch {}
   };
 
@@ -164,11 +239,20 @@ export default function TopicPage() {
   };
 
   const handleDeletePost = async (postId) => {
-    try {
-      await postsAPI.delete(postId);
-      await loadTopic();
-      await refreshUser();
-    } catch {}
+    const confirmDelete = async () => {
+      try {
+        await postsAPI.delete(postId);
+        await loadTopic();
+        await refreshUser();
+      } catch {}
+    };
+    setAlert({
+      isOpen: true,
+      message: 'Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.',
+      title: 'Excluir post?',
+      onConfirm: confirmDelete,
+      showCancel: true,
+    });
   };
 
   const handleSearch = async (query) => {
@@ -221,18 +305,24 @@ export default function TopicPage() {
             )}
           </div>
         )}
-        {loading && <div style={styles.loading}>Carregando...</div>}
+        {loading && <div style={styles.loading}>{t('loading')}</div>}
         {!loading && error && <div style={styles.error}>{error}</div>}
         {!loading && topic && (
           <>
             <div style={styles.header}>
               <h1 style={styles.title}>{topic.name}</h1>
-              <button style={styles.createBtn} onClick={() => setShowModal(true)}>Criar novo tópico</button>
+              <button style={styles.createBtn} onClick={() => setShowModal(true)}>{t('create_new_thread')}</button>
             </div>
             {topic.description && <div style={styles.card}>{topic.description}</div>}
 
             {Array.isArray(topic.posts) && topic.posts.length > 0 ? (
-              topic.posts.map((post) => (
+              topic.posts
+                .map((post) => ({
+                  ...post,
+                  createdAt: post?.createdAt || post?.created_at || post?.date || Date.now(),
+                }))
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .map((post) => (
                 <PostCard
                   key={post._id}
                   post={post}
@@ -241,28 +331,55 @@ export default function TopicPage() {
                   onComment={handleComment}
                   onEdit={handleEditPost}
                   onDelete={handleDeletePost}
+                  onEditComment={handleEditComment}
+                  onDeleteComment={handleDeleteComment}
+                  onLikeComment={handleLikeComment}
+                  onReplyComment={(commentId, content) => handleComment(post._id, content, commentId)}
                   theme={theme}
+                  topicId={topicId}
                 />
               ))
             ) : (
-              <div style={styles.card}>Nenhuma discussão ainda. Seja o primeiro a criar!</div>
+              <div style={styles.card}>{t('no_discussions')}</div>
             )}
           </>
         )}
       </main>
       <Footer />
 
+      <AlertModal
+        isOpen={alert.isOpen}
+        onClose={() => setAlert(prev => ({ ...prev, isOpen: false }))}
+        message={alert.message}
+        title={alert.title}
+        onConfirm={alert.onConfirm}
+        showCancel={alert.showCancel}
+      />
+
       {showModal && (
         <div style={styles.modalOverlay} onClick={() => setShowModal(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ marginTop: 0 }}>Criar Novo Tópico</h2>
-            <label style={styles.label}>Título</label>
-            <input style={styles.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Digite o título" />
-            <label style={styles.label}>Descrição</label>
-            <textarea style={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Escreva a descrição (opcional)" />
+            <h2 style={{ marginTop: 0 }}>{t('create_new_thread')}</h2>
+            <label style={styles.label}>{t('thread_title')}</label>
+            <input style={styles.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('thread_title_placeholder')} />
+            <label style={styles.label}>{t('thread_description')}</label>
+            <MentionTextarea 
+              style={styles.textarea} 
+              value={description} 
+              onChange={(e) => setDescription(e.target.value)} 
+              placeholder={t('thread_desc_placeholder')}
+              theme={theme}
+            />
+            <label style={styles.label}>{t('image_optional') || 'Imagem (opcional)'}</label>
+            <ImageUpload
+              value={image}
+              onChange={setImage}
+              placeholder={t('select_image') || "Selecione uma imagem do computador"}
+              theme={theme}
+            />
             <div style={styles.actions}>
-              <button style={styles.cancel} onClick={() => setShowModal(false)}>Cancelar</button>
-              <button style={styles.save} onClick={handleCreateThread}>Criar</button>
+              <button style={styles.cancel} onClick={() => setShowModal(false)}>{t('cancel')}</button>
+              <button style={styles.save} onClick={handleCreateThread}>{t('create')}</button>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import express from "express";
 import Topic from "../models/topic.js";
 import Post from "../models/post.js";
 import User from "../models/user.js";
+import { processMentions } from "../lib/mentionUtils.js";
 
 const router = express.Router();
 
@@ -31,7 +32,16 @@ router.get('/topics/:id', async (req, res) => {
   try {
     const topic = await Topic.findById(req.params.id).populate({
       path: 'posts',
-      populate: { path: 'author', select: 'name profilePicture xp' }
+      populate: [
+        { path: 'author', select: 'name profilePicture xp' },
+        { 
+          path: 'comments', 
+          populate: [
+            { path: 'author', select: 'name profilePicture' },
+            { path: 'parentComment', select: '_id' }
+          ]
+        }
+      ]
     });
     if (!topic) return res.status(404).json({ error: 'Tópico não encontrado' });
     res.json(topic);
@@ -53,6 +63,11 @@ router.post('/topics/:id/reply', async (req, res) => {
     
     // Add XP for forum participation
     await User.findByIdAndUpdate(author, { $inc: { xp: 15 } });
+    
+    // Processar menções no conteúdo do post do fórum
+    if (content) {
+      await processMentions(content, author, post._id, null);
+    }
     
     const populatedPost = await Post.findById(post._id)
       .populate('author', 'name profilePicture xp');

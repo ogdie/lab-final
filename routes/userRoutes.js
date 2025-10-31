@@ -158,8 +158,9 @@ router.get('/:id/notifications', async (req, res) => {
   try {
     const notifications = await Notification.find({ user: req.params.id })
       .populate('from', 'name profilePicture')
-      .populate('relatedPost')
-      .populate('relatedComment')
+      .populate('relatedPost', '_id topic')
+      .populate('relatedComment', '_id')
+      .populate('relatedTopic', '_id')
       .sort({ createdAt: -1 });
     res.json(notifications);
   } catch (error) {
@@ -201,6 +202,46 @@ router.post('/:id/follow', async (req, res) => {
     const updatedTarget = await User.findById(targetUserId).select('-password');
     const updatedFollower = await User.findById(followerId).select('-password');
     res.json({ target: updatedTarget, follower: updatedFollower, following: !alreadyFollowing });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add achievement to user
+router.post('/:id/achievements', async (req, res) => {
+  try {
+    const { title, type, description, date, technologies, image } = req.body;
+    
+    if (!title || !type || !date) {
+      return res.status(400).json({ error: 'Título, tipo e data são obrigatórios' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    const newAchievement = {
+      title: title.trim(),
+      type,
+      description: description || '',
+      date: new Date(date),
+      technologies: Array.isArray(technologies) ? technologies : (technologies || []),
+      image: image || ''
+    };
+
+    // Usa findByIdAndUpdate com $push para evitar validação de campos obrigatórios do schema
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { $push: { achievements: newAchievement } },
+      { new: true, runValidators: false }
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    res.json(updatedUser);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

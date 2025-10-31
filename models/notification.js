@@ -8,7 +8,7 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['like', 'comment', 'connection_request', 'connection_accepted', 'new_follower'],
+    enum: ['like', 'comment', 'connection_request', 'connection_accepted', 'new_follower', 'mention'],
     required: true
   },
   from: {
@@ -23,6 +23,16 @@ const notificationSchema = new mongoose.Schema({
   relatedComment: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment'
+  },
+  mentionType: {
+    type: String,
+    enum: ['post', 'comment'],
+    required: false
+  },
+  relatedTopic: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Topic',
+    required: false
   },
   read: {
     type: Boolean,

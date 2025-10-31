@@ -2,14 +2,15 @@ import { useState, useEffect } from 'react';
 import AlertModal from './AlertModal';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
-export default function ShareButton({ post }) {
+export default function ShareButton({ post, topicId = null }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const { t } = useThemeLanguage();
 
   const handleShare = (platform) => {
+    // Gerar URL baseada no contexto - se tem topicId, é do fórum, senão é do feed
     const url = window.location.origin + `/post/${post._id}`;
-    const text = `Confira este post no CodeConnect: ${post.content.substring(0, 100)}...`;
+    const text = `Confira este post no CodeConnect: ${post.content?.substring(0, 100) || 'Post interessante'}...`;
     
     let shareUrl = '';
 

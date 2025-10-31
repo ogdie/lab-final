@@ -37,6 +37,47 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Mark messages as read (DEVE VIR ANTES de /:userId/messages para evitar conflitos)
+router.put('/:userId/read', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { currentUserId } = req.query;
+
+    // Marcar todas as mensagens enviadas pelo outro usuário como lidas
+    await Message.updateMany(
+      {
+        sender: userId,
+        receiver: currentUserId,
+        read: false
+      },
+      {
+        $set: { read: true }
+      }
+    );
+
+    res.json({ message: 'Mensagens marcadas como lidas' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete single message (DEVE VIR ANTES de /:userId para evitar conflitos)
+router.delete('/messages/:messageId', async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { currentUserId } = req.query;
+    const msg = await Message.findById(messageId);
+    if (!msg) return res.status(404).json({ error: 'Mensagem não encontrada' });
+    if (msg.sender.toString() !== currentUserId && msg.receiver.toString() !== currentUserId) {
+      return res.status(403).json({ error: 'Não autorizado' });
+    }
+    await Message.findByIdAndDelete(messageId);
+    res.json({ message: 'Mensagem deletada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get messages between two users
 router.get('/:userId/messages', async (req, res) => {
   try {
