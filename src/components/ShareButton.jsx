@@ -196,7 +196,7 @@ export default function ShareButton({
                 {platform === "linkedin" && "💼 "}
                 {platform === "whatsapp" && "📱 "}
                 {platform === "copy" && "📋 "}
-                {t(platform)}
+                {platform === "copy" ? t("copy_link") : t(platform)}
               </button>
             )
           )}

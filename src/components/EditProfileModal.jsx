@@ -210,7 +210,7 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
                         <ImageUpload
                             value={formData.profilePicture}
                             onChange={(value) => setFormData({ ...formData, profilePicture: value })}
-                            placeholder={t('select_profile_picture') || "Selecione uma foto do computador"}
+                            placeholder={t('select_profile_picture')}
                             theme={theme}
                         />
                         {!formData.profilePicture && (

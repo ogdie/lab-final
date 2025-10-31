@@ -32,7 +32,9 @@ async function start() {
       origin: process.env.NODE_ENV === 'production' ? process.env.BASE_URL : 'http://localhost:3000',
       credentials: true
     }));
-    server.use(express.json());
+    // Aumentar limite do body parser para aceitar imagens base64 (até 10MB)
+    server.use(express.json({ limit: '10mb' }));
+    server.use(express.urlencoded({ limit: '10mb', extended: true }));
     
     // Session configuration for OAuth
     server.use(session({

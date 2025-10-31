@@ -18,7 +18,7 @@ const getPageStyles = (theme) => {
       minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column',
-      background: isDark ? '#121212' : '#f3f2ef',
+      background: isDark ? '#1d2226' : '#f3f2ef',
       color: isDark ? '#e4e6eb' : '#1d2129',
     },
     content: {
@@ -695,6 +695,7 @@ export default function Profile() {
         onClose={() => setShowEditModal(false)}
         user={user}
         onSave={handleEditProfile}
+        theme={theme}
       />
       <AlertModal
         isOpen={alert.isOpen}
