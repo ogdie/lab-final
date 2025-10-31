@@ -18,7 +18,14 @@ export default function UserCard({ user, currentUser, onFollow }) {
         <p style={styles.email}>{user.email}</p>
         <p style={styles.bio}>{user.bio}</p>
         <div style={styles.xp}>
-          ⭐ {user.xp || 0} {t('xp')} | {user.userType}
+          ⭐ {user.xp || 0} {t('xp')} | {(() => {
+            const typeMap = {
+              'Estudante': 'user_type_student',
+              'Professor': 'user_type_professor',
+              'Recrutador': 'user_type_recruiter'
+            };
+            return t(typeMap[user.userType]) || user.userType;
+          })()}
         </div>
         
         {currentUser && user._id !== currentUser._id && (

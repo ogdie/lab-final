@@ -158,8 +158,9 @@ router.get('/:id/notifications', async (req, res) => {
   try {
     const notifications = await Notification.find({ user: req.params.id })
       .populate('from', 'name profilePicture')
-      .populate('relatedPost')
-      .populate('relatedComment')
+      .populate('relatedPost', '_id topic')
+      .populate('relatedComment', '_id')
+      .populate('relatedTopic', '_id')
       .sort({ createdAt: -1 });
     res.json(notifications);
   } catch (error) {

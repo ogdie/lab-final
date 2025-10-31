@@ -132,11 +132,130 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
 
     const [searchTerm, setSearchTerm] = useState('');
     const [notificationsCount, setNotificationsCount] = useState(0);
+    const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
     const [showConnectionNotifications, setShowConnectionNotifications] = useState(false); 
 
+    // Buscar notificações não lidas
+    useEffect(() => {
+        if (user?._id) {
+            fetchUnreadNotifications();
+            fetchUnreadMessages();
+            // Polling para atualizar notificações a cada 5 segundos (tempo real)
+            // Mensagens também são atualizadas a cada 5 segundos
+            const notificationsInterval = setInterval(() => {
+                fetchUnreadNotifications();
+            }, 5000);
+            
+            const messagesInterval = setInterval(() => {
+                fetchUnreadMessages();
+            }, 5000);
+            
+            return () => {
+                clearInterval(notificationsInterval);
+                clearInterval(messagesInterval);
+            };
+        }
+    }, [user?._id]);
+
+    // Listener para atualizar contador quando entrar no chat
+    useEffect(() => {
+        const handleChatVisited = () => {
+            // Zerar imediatamente
+            setUnreadMessagesCount(0);
+        };
+        
+        // Verificar se estamos na página de chat
+        const checkChatPage = () => {
+            if (typeof window !== 'undefined' && window.location.pathname === '/chat') {
+                handleChatVisited();
+            }
+        };
+        
+        // Escutar evento customizado (prioridade alta)
+        const eventHandler = (e) => {
+            handleChatVisited();
+        };
+        window.addEventListener('chatVisited', eventHandler, true);
+        
+        // Escutar BroadcastChannel se disponível
+        let broadcastChannel = null;
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+            broadcastChannel = new BroadcastChannel('chat-visited');
+            broadcastChannel.onmessage = (event) => {
+                if (event.data.type === 'chatVisited') {
+                    handleChatVisited();
+                }
+            };
+        }
+        
+        // Verificar imediatamente ao montar
+        checkChatPage();
+        
+        // Verificar periodicamente se estamos na página de chat (fallback mais frequente)
+        const interval = setInterval(checkChatPage, 500);
+        
+        return () => {
+            window.removeEventListener('chatVisited', eventHandler, true);
+            clearInterval(interval);
+            if (broadcastChannel) {
+                broadcastChannel.close();
+            }
+        };
+    }, []);
+
+    const fetchUnreadNotifications = async () => {
+        if (!user?._id) return;
+        try {
+            const { notificationsAPI } = await import('../services/api');
+            const notifications = await notificationsAPI.getAll(user._id);
+            const unreadCount = Array.isArray(notifications) 
+                ? notifications.filter(n => !n.read).length 
+                : 0;
+            setNotificationsCount(unreadCount);
+        } catch (err) {
+            console.error('Error fetching unread notifications:', err);
+        }
+    };
+
+    const fetchUnreadMessages = async () => {
+        if (!user?._id) return;
+        try {
+            const { chatAPI } = await import('../services/api');
+            const conversations = await chatAPI.getConversations(user._id);
+            const totalUnread = Array.isArray(conversations)
+                ? conversations.reduce((sum, conv) => sum + (conv.unread || 0), 0)
+                : 0;
+            setUnreadMessagesCount(totalUnread);
+        } catch (err) {
+            console.error('Error fetching unread messages:', err);
+        }
+    };
+
     // Lógica para alternar a visibilidade das notificações
-    const handleNotificationsClick = () => {
-        setShowConnectionNotifications(prev => !prev);
+    const handleNotificationsClick = async () => {
+        const willShow = !showConnectionNotifications;
+        setShowConnectionNotifications(willShow);
+        
+        // Se está abrindo, marcar todas como lidas
+        if (willShow && user?._id && notificationsCount > 0) {
+            try {
+                const { notificationsAPI } = await import('../services/api');
+                const notifications = await notificationsAPI.getAll(user._id);
+                const unreadNotifications = Array.isArray(notifications) 
+                    ? notifications.filter(n => !n.read) 
+                    : [];
+                
+                // Marcar todas como lidas
+                await Promise.all(
+                    unreadNotifications.map(n => notificationsAPI.markAsRead(n._id))
+                );
+                
+                // Atualizar contador
+                setNotificationsCount(0);
+            } catch (err) {
+                console.error('Error marking notifications as read:', err);
+            }
+        }
     };
     
     // Busca ao digitar (debounce curto)
@@ -216,11 +335,39 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                         onClick={handleNotificationsClick} 
                         title={t('notifications')}
                     >
-                        🔔 {notificationsCount > 0 && <span style={styles.badge}>{notificationsCount}</span>}
+                        🔔 
+                        {notificationsCount > 0 && (
+                            <span style={{
+                                ...styles.badge,
+                                background: '#f44336',
+                                width: notificationsCount > 99 ? '24px' : '20px',
+                                height: notificationsCount > 99 ? '20px' : '20px',
+                                borderRadius: notificationsCount > 99 ? '10px' : '50%',
+                                fontSize: notificationsCount > 99 ? '0.7rem' : '0.75rem',
+                                padding: notificationsCount > 99 ? '2px 6px' : '0'
+                            }}>
+                                {notificationsCount > 99 ? '99+' : notificationsCount}
+                            </span>
+                        )}
                     </button>
                     
                     {/* Outros Ícones */}
-                    <Link href="/chat" style={styles.iconButton} title={t('chat')}>💬</Link>
+                    <Link href="/chat" style={styles.iconButton} title={t('chat')}>
+                        💬
+                        {unreadMessagesCount > 0 && (
+                            <span style={{
+                                ...styles.badge,
+                                background: '#f44336',
+                                width: unreadMessagesCount > 99 ? '24px' : '20px',
+                                height: unreadMessagesCount > 99 ? '20px' : '20px',
+                                borderRadius: unreadMessagesCount > 99 ? '10px' : '50%',
+                                fontSize: unreadMessagesCount > 99 ? '0.7rem' : '0.75rem',
+                                padding: unreadMessagesCount > 99 ? '2px 6px' : '0'
+                            }}>
+                                {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+                            </span>
+                        )}
+                    </Link>
                     <Link href="/forum" style={styles.iconButton} title={t('forum')}>📢</Link>
                     <Link href="/settings" style={styles.iconButton} title={t('settings')}>⚙️</Link>
 
@@ -256,7 +403,12 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
             {showConnectionNotifications && (
                 <Notificacoes 
                     userId={user?._id} 
-                    onClose={() => setShowConnectionNotifications(false)} 
+                    onClose={() => {
+                        setShowConnectionNotifications(false);
+                        // Atualizar contador ao fechar
+                        fetchUnreadNotifications();
+                    }}
+                    onNotificationsUpdated={fetchUnreadNotifications}
                 />
             )}
         </nav>

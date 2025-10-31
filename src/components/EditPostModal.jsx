@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import MentionTextarea from './MentionTextarea';
 // Modal component for editing a post
-export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete }) {
+export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete, theme = 'light' }) {
   const [content, setContent] = useState('');
   const [image, setImage] = useState('');
   const { t } = useThemeLanguage();
@@ -33,12 +34,13 @@ export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete 
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h2 style={styles.title}>{t('edit_post')}</h2>
         <form onSubmit={handleSubmit}>
-          <textarea
+          <MentionTextarea
             placeholder={t('what_are_you_thinking')}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             style={styles.textarea}
             rows={5}
+            theme={theme}
             required
           />
           <input

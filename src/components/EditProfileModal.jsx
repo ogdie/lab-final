@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import ImageUpload from './ImageUpload';
 
 const INSTITUTIONS = [
     "Faculdade de Engenharia da Universidade do Porto (FEUP)",
@@ -205,15 +206,31 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
                     </div>
                     
                     <div style={styles.field}>
-                        <label style={styles.label}>{t('profile_picture_url')}</label>
-                        <input
-                            name="profilePicture"
-                            type="url"
+                        <label style={styles.label}>{t('profile_picture') || 'Foto de perfil'}</label>
+                        <ImageUpload
                             value={formData.profilePicture}
-                            onChange={handleChange}
-                            style={styles.input}
-                            placeholder={t('example_url')}
+                            onChange={(value) => setFormData({ ...formData, profilePicture: value })}
+                            placeholder={t('select_profile_picture') || "Selecione uma foto do computador"}
+                            theme={theme}
                         />
+                        {!formData.profilePicture && (
+                            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: styles.label.color }}>
+                                Ou{' '}
+                                <input
+                                    name="profilePicture"
+                                    type="url"
+                                    value={formData.profilePicture}
+                                    onChange={handleChange}
+                                    style={{
+                                        ...styles.input,
+                                        marginTop: '0.5rem',
+                                        fontSize: '0.85rem',
+                                        padding: '0.5rem'
+                                    }}
+                                    placeholder={t('example_url') || 'Cole uma URL de imagem'}
+                                />
+                            </div>
+                        )}
                     </div>
                     
                     <div style={styles.field}>
@@ -224,9 +241,12 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
                             onChange={handleChange}
                             style={styles.input}
                         >
-                            {USER_TYPES.map((opt) => (
-                                <option key={opt} value={opt}>{opt}</option>
-                            ))}
+                            {USER_TYPES.map((opt) => {
+                                const translationKey = opt === 'Estudante' ? 'user_type_student' : 
+                                                       opt === 'Professor' ? 'user_type_professor' : 
+                                                       opt === 'Recrutador' ? 'user_type_recruiter' : opt;
+                                return <option key={opt} value={opt}>{t(translationKey)}</option>;
+                            })}
                         </select>
                     </div>
 
@@ -239,7 +259,9 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
                             style={styles.input}
                         >
                             {INSTITUTIONS.map((inst) => (
-                                <option key={inst} value={inst}>{inst}</option>
+                                <option key={inst} value={inst}>
+                                    {inst === 'Outros' ? t('institution_others') : inst}
+                                </option>
                             ))}
                         </select>
                     </div>

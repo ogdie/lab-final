@@ -11,16 +11,6 @@ const ACHIEVEMENT_TYPES = [
   "other"
 ];
 
-// Mapeamento para exibição amigável 
-const typeLabels = {
-  certification: "Certificação",
-  course: "Curso",
-  project: "Projeto",
-  competition: "Competição",
-  publication: "Publicação",
-  other: "Outro"
-};
-
 // --- Estilos dinâmicos (mesmo padrão do EditProfileModal) ---
 const getStyles = (theme) => {
   const isDark = theme === 'dark';
@@ -178,7 +168,7 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2 style={styles.title}>Adicionar Conquista</h2>
+        <h2 style={styles.title}>{t('add_achievement')}</h2>
         <form onSubmit={handleSubmit}>
           {/* Título */}
           <div style={styles.field}>
@@ -206,7 +196,7 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
             >
               {ACHIEVEMENT_TYPES.map(type => (
                 <option key={type} value={type}>
-                  {typeLabels[type]}
+                  {t(`achievement_type_${type}`)}
                 </option>
               ))}
             </select>
