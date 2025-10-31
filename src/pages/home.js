@@ -6,7 +6,6 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PostCard from '../components/PostCard';
 import PostModal from '../components/PostModal';
-import ChatModal from '../components/ChatModal';
 import AlertModal from '../components/AlertModal';
 import { postsAPI, usersAPI } from '../services/api';
 
@@ -260,7 +259,9 @@ export default function Home() {
         setError(null);
         try {
             const data = await postsAPI.getAll();
-            setPosts(Array.isArray(data) ? data : []);
+            const list = Array.isArray(data) ? data : [];
+            list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setPosts(list);
         } catch (err) {
             console.error('Error loading posts:', err);
             setError('Não foi possível carregar os posts.');
@@ -272,8 +273,8 @@ export default function Home() {
     const handleCreatePost = async (data) => {
         if (!user?._id) return;
         try {
-            await postsAPI.create({ ...data, author: user._id });
-            loadPosts();
+            const created = await postsAPI.create({ ...data, author: user._id });
+            setPosts(prev => [{ ...(created || {}), author: created?.author || user }, ...prev]);
         } catch (err) {
             showAlert({ 
                 message: 'Erro ao criar post: ' + (err.message || 'Erro desconhecido'), 
@@ -299,6 +300,24 @@ export default function Home() {
             loadPosts();
         } catch (err) {
             console.error('Error adding comment:', err);
+        }
+    };
+
+    const handleEditComment = async (commentId, updated) => {
+        try {
+            await commentsAPI.update(commentId, updated);
+            loadPosts();
+        } catch (err) {
+            console.error('Error editing comment:', err);
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        try {
+            await commentsAPI.delete(commentId);
+            loadPosts();
+        } catch (err) {
+            console.error('Error deleting comment:', err);
         }
     };
 
@@ -540,6 +559,8 @@ export default function Home() {
                                     onComment={handleComment}
                                     onEdit={handleEditPost}
                                     onDelete={handleDeletePost}
+                                    onEditComment={handleEditComment}
+                                    onDeleteComment={handleDeleteComment}
                                     theme={theme}
                                 />
                             </div>

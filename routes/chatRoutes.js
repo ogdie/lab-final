@@ -102,3 +102,20 @@ router.delete('/:userId', async (req, res) => {
 
 export default router;
 
+// Delete single message (only sender or receiver allowed)
+router.delete('/messages/:messageId', async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { currentUserId } = req.query;
+    const msg = await Message.findById(messageId);
+    if (!msg) return res.status(404).json({ error: 'Mensagem não encontrada' });
+    if (msg.sender.toString() !== currentUserId && msg.receiver.toString() !== currentUserId) {
+      return res.status(403).json({ error: 'Não autorizado' });
+    }
+    await Message.findByIdAndDelete(messageId);
+    res.json({ message: 'Mensagem deletada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+

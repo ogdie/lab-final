@@ -123,15 +123,18 @@ const getStyles = (theme) => {
 };
 
 
+import { useState } from 'react';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
-export default function CommentCard({ comment, currentUser, onLike, onDelete, theme = 'light' }) {
+export default function CommentCard({ comment, currentUser, onLike, onDelete, onEdit, theme = 'light' }) {
     // Inicialização dos estilos com o tema
     const styles = getStyles(theme);
     const { t } = useThemeLanguage();
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(comment.content || '');
 
     const isLiked = currentUser && comment.likes?.includes(currentUser._id);
-    const canDelete = currentUser && (comment.author._id === currentUser._id);
+    const canModify = currentUser && (comment.author?._id === currentUser._id);
     // Para fins de demonstração, assumimos que 'author' pode ter um campo 'title'
     const authorTitle = comment.author?.title || t('member_of_network');
 
@@ -144,6 +147,13 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, th
     const handleDelete = () => {
         if (onDelete && window.confirm(t('delete_confirm'))) {
             onDelete(comment._id);
+        }
+    };
+
+    const handleSave = () => {
+        if (onEdit && editText.trim()) {
+            onEdit(comment._id, { content: editText.trim() });
+            setIsEditing(false);
         }
     };
 
@@ -163,7 +173,21 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, th
                     </div>
                 </div>
 
-                <div style={styles.content}>{comment.content}</div>
+                <div style={styles.content}>
+                    {isEditing ? (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <input
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                style={{ flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid #ccc' }}
+                            />
+                            <button onClick={handleSave} style={{ padding: '6px 10px' }}>{t('save') || 'Salvar'}</button>
+                            <button onClick={() => { setIsEditing(false); setEditText(comment.content || ''); }} style={{ padding: '6px 10px' }}>{t('cancel')}</button>
+                        </div>
+                    ) : (
+                        comment.content
+                    )}
+                </div>
 
                 <div style={styles.footer}>
                     <span style={styles.dateText}>
@@ -184,10 +208,15 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, th
                         {t('reply')}
                     </button>
 
-                    {canDelete && (
-                        <button onClick={handleDelete} style={styles.deleteButton} title={t('delete')}>
-                            ✕
-                        </button>
+                    {canModify && (
+                        <>
+                            <button onClick={() => setIsEditing(true)} style={styles.actionButton}>
+                                {t('edit_post')}
+                            </button>
+                            <button onClick={handleDelete} style={styles.deleteButton} title={t('delete')}>
+                                ✕
+                            </button>
+                        </>
                     )}
                 </div>
             </div>

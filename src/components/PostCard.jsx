@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import CommentCard from './CommentCard';
 import ShareButton from './ShareButton';
 import EditPostModal from './EditPostModal';
@@ -221,10 +222,11 @@ const getStyles = (theme, post = {}) => {
 };
 
 
-export default function PostCard({ post, currentUser, onLike, onComment, onEdit, onDelete, theme }) {
+export default function PostCard({ post, currentUser, onLike, onComment, onEdit, onDelete, onEditComment, onDeleteComment, theme }) {
     // CORREÇÃO: Passando o objeto 'post' para o getStyles
     const styles = getStyles(theme || 'light', post); 
     const { t } = useThemeLanguage();
+    const router = useRouter();
     
     const [commentText, setCommentText] = useState('');
     const [showComments, setShowComments] = useState(false);
@@ -285,9 +287,15 @@ export default function PostCard({ post, currentUser, onLike, onComment, onEdit,
                     src={post.author?.profilePicture || '/default-avatar.svg'}
                     alt={post.author?.name || 'Autor'}
                     style={styles.avatar}
+                    onClick={() => post.author?._id && router.push(`/profile?id=${post.author._id}`)}
                 />
                 <div style={styles.authorInfo}>
-                    <div style={styles.name}>{post.author?.name || t('user')}</div>
+                    <div
+                        style={styles.name}
+                        onClick={() => post.author?._id && router.push(`/profile?id=${post.author._id}`)}
+                    >
+                        {post.author?.name || t('user')}
+                    </div>
                     <div style={styles.title}>{post.author?.title || t('network_user')}</div> 
                     <div style={styles.date}>
                         {formatRelativeTime(post.createdAt)}
@@ -369,14 +377,28 @@ export default function PostCard({ post, currentUser, onLike, onComment, onEdit,
                         </form>
                     )}
                     
-                    {post.comments?.map((comment) => (
-                        <CommentCard
-                            key={comment._id}
-                            comment={comment}
-                            currentUser={currentUser}
-                            theme={theme} 
-                        />
-                    ))}
+                    {(post.comments || []).map((rawComment) => {
+                        const normalizedComment = {
+                            ...rawComment,
+                            // Alguns backends usam outras chaves para o conteúdo
+                            content: (rawComment?.content ?? rawComment?.text ?? rawComment?.body ?? ''),
+                            createdAt: rawComment?.createdAt || rawComment?.created_at || rawComment?.date || Date.now(),
+                            author:
+                                (typeof rawComment?.author === 'string' && currentUser && rawComment.author === currentUser._id)
+                                    ? currentUser
+                                    : rawComment.author
+                        };
+                        return (
+                            <CommentCard
+                                key={normalizedComment._id}
+                                comment={normalizedComment}
+                                currentUser={currentUser}
+                                onEdit={onEditComment}
+                                onDelete={onDeleteComment}
+                                theme={theme}
+                            />
+                        );
+                    })}
                     
                 </div>
             )}

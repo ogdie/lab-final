@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import PostCard from "../../components/PostCard";
-import { forumAPI, postsAPI, usersAPI } from "../../services/api";
+import AlertModal from "../../components/AlertModal";
+import { forumAPI, postsAPI, usersAPI, commentsAPI } from "../../services/api";
 import { useThemeLanguage } from "../../context/ThemeLanguageContext";
 import BackButton from "../../components/BackButton";
 
@@ -35,13 +37,15 @@ const getStyles = (theme) => {
 };
 
 export default function TopicPage() {
-  const { theme } = useThemeLanguage();
+  const router = useRouter();
+  const { theme, t } = useThemeLanguage();
   const styles = getStyles(theme);
   const [user, setUser] = useState(null);
   const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso', onConfirm: null, showCancel: false });
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -150,9 +154,41 @@ export default function TopicPage() {
   const handleComment = async (postId, content) => {
     if (!user?._id || !content?.trim()) return;
     try {
-      await postsAPI.addComment(postId, { author: user._id, content });
+      // Otimista: insere comentário imediatamente na UI
+      const optimistic = {
+        _id: `tmp-${Date.now()}`,
+        author: user,
+        content: content.trim(),
+        createdAt: new Date().toISOString(),
+        likes: [],
+      };
+      setTopic((prev) => {
+        if (!prev) return prev;
+        const updatedPosts = (prev.posts || []).map((p) =>
+          p._id === postId
+            ? { ...p, comments: [ ...(p.comments || []), optimistic ] }
+            : p
+        );
+        return { ...prev, posts: updatedPosts };
+      });
+
+      await postsAPI.addComment(postId, { author: user._id, content: content.trim() });
       await loadTopic();
       await refreshUser();
+    } catch {}
+  };
+
+  const handleEditComment = async (commentId, updated) => {
+    try {
+      await commentsAPI.update(commentId, updated);
+      await loadTopic();
+    } catch {}
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await commentsAPI.delete(commentId);
+      await loadTopic();
     } catch {}
   };
 
@@ -164,11 +200,20 @@ export default function TopicPage() {
   };
 
   const handleDeletePost = async (postId) => {
-    try {
-      await postsAPI.delete(postId);
-      await loadTopic();
-      await refreshUser();
-    } catch {}
+    const confirmDelete = async () => {
+      try {
+        await postsAPI.delete(postId);
+        await loadTopic();
+        await refreshUser();
+      } catch {}
+    };
+    setAlert({
+      isOpen: true,
+      message: 'Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.',
+      title: 'Excluir post?',
+      onConfirm: confirmDelete,
+      showCancel: true,
+    });
   };
 
   const handleSearch = async (query) => {
@@ -221,18 +266,24 @@ export default function TopicPage() {
             )}
           </div>
         )}
-        {loading && <div style={styles.loading}>Carregando...</div>}
+        {loading && <div style={styles.loading}>{t('loading')}</div>}
         {!loading && error && <div style={styles.error}>{error}</div>}
         {!loading && topic && (
           <>
             <div style={styles.header}>
               <h1 style={styles.title}>{topic.name}</h1>
-              <button style={styles.createBtn} onClick={() => setShowModal(true)}>Criar novo tópico</button>
+              <button style={styles.createBtn} onClick={() => setShowModal(true)}>{t('create_new_thread')}</button>
             </div>
             {topic.description && <div style={styles.card}>{topic.description}</div>}
 
             {Array.isArray(topic.posts) && topic.posts.length > 0 ? (
-              topic.posts.map((post) => (
+              topic.posts
+                .map((post) => ({
+                  ...post,
+                  createdAt: post?.createdAt || post?.created_at || post?.date || Date.now(),
+                }))
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .map((post) => (
                 <PostCard
                   key={post._id}
                   post={post}
@@ -241,28 +292,39 @@ export default function TopicPage() {
                   onComment={handleComment}
                   onEdit={handleEditPost}
                   onDelete={handleDeletePost}
+                  onEditComment={handleEditComment}
+                  onDeleteComment={handleDeleteComment}
                   theme={theme}
                 />
               ))
             ) : (
-              <div style={styles.card}>Nenhuma discussão ainda. Seja o primeiro a criar!</div>
+              <div style={styles.card}>{t('no_discussions')}</div>
             )}
           </>
         )}
       </main>
       <Footer />
 
+      <AlertModal
+        isOpen={alert.isOpen}
+        onClose={() => setAlert(prev => ({ ...prev, isOpen: false }))}
+        message={alert.message}
+        title={alert.title}
+        onConfirm={alert.onConfirm}
+        showCancel={alert.showCancel}
+      />
+
       {showModal && (
         <div style={styles.modalOverlay} onClick={() => setShowModal(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ marginTop: 0 }}>Criar Novo Tópico</h2>
-            <label style={styles.label}>Título</label>
-            <input style={styles.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Digite o título" />
-            <label style={styles.label}>Descrição</label>
-            <textarea style={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Escreva a descrição (opcional)" />
+            <h2 style={{ marginTop: 0 }}>{t('create_new_thread')}</h2>
+            <label style={styles.label}>{t('thread_title')}</label>
+            <input style={styles.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('thread_title_placeholder')} />
+            <label style={styles.label}>{t('thread_description')}</label>
+            <textarea style={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('thread_desc_placeholder')} />
             <div style={styles.actions}>
-              <button style={styles.cancel} onClick={() => setShowModal(false)}>Cancelar</button>
-              <button style={styles.save} onClick={handleCreateThread}>Criar</button>
+              <button style={styles.cancel} onClick={() => setShowModal(false)}>{t('cancel')}</button>
+              <button style={styles.save} onClick={handleCreateThread}>{t('create')}</button>
             </div>
           </div>
         </div>

@@ -31,7 +31,10 @@ router.get('/topics/:id', async (req, res) => {
   try {
     const topic = await Topic.findById(req.params.id).populate({
       path: 'posts',
-      populate: { path: 'author', select: 'name profilePicture xp' }
+      populate: [
+        { path: 'author', select: 'name profilePicture xp' },
+        { path: 'comments', populate: { path: 'author', select: 'name profilePicture' } }
+      ]
     });
     if (!topic) return res.status(404).json({ error: 'Tópico não encontrado' });
     res.json(topic);

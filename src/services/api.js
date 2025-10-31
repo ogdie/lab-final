@@ -76,7 +76,11 @@ export const usersAPI = {
   getFollowing: (id) => fetchAPI(`/users/${id}/following`),
   getConnections: (id) => fetchAPI(`/users/${id}/connections`),
   getUserPosts: (id) => fetchAPI(`/users/${id}/posts`),
-  getNotifications: (id) => fetchAPI(`/users/${id}/notifications`)
+  getNotifications: (id) => fetchAPI(`/users/${id}/notifications`),
+  addAchievement: (id, data) => fetchAPI(`/users/${id}/achievements`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  })
 };
 
 // Follow API

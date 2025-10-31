@@ -3,7 +3,7 @@ import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import ChatModal from '../components/ChatModal';
+import ChatPane from '../components/ChatPane';
 import { chatAPI, usersAPI } from '../services/api';
 
 export default function Chat() {
@@ -12,7 +12,6 @@ export default function Chat() {
   const [user, setUser] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [showChatModal, setShowChatModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
@@ -36,6 +35,19 @@ export default function Chat() {
 
     setUser(parsedUser);
     loadConversations(parsedUser._id);
+
+    // Abrir conversa direto via query param ?userId=
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const targetId = params.get('userId');
+      if (targetId) {
+        usersAPI.getById(targetId).then((u) => {
+          if (u && u._id) {
+            setSelectedUser(u);
+          }
+        }).catch(() => {});
+      }
+    } catch {}
   }, [router]);
 
   const loadConversations = async (userId) => {
@@ -55,13 +67,8 @@ export default function Chat() {
   const handleOpenChat = (otherUser) => {
     if (!otherUser?._id) return;
     setSelectedUser(otherUser);
-    setShowChatModal(true);
   };
 
-  const handleCloseModal = () => {
-    setShowChatModal(false);
-    setSelectedUser(null);
-  };
 
   const handleSearch = async (query) => {
     if (!query?.trim()) {
@@ -114,7 +121,7 @@ export default function Chat() {
       </div>
     );
   }
-
+  
   return (
     <div style={styles.container}>
       <Navbar 
@@ -157,49 +164,57 @@ export default function Chat() {
         </div>
       )}
 
-      <div style={styles.content}>
-        <h1>{t('messages_title')}</h1>
-
-        <div style={styles.conversations}>
-          {conversations.length === 0 ? (
-            <p style={styles.empty}>{t('no_conversations')}</p>
-          ) : (
-            conversations.map((conv) => (
-              <div
-                key={conv.user?._id || conv._id || Math.random()}
-                onClick={() => handleOpenChat(conv.user)}
-                style={styles.conversationItem}
-              >
-                <img
-                  src={conv.user?.profilePicture || '/default-avatar.svg'}
-                  alt={conv.user?.name || 'Usuário'}
-                  style={styles.avatar}
-                />
-                <div style={styles.info}>
-                  <h3 style={styles.name}>
-                    {conv.user?.name || 'Usuário desconhecido'}
-                  </h3>
-                  <p style={styles.lastMessage}>
-                    {conv.lastMessage?.content || t('no_messages')}
-                  </p>
+      <div style={{ display: 'flex', flex: 1, maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+        <div style={{ width: '320px', padding: '1rem', borderRight: '1px solid #e0e0e0' }}>
+          <h2 style={{ marginTop: 0 }}>{t('messages_title')}</h2>
+          <div style={styles.conversations}>
+            {conversations.length === 0 ? (
+              <p style={styles.empty}>{t('no_conversations')}</p>
+            ) : (
+              conversations.map((conv) => (
+                <div
+                  key={conv.user?._id || conv._id || Math.random()}
+                  onClick={() => handleOpenChat(conv.user)}
+                  style={styles.conversationItem}
+                >
+                  <img
+                    src={conv.user?.profilePicture || '/default-avatar.svg'}
+                    alt={conv.user?.name || 'Usuário'}
+                    style={styles.avatar}
+                  />
+                  <div style={styles.info}>
+                    <h3 style={styles.name}>
+                      {conv.user?.name || 'Usuário desconhecido'}
+                    </h3>
+                    <p style={styles.lastMessage}>
+                      {conv.lastMessage?.content || t('no_messages')}
+                    </p>
+                  </div>
+                  {conv.unread > 0 && (
+                    <span style={styles.badge}>{conv.unread}</span>
+                  )}
                 </div>
-                {conv.unread > 0 && (
-                  <span style={styles.badge}>{conv.unread}</span>
-                )}
-              </div>
-            ))
+              ))
+            )}
+          </div>
+        </div>
+        <div style={{ flex: 1, padding: '1rem' }}>
+          {selectedUser ? (
+            <ChatPane
+              currentUser={user}
+              otherUser={selectedUser}
+              onConversationDeleted={(otherId) => {
+                setConversations(prev => prev.filter(c => (c.user?._id || '') !== otherId));
+                setSelectedUser(null);
+              }}
+            />
+          ) : (
+            <p style={styles.empty}>{t('click_to_open_chat')}</p>
           )}
         </div>
       </div>
 
-      {showChatModal && (
-        <ChatModal
-          isOpen={showChatModal}
-          onClose={handleCloseModal}
-          currentUser={user}
-          otherUser={selectedUser}
-        />
-      )}
+
 
       <Footer />
     </div>

@@ -305,7 +305,7 @@ export default function Forum() {
 
     setUser(parsedUser);
     loadTopics();
-  }, [router]);
+  }, [router, t]);
 
   const loadTopics = async () => {
     setLoading(true);
@@ -314,19 +314,67 @@ export default function Forum() {
       const data = await forumAPI.getTopics();
       const backendTopics = Array.isArray(data) ? data : [];
       const byName = new Map();
+      
+      // Mapa com descrições traduzidas
+      const topicDescriptions = {
+        'reports': t('topic_reports_desc'),
+        'fullstack': t('topic_fullstack_desc'),
+        'c': t('topic_c_desc'),
+        'python': t('topic_python_desc'),
+        'outros': t('topic_others_desc'),
+        'others': t('topic_others_desc')
+      };
+      
       backendTopics.forEach((t) => {
         const key = (t?.name || "").toLowerCase();
-        if (!byName.has(key)) byName.set(key, t);
+        if (!byName.has(key)) {
+          // Aplicar descrição traduzida se disponível
+          if (topicDescriptions[key]) {
+            t.description = topicDescriptions[key];
+          }
+          byName.set(key, t);
+        }
       });
+      
       const merged = [...byName.values()];
       defaultTopics.forEach((t) => {
         const key = (t?.name || "").toLowerCase();
-        if (!byName.has(key)) merged.push(t);
+        if (!byName.has(key)) {
+          // Aplicar descrição traduzida
+          if (topicDescriptions[key]) {
+            t.description = topicDescriptions[key];
+          }
+          merged.push(t);
+        }
       });
+      
+      // Garantir que Reports seja sempre o primeiro
+      const reportsIndex = merged.findIndex(t => (t?.name || "").toLowerCase() === "reports");
+      if (reportsIndex > 0) {
+        const reportsTopic = merged.splice(reportsIndex, 1)[0];
+        merged.unshift(reportsTopic);
+      }
+      
       setTopics(merged);
     } catch (err) {
       console.error("Error loading topics:", err);
-      setTopics(defaultTopics);
+      // Aplicar traduções aos defaultTopics também em caso de erro
+      const translatedDefaults = defaultTopics.map(t => {
+        const key = (t?.name || "").toLowerCase();
+        const topicDescriptions = {
+          'reports': t('topic_reports_desc'),
+          'fullstack': t('topic_fullstack_desc'),
+          'c': t('topic_c_desc'),
+          'python': t('topic_python_desc'),
+          'outros': t('topic_others_desc'),
+          'others': t('topic_others_desc')
+        };
+        if (topicDescriptions[key]) {
+          return { ...t, description: topicDescriptions[key] };
+        }
+        return t;
+      });
+      setTopics(translatedDefaults);
       setError(
         "Não foi possível carregar os tópicos do fórum. Exibindo dados padrão."
       );

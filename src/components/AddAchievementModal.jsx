@@ -133,7 +133,8 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
     type: ACHIEVEMENT_TYPES[0],
     description: '',
     date: '',
-    technologies: ''
+    technologies: '',
+    image: ''
   });
 
   const styles = getStyles(theme);
@@ -147,7 +148,8 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
         type: ACHIEVEMENT_TYPES[0],
         description: '',
         date: '',
-        technologies: ''
+        technologies: '',
+        image: ''
       });
     }
   }, [isOpen]);
@@ -232,6 +234,19 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
               onChange={handleChange}
               style={styles.input}
               required
+            />
+          </div>
+
+          {/* Imagem */}
+          <div style={styles.field}>
+            <label style={styles.label}>URL da Imagem</label>
+            <input
+              name="image"
+              type="url"
+              value={formData.image}
+              onChange={handleChange}
+              style={styles.input}
+              placeholder="https://exemplo.com/imagem.jpg"
             />
           </div>
 

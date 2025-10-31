@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 // Ícones simples baseados em emoji (sem dependência externa)
@@ -23,6 +24,7 @@ const typeLabels = {
 };
 
 export default function AchievementCard({ achievement, theme = 'light' }) {
+  const [imageError, setImageError] = useState(false);
   const isDark = theme === 'dark';
   const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
   const textSecondary = isDark ? '#b0b3b8' : '#606770';
@@ -37,6 +39,8 @@ export default function AchievementCard({ achievement, theme = 'light' }) {
     });
   };
 
+  const showImage = achievement.image && !imageError;
+
   return (
     <div style={{
       background,
@@ -47,12 +51,27 @@ export default function AchievementCard({ achievement, theme = 'light' }) {
       display: 'flex',
       gap: '1rem'
     }}>
-      <div style={{
-        fontSize: '2rem',
-        flexShrink: 0
-      }}>
-        {getIconByType(achievement.type)}
-      </div>
+      {showImage ? (
+        <img 
+          src={achievement.image} 
+          alt={achievement.title}
+          style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '8px',
+            objectFit: 'cover',
+            flexShrink: 0
+          }}
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <div style={{
+          fontSize: '2rem',
+          flexShrink: 0
+        }}>
+          {getIconByType(achievement.type)}
+        </div>
+      )}
       <div style={{ flex: 1 }}>
         <div style={{
           display: 'flex',
