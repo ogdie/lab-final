@@ -6,7 +6,7 @@ export const ThemeLanguageContext = createContext();
 // Função de Estilo que já usamos no Settings.js
 const applyGlobalStyles = (theme) => {
     const isDark = theme === 'dark';
-    const backgroundPrimary = isDark ? '#18191a' : '#f0f2f5';
+    const backgroundPrimary = isDark ? '#1d2226' : '#f0f2f5';
     const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
     
     // Aplica o background e a cor de texto ao body para afetar toda a aplicação
@@ -103,6 +103,8 @@ export const ThemeLanguageProvider = ({ children }) => {
             bio_label: 'Resumo/Bio',
             bio_placeholder: 'Descreva sua experiência profissional e objetivos...',
             profile_picture_url: 'Foto de Perfil (URL)',
+            profile_picture: 'Foto de Perfil',
+            select_profile_picture: 'Selecione uma imagem para seu perfil...',
             example_url: 'https://exemplo.com/foto.jpg',
             user_type: 'Tipo de Usuário',
             institution: 'Instituição',
@@ -115,6 +117,8 @@ export const ThemeLanguageProvider = ({ children }) => {
             twitter: 'Twitter',
             facebook: 'Facebook',
             linkedin: 'LinkedIn',
+            select_image: 'Selecionar Imagem',
+            select_image_placeholder: 'Selecione uma imagem para seu perfil...',
             whatsapp: 'WhatsApp',
             copy_link: 'Copiar Link',
             success: 'Sucesso',
@@ -145,7 +149,6 @@ export const ThemeLanguageProvider = ({ children }) => {
             error_loading_profile: 'Não foi possível carregar o perfil.',
             followers_label: 'Seguidores',
             following_label: 'Seguindo',
-            connections: 'Conexões',
             topic_reports_desc: 'Discussão sobre relatórios e métricas de desempenho.',
             topic_fullstack_desc: 'Discussão sobre desenvolvimento com foco em FullStack (Frontend e Backend).',
             topic_c_desc: 'Programação em C: dúvidas, projetos e boas práticas.',
@@ -236,6 +239,7 @@ export const ThemeLanguageProvider = ({ children }) => {
             bio_label: 'Summary/Bio',
             bio_placeholder: 'Describe your professional experience and goals...',
             profile_picture_url: 'Profile Picture (URL)',
+            select_profile_picture: 'Select an image for your profile...',
             example_url: 'https://example.com/photo.jpg',
             user_type: 'User Type',
             institution: 'Institution',
@@ -278,7 +282,6 @@ export const ThemeLanguageProvider = ({ children }) => {
             error_loading_profile: 'Could not load the profile.',
             followers_label: 'Followers',
             following_label: 'Following',
-            connections: 'Connections',
             topic_reports_desc: 'Discussion about reports and performance metrics.',
             topic_fullstack_desc: 'Discussion about development focused on FullStack (Frontend and Backend).',
             topic_c_desc: 'C Programming: questions, projects and best practices.',
@@ -309,6 +312,8 @@ export const ThemeLanguageProvider = ({ children }) => {
             user_type_professor: 'Professor',
             user_type_recruiter: 'Recruiter',
             institution_others: 'Others',
+            select_image: 'Select Image',
+            select_image_placeholder: 'Select an image for your profile...',
         }
     };
 

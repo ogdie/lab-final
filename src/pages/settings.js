@@ -13,7 +13,7 @@ const getStyles = (theme) => {
     const isDark = theme === 'dark';
     const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
     const textSecondary = isDark ? '#b0b3b8' : '#606770';
-    const backgroundPrimary = isDark ? '#18191a' : '#f3f2ef';
+    const backgroundPrimary = isDark ? '#1d2226' : '#f3f2ef';
     const backgroundCard = isDark ? '#242526' : 'white';
     const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
     const blueAction = '#4F46E5';
