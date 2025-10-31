@@ -4,7 +4,8 @@ import AlertModal from './AlertModal';
 import { chatAPI } from '../services/api';
 
 export default function ChatPane({ currentUser, otherUser, onConversationDeleted, onMessageSent, onMessagesRead }) {
-  const { t } = useThemeLanguage();
+  const { t, theme } = useThemeLanguage();
+  const styles = getStyles(theme);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso', onConfirm: null, showCancel: false });
@@ -138,7 +139,7 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h3 style={{ margin: 0 }}>{otherUser?.name || t('user')}</h3>
+        <h3 style={{ margin: 0, color: styles.textPrimary }}>{otherUser?.name || t('user')}</h3>
         <button onClick={handleDeleteConversation} style={styles.deleteConvButton}>🗑️</button>
       </div>
       <div style={styles.messages}>
@@ -148,8 +149,8 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
             style={{
               ...styles.message,
               alignSelf: msg.sender._id === currentUser._id ? 'flex-end' : 'flex-start',
-              background: msg.sender._id === currentUser._id ? '#4F46E5' : '#f0f0f0',
-              color: msg.sender._id === currentUser._id ? 'white' : 'black'
+              background: msg.sender._id === currentUser._id ? '#4F46E5' : styles.messageOtherBg,
+              color: msg.sender._id === currentUser._id ? 'white' : styles.messageOtherColor
             }}
           >
             <span>{msg.content}</span>
@@ -182,73 +183,90 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
   );
 }
 
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: 'calc(100vh - 160px)',
-    border: '1px solid #e0e0e0',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  header: {
-    padding: '0.75rem 1rem',
-    borderBottom: '1px solid #e0e0e0',
-    background: '#f8f9fa',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  messages: {
-    flex: 1,
-    padding: '1rem',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-    background: 'white',
-  },
-  message: {
-    padding: '0.6rem 0.8rem',
-    borderRadius: 8,
-    maxWidth: '70%',
-    display: 'inline-flex',
-    gap: '8px',
-    alignItems: 'center',
-  },
-  deleteConvButton: {
-    border: '1px solid #e0e0e0',
-    background: 'white',
-    borderRadius: 6,
-    cursor: 'pointer',
-    padding: '4px 8px'
-  },
-  deleteMsgButton: {
-    background: 'transparent',
-    border: 'none',
-    color: 'inherit',
-    cursor: 'pointer'
-  },
-  form: {
-    display: 'flex',
-    padding: '0.75rem',
-    borderTop: '1px solid #e0e0e0',
-    background: 'white',
-  },
-  input: {
-    flex: 1,
-    padding: '0.6rem 0.8rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px 0 0 4px'
-  },
-  sendButton: {
-    padding: '0.6rem 1rem',
-    background: '#4F46E5',
-    color: 'white',
-    border: 'none',
-    borderRadius: '0 4px 4px 0',
-    cursor: 'pointer'
-  }
+const getStyles = (theme) => {
+  const isDark = theme === 'dark';
+  const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
+  const textSecondary = isDark ? '#b0b3b8' : '#606770';
+  const backgroundCard = isDark ? '#2c2f33' : 'white';
+  const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
+  const backgroundSecondary = isDark ? '#3a3b3c' : '#f8f9fa';
+
+  return {
+    container: {
+      display: 'flex',
+      flexDirection: 'column',
+      height: 'calc(100vh - 160px)',
+      border: `1px solid ${borderSubtle}`,
+      borderRadius: 8,
+      overflow: 'hidden',
+      background: backgroundCard,
+    },
+    header: {
+      padding: '0.75rem 1rem',
+      borderBottom: `1px solid ${borderSubtle}`,
+      background: backgroundSecondary,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    messages: {
+      flex: 1,
+      padding: '1rem',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0.5rem',
+      background: backgroundCard,
+    },
+    message: {
+      padding: '0.6rem 0.8rem',
+      borderRadius: 8,
+      maxWidth: '70%',
+      display: 'inline-flex',
+      gap: '8px',
+      alignItems: 'center',
+    },
+    messageOtherBg: isDark ? '#3e4042' : '#f0f0f0',
+    messageOtherColor: isDark ? '#e4e6eb' : '#1d2129',
+    deleteConvButton: {
+      border: `1px solid ${borderSubtle}`,
+      background: backgroundCard,
+      borderRadius: 6,
+      cursor: 'pointer',
+      padding: '4px 8px',
+      color: textPrimary,
+    },
+    deleteMsgButton: {
+      background: 'transparent',
+      border: 'none',
+      color: 'inherit',
+      cursor: 'pointer'
+    },
+    form: {
+      display: 'flex',
+      padding: '0.75rem',
+      borderTop: `1px solid ${borderSubtle}`,
+      background: backgroundCard,
+    },
+    input: {
+      flex: 1,
+      padding: '0.6rem 0.8rem',
+      border: `1px solid ${borderSubtle}`,
+      borderRadius: '4px 0 0 4px',
+      background: backgroundCard,
+      color: textPrimary,
+    },
+    sendButton: {
+      padding: '0.6rem 1rem',
+      background: '#4F46E5',
+      color: 'white',
+      border: 'none',
+      borderRadius: '0 4px 4px 0',
+      cursor: 'pointer'
+    },
+    textPrimary,
+    textSecondary,
+  };
 };
 
 

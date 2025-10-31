@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react';
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
-const MAX_WIDTH = 1920; // Largura máxima
-const MAX_HEIGHT = 1920; // Altura máxima
+const MAX_FILE_SIZE = 1.5 * 1024 * 1024; // 1.5MB (tamanho máximo do base64 após compressão)
+const MAX_WIDTH = 1280; // Largura máxima (reduzido para melhor compressão)
+const MAX_HEIGHT = 1280; // Altura máxima (reduzido para melhor compressão)
 
 export default function ImageUpload({ 
   value, 
@@ -32,8 +32,8 @@ export default function ImageUpload({
           
           if (width > MAX_WIDTH || height > MAX_HEIGHT) {
             const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
-            width = width * ratio;
-            height = height * ratio;
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
           }
           
           // Criar canvas para redimensionar
@@ -41,23 +41,49 @@ export default function ImageUpload({
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
+          
+          // Melhorar qualidade de renderização
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
           ctx.drawImage(img, 0, 0, width, height);
           
-          // Converter para base64 com qualidade ajustada
-          const quality = 0.8; // Qualidade da compressão (0-1)
-          const base64 = canvas.toDataURL('image/jpeg', quality);
+          // Função para calcular tamanho real do base64 em bytes
+          const getBase64Size = (base64String) => {
+            // Remove o prefixo data:image/...;base64,
+            const base64Data = base64String.split(',')[1] || base64String;
+            // Cada caractere base64 representa 6 bits, então tamanho em bytes = (length * 3) / 4
+            return (base64Data.length * 3) / 4;
+          };
           
-          // Verificar tamanho final
-          const base64Size = (base64.length * 3) / 4; // Aproximação do tamanho em bytes
+          // Tentar comprimir com qualidade progressivamente menor até atingir o tamanho desejado
+          const qualities = [0.75, 0.65, 0.55, 0.45, 0.35];
           
-          if (base64Size > MAX_FILE_SIZE) {
-            // Se ainda for muito grande, reduzir mais a qualidade
-            const lowerQuality = 0.6;
-            const compressedBase64 = canvas.toDataURL('image/jpeg', lowerQuality);
-            resolve(compressedBase64);
-          } else {
-            resolve(base64);
-          }
+          const tryCompress = (index) => {
+            if (index >= qualities.length) {
+              // Se todas as qualidades falharem, usar a menor e redimensionar ainda mais
+              const smallerWidth = Math.round(width * 0.8);
+              const smallerHeight = Math.round(height * 0.8);
+              canvas.width = smallerWidth;
+              canvas.height = smallerHeight;
+              ctx.drawImage(img, 0, 0, smallerWidth, smallerHeight);
+              const finalBase64 = canvas.toDataURL('image/jpeg', 0.3);
+              resolve(finalBase64);
+              return;
+            }
+            
+            const quality = qualities[index];
+            const base64 = canvas.toDataURL('image/jpeg', quality);
+            const base64Size = getBase64Size(base64);
+            
+            if (base64Size <= MAX_FILE_SIZE) {
+              resolve(base64);
+            } else {
+              // Tentar próxima qualidade
+              tryCompress(index + 1);
+            }
+          };
+          
+          tryCompress(0);
         };
         
         img.onerror = reject;
@@ -79,9 +105,9 @@ export default function ImageUpload({
       return;
     }
 
-    // Validar tamanho original
-    if (file.size > MAX_FILE_SIZE * 2) {
-      setError('Imagem muito grande. Tamanho máximo: 4MB.');
+    // Validar tamanho original (aceitar até 10MB, mas será comprimida)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Imagem muito grande. Tamanho máximo original: 10MB.');
       return;
     }
 

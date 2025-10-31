@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import ImageUpload from './ImageUpload';
 
 // Tipos de conquista alinhados ao contexto de programação
 const ACHIEVEMENT_TYPES = [
@@ -229,15 +230,30 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
 
           {/* Imagem */}
           <div style={styles.field}>
-            <label style={styles.label}>URL da Imagem</label>
-            <input
-              name="image"
-              type="url"
+            <ImageUpload
               value={formData.image}
-              onChange={handleChange}
-              style={styles.input}
-              placeholder="https://exemplo.com/imagem.jpg"
+              onChange={(value) => setFormData({ ...formData, image: value })}
+              placeholder={t('select_image') || "Selecione uma imagem do computador"}
+              theme={theme}
             />
+            {!formData.image && (
+              <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: styles.label.color }}>
+                Ou{' '}
+                <input
+                  name="image"
+                  type="url"
+                  value={formData.image}
+                  onChange={handleChange}
+                  style={{
+                    ...styles.input,
+                    marginTop: '0.5rem',
+                    fontSize: '0.85rem',
+                    padding: '0.5rem'
+                  }}
+                  placeholder={t('example_url') || 'Cole uma URL de imagem'}
+                />
+              </div>
+            )}
           </div>
 
           {/* Tecnologias */}

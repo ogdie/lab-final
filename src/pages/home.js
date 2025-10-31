@@ -567,7 +567,7 @@ export default function Home() {
                         </div>
                         <div style={styles.statsSection}>
                             <div style={styles.statItem}>
-                                <span>👥 {t('connections')}</span>
+                                <span>👥 {t('followers_label')}</span>
                                 <strong style={styles.statValue}>{user?.followers?.length || 0}</strong>
                             </div>
                             <div style={styles.statItem}>

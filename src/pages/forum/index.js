@@ -527,6 +527,7 @@ export default function Forum() {
         isOpen={showTopicModal}
         onClose={() => setShowTopicModal(false)}
         onSubmit={handleCreateTopic}
+        theme={theme}
       />
 
       <Footer />
