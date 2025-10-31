@@ -294,7 +294,7 @@ const getStyles = (theme) => {
   const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
   const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
   const textSecondary = isDark ? '#b0b3b8' : '#666';
-  const backgroundPrimary = isDark ? '#18191a' : '#f0f2f5';
+  const backgroundPrimary = isDark ? '#18191a' : '#f3f2ef';
   
   return {
     container: {
