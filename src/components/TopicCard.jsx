@@ -10,7 +10,6 @@ export default function TopicCard({ topic }) {
       <p style={styles.desc}>{topic.description || t('no_description')}</p>
 
       <div style={styles.meta}>
-        <span>📝 {topic.category || t('no_category')}</span>
         <span>💬 {topic.posts?.length || 0} {t('posts_label')}</span>
       </div>
 

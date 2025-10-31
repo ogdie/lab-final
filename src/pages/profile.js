@@ -491,15 +491,21 @@ export default function Profile() {
                 </div>
               </div>
 
-              {currentUser && currentUser._id !== user._id && (
-                <div style={{ marginTop: "1rem" }}>
-                  <FollowButton
-                    userId={user._id}
-                    currentUser={currentUser}
-                    onFollow={handleFollow}
-                  />
-                </div>
-              )}
+          {currentUser && currentUser._id !== user._id && (
+            <div style={{ marginTop: "1rem", display: 'flex', gap: '0.75rem' }}>
+              <FollowButton
+                userId={user._id}
+                currentUser={currentUser}
+                onFollow={handleFollow}
+              />
+              <button
+                onClick={() => router.push(`/chat?userId=${user._id}`)}
+                style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
+              >
+                Enviar mensagem
+              </button>
+            </div>
+          )}
 
               {/* Conquistas */}
               {Array.isArray(user.achievements) && user.achievements.length > 0 && (
@@ -610,12 +616,18 @@ export default function Profile() {
                 </div>
 
                 {currentUser && currentUser._id !== user._id && (
-                  <div style={{ marginTop: "1rem" }}>
+                  <div style={{ marginTop: "1rem", display: 'flex', gap: '0.75rem' }}>
                     <FollowButton
                       userId={user._id}
                       currentUser={currentUser}
                       onFollow={handleFollow}
                     />
+                    <button
+                      onClick={() => router.push(`/chat?userId=${user._id}`)}
+                      style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
+                    >
+                      Enviar mensagem
+                    </button>
                   </div>
                 )}
               </div>
