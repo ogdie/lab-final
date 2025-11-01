@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 
 export default function TopicModal({ isOpen, onClose, onSubmit, theme = 'light' }) {
   const [name, setName] = useState('');

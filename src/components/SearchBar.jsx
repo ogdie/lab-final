@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaSearch } from 'react-icons/fa';
 
 export default function SearchBar({ onSearch }) {
   const [query, setQuery] = useState('');
@@ -20,7 +21,7 @@ export default function SearchBar({ onSearch }) {
         style={styles.input}
       />
       <button type="submit" style={styles.button}>
-        🔍
+        <FaSearch />
       </button>
     </form>
   );

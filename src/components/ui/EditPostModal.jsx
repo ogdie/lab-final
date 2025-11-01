@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 import MentionTextarea from './MentionTextarea';
 // Modal component for editing a post
 export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete, theme = 'light' }) {

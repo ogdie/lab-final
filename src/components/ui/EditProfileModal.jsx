@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 import ImageUpload from './ImageUpload';
 
 const INSTITUTIONS = [

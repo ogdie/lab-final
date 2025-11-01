@@ -1,4 +1,5 @@
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import { FaComment } from 'react-icons/fa';
 
 export default function TopicCard({ topic }) {
   const { t, theme } = useThemeLanguage();
@@ -10,7 +11,7 @@ export default function TopicCard({ topic }) {
       <p style={styles.desc}>{topic.description || t('no_description')}</p>
 
       <div style={styles.meta}>
-        <span>💬 {topic.posts?.length || 0} {t('posts_label')}</span>
+        <span><FaComment /> {topic.posts?.length || 0} {t('posts_label')}</span>
       </div>
 
       <a

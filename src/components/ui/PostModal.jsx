@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 import MentionTextarea from './MentionTextarea';
 import ImageUpload from './ImageUpload';
 

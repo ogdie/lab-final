@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthForm from '../components/AuthForm';
-import AlertModal from '../components/AlertModal';
+import AlertModal from '../components/ui/AlertModal';
 import { authAPI } from '../services/api';
 import { handleOAuthCallback, checkOAuthError } from '../utils/auth';
 

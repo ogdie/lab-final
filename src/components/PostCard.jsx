@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import CommentCard from "./CommentCard";
-import ShareButton from "./ShareButton";
-import EditPostModal from "./EditPostModal";
-import MentionTextarea from "./MentionTextarea";
+import ShareButton from "./ui/ShareButton";
+import EditPostModal from "./ui/EditPostModal";
+import MentionTextarea from "./ui/MentionTextarea";
+import UsersListModal from "./ui/UsersListModal";
 import { renderTextWithMentions } from "../utils/mentionRenderer";
 import { useThemeLanguage } from "../context/ThemeLanguageContext";
+import { FaThumbsUp, FaComment, FaShare, FaEllipsisH } from 'react-icons/fa';
 
 // Formata a diferença de tempo de forma resumida (estilo LinkedIn)
 function formatRelativeTime(dateInput) {
@@ -40,12 +42,12 @@ function formatRelativeTime(dateInput) {
   return date.toLocaleDateString("pt-BR");
 }
 
-// Ícones simples para ações (simulando Font Awesome/Lucide)
+// Ícones usando react-icons
 const ICONS = {
-  Like: "👍",
-  Comment: "💬",
-  Share: "🔁",
-  Dots: "···",
+  Like: <FaThumbsUp />,
+  Comment: <FaComment />,
+  Share: <FaShare />,
+  Dots: <FaEllipsisH />,
 };
 
 // CORREÇÃO: getStyles agora recebe o objeto 'post' como argumento
@@ -250,6 +252,7 @@ export default function PostCard({
   const [showComments, setShowComments] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showFullContent, setShowFullContent] = useState(false);
+  const [showLikesModal, setShowLikesModal] = useState(false);
   const MAX_PREVIEW_LENGTH = 300;
 
   const handleLike = () => {
@@ -267,9 +270,15 @@ export default function PostCard({
     }
   };
 
-  const isLiked = currentUser && post.likes?.includes(currentUser._id);
+  // Normalizar IDs para comparação correta - recalcular a cada render para garantir atualização
+  const normalizedLikes = (post.likes || []).map(id => String(id));
+  const currentUserId = currentUser?._id ? String(currentUser._id) : null;
+  const isLiked = currentUserId && normalizedLikes.includes(currentUserId);
   const isOwnPost =
-    currentUser && currentUser._id === (post.author?._id || post.author);
+    currentUser && String(currentUser._id) === String(post.author?._id || post.author);
+  
+  // Calcular contagem de comentários (incluindo replies)
+  const commentsCount = (post.comments || []).length;
 
   const displayContent = post.content || "";
   const shouldTruncate = displayContent.length > MAX_PREVIEW_LENGTH;
@@ -359,13 +368,33 @@ export default function PostCard({
       )}
 
       <div style={styles.statsBar}>
-        <span>
-          {post.likes?.length || 0} {ICONS.Like}
+        <span
+          onClick={() => {
+            if (normalizedLikes.length > 0) {
+              setShowLikesModal(true);
+            }
+          }}
+          style={{
+            cursor: normalizedLikes.length > 0 ? 'pointer' : 'default',
+            userSelect: 'none',
+          }}
+        >
+          {normalizedLikes.length} {ICONS.Like}
         </span>
         <span>
-          {post.comments?.length || 0} {t("comments")}
+          {commentsCount} {t("comments")}
         </span>
       </div>
+
+      {showLikesModal && (
+        <UsersListModal
+          isOpen={showLikesModal}
+          onClose={() => setShowLikesModal(false)}
+          title={t('likes') || 'Curtidas'}
+          userIds={normalizedLikes}
+          theme={theme}
+        />
+      )}
 
       <div style={styles.actions}>
         <button
@@ -407,6 +436,7 @@ export default function PostCard({
             topicId={topicId}
             style={styles.actionButton}
             icon={ICONS.Share}
+            theme={theme}
           />
         </div>
       </div>

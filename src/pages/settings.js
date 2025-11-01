@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useThemeLanguage } from '../context/ThemeLanguageContext'; 
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import EditProfileModal from '../components/EditProfileModal';
-import AlertModal from '../components/AlertModal';
+import Navbar from '../components/ui/Navbar';
+import Footer from '../components/ui/Footer';
+import EditProfileModal from '../components/ui/EditProfileModal';
+import AlertModal from '../components/ui/AlertModal';
 import { usersAPI } from '../services/api';
 
 // --- Função de Estilo (getStyles) ---
@@ -171,26 +171,43 @@ export default function Settings() {
     const showAlert = useCallback(({ message, title }) => { setAlert({ isOpen: true, message, title }); }, []);
     const closeAlert = useCallback(() => { setAlert({ isOpen: false, message: '', title: 'Aviso' }); }, []);
 
+    const [searchPaused, setSearchPaused] = useState(false);
+    const [lastSearchQuery, setLastSearchQuery] = useState('');
+
     const handleSearch = useCallback(async (query) => {
         if (!query?.trim()) {
             setSearchResults([]);
             setShowSearchResults(false);
+            setSearchPaused(false);
+            setLastSearchQuery('');
             return;
+        }
+
+        // Se a pesquisa está pausada e a query não mudou, não fazer nada
+        if (searchPaused && query === lastSearchQuery) {
+            return;
+        }
+
+        // Se a query mudou, reativar a pesquisa
+        if (query !== lastSearchQuery) {
+            setSearchPaused(false);
         }
 
         try {
             const users = await usersAPI.searchUsers(query);
             setSearchResults(Array.isArray(users) ? users : []);
             setShowSearchResults(true);
+            setLastSearchQuery(query);
         } catch (err) {
             console.error('Error searching users:', err);
             setSearchResults([]);
         }
-    }, []);
+    }, [searchPaused, lastSearchQuery]);
 
     const handleCloseSearch = useCallback(() => {
         setShowSearchResults(false);
         setSearchResults([]);
+        setSearchPaused(true); // Pausar a pesquisa para evitar reabertura automática
     }, []);
     
     // Carrega usuário e verifica autenticação (Lógica inalterada)
@@ -220,6 +237,7 @@ export default function Settings() {
 
     
     const styles = getStyles(theme);
+    const isDark = theme === 'dark';
 
     if (loading) {
         return (
@@ -246,38 +264,104 @@ export default function Settings() {
             />
 
             {showSearchResults && (
-                <div style={{ position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)', background: 'white', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', zIndex: 1000, width: '90%', maxWidth: '500px', maxHeight: '400px', overflowY: 'auto' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid #e0e0e0', background: '#f8f9fa' }}>
-                        <h3>{t('searchResults')}</h3>
-                        <button onClick={handleCloseSearch} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#666' }}>
-                            ✖
-                        </button>
-                    </div>
+                <>
+                    {/* Overlay para fechar ao clicar fora */}
+                    <div 
+                        style={{ 
+                            position: 'fixed', 
+                            top: 0, 
+                            left: 0, 
+                            right: 0, 
+                            bottom: 0, 
+                            zIndex: 999 
+                        }}
+                        onClick={handleCloseSearch}
+                    />
+                    <div 
+                        style={{ 
+                            position: 'fixed', 
+                            top: '80px', 
+                            left: '50%', 
+                            transform: 'translateX(-50%)', 
+                            background: isDark ? '#2c2f33' : '#ffffff', 
+                            border: `1px solid ${isDark ? '#3e4042' : '#e0e0e0'}`, 
+                            borderRadius: '8px', 
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', 
+                            zIndex: 1001, 
+                            width: '90%', 
+                            maxWidth: '500px', 
+                            maxHeight: '400px', 
+                            overflowY: 'auto' 
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center', 
+                            padding: '1rem', 
+                            borderBottom: `1px solid ${isDark ? '#3e4042' : '#e0e0e0'}`, 
+                            background: isDark ? '#3a3b3c' : '#f8f9fa' 
+                        }}>
+                            <h3 style={{ color: isDark ? '#e4e6eb' : '#1d2129', margin: 0 }}>
+                                {t('searchResults')}
+                            </h3>
+                            <button 
+                                onClick={handleCloseSearch} 
+                                style={{ 
+                                    background: 'none', 
+                                    border: 'none', 
+                                    fontSize: '1.2rem', 
+                                    cursor: 'pointer', 
+                                    color: isDark ? '#b0b3b8' : '#666' 
+                                }}
+                            >
+                                ✖
+                            </button>
+                        </div>
                     {searchResults.length === 0 ? (
-                        <p style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>{t('noUsersFound')}</p>
+                        <p style={{ padding: '2rem', textAlign: 'center', color: isDark ? '#b0b3b8' : '#666' }}>
+                            {t('noUsersFound')}
+                        </p>
                     ) : (
                         searchResults.map((userResult) => (
-                            <div key={userResult._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderBottom: '1px solid #f0f0f0' }}>
+                            <div 
+                                key={userResult._id} 
+                                style={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: '1rem', 
+                                    padding: '1rem', 
+                                    borderBottom: `1px solid ${isDark ? '#3e4042' : '#f0f0f0'}` 
+                                }}
+                            >
                                 <img
                                     src={userResult.profilePicture || '/default-avatar.svg'}
                                     alt={userResult.name || 'Usuário'}
                                     style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }}
                                 />
                                 <div style={{ flex: 1 }}>
-                                    <h4>{userResult.name || 'Nome indisponível'}</h4>
-                                    <p>{userResult.email || 'Email indisponível'}</p>
-                                    <p>⭐ {userResult.xp || 0} XP</p>
+                                    <h4 style={{ color: isDark ? '#e4e6eb' : '#1d2129', margin: 0 }}>
+                                        {userResult.name || 'Nome indisponível'}
+                                    </h4>
+                                    <p style={{ color: isDark ? '#b0b3b8' : '#606770', margin: '2px 0', fontSize: '0.85rem' }}>
+                                        {userResult.email || 'Email indisponível'}
+                                    </p>
+                                    <p style={{ color: isDark ? '#b0b3b8' : '#606770', margin: '2px 0', fontSize: '0.85rem' }}>
+                                        ⭐ {userResult.xp || 0} XP
+                                    </p>
                                 </div>
                                 <button
                                     onClick={() => router.push(`/profile?id=${userResult._id}`)}
                                     style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
                                 >
-                                    Ver Perfil
+                                    {t('viewProfile') || 'Ver Perfil'}
                                 </button>
                             </div>
                         ))
                     )}
                 </div>
+                </>
             )}
 
             <div style={styles.content}>

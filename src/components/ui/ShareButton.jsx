@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import AlertModal from "./AlertModal";
-import { useThemeLanguage } from "../context/ThemeLanguageContext";
+import { useThemeLanguage } from "../../context/ThemeLanguageContext";
+import { FaShare } from 'react-icons/fa';
 
 // Função de estilos dinâmicos baseada no tema
 const getStyles = (theme) => {
@@ -66,7 +67,7 @@ const getStyles = (theme) => {
 export default function ShareButton({
   post,
   topicId = null,
-  icon = "🔁",
+  icon = <FaShare />,
   style = {},
   theme,
 }) {
@@ -209,6 +210,7 @@ export default function ShareButton({
         message={t("link_copied")}
         title={t("success")}
         showCancel={false}
+        theme={appliedTheme}
       />
     </div>
   );
