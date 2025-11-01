@@ -29,10 +29,13 @@ const getStyles = (theme) => {
       alignItems: "center",
       justifyContent: "center",
       gap: "8px",
-      padding: "8px 0",
+      padding: "8px 12px",
+      margin: "0",
       borderRadius: "6px",
-      width: "100%",
-      transition: "background-color 0.2s, color 0.2s",
+      flex: 1,
+      minHeight: "36px",
+      transition: "background-color 0.2s ease, color 0.2s ease",
+      position: "relative",
     },
     shareMenu: {
       position: "absolute",
@@ -155,7 +158,7 @@ export default function ShareButton({
   }, [showAlert]);
 
   return (
-    <div style={styles.shareDropdown} ref={dropdownRef}>
+    <div style={{ ...styles.shareDropdown, flex: 1 }} ref={dropdownRef}>
       <button
         style={{
           ...styles.shareButton,

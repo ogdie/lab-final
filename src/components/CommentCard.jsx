@@ -42,6 +42,7 @@ const getStyles = (theme) => {
     const backgroundComment = isDark ? '#3a3b3c' : '#f0f2f5'; 
     const blueAction = '#4F46E5';
     const redLike = '#6860f9ff';
+    const hoverBg = isDark ? '#4a4b4c' : '#e4e6e8';
 
     return {
         commentContainer: {
@@ -130,8 +131,11 @@ const getStyles = (theme) => {
             fontSize: '0.75rem',
             fontWeight: '600',
             color: textSecondary,
-            padding: '4px 0',
-            transition: 'color 0.1s',
+            padding: '4px 8px',
+            margin: '0',
+            borderRadius: '4px',
+            transition: 'background-color 0.2s ease, color 0.2s ease',
+            position: 'relative',
         },
         actionButtonLiked: {
             color: redLike,
@@ -147,9 +151,18 @@ const getStyles = (theme) => {
             cursor: 'pointer',
             fontSize: '0.9rem',
             color: textSecondary,
-            padding: '0 4px',
-            transition: 'color 0.1s',
+            padding: '4px 6px',
+            margin: '0',
+            borderRadius: '4px',
+            width: '24px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background-color 0.2s ease, color 0.2s ease',
         },
+        _hoverBg: hoverBg,
+        _activeColor: blueAction,
     };
 };
 
@@ -162,6 +175,10 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, on
     const [editText, setEditText] = useState(comment.content || '');
     const [showReplyForm, setShowReplyForm] = useState(false);
     const [replyText, setReplyText] = useState('');
+    
+    // Helper para cores consistentes
+    const isDark = theme === 'dark';
+    const textSecondary = isDark ? '#b0b3b8' : '#606770';
 
     const isLiked = currentUser && comment.likes?.map(id => String(id)).includes(String(currentUser._id));
     const canModify = currentUser && (comment.author?._id === currentUser._id || String(comment.author?._id) === String(currentUser._id));
@@ -254,6 +271,16 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, on
                     <button 
                         onClick={handleLike}
                         style={{ ...styles.actionButton, ...(isLiked && styles.actionButtonLiked) }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = styles._hoverBg;
+                            e.currentTarget.style.color = styles._activeColor;
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = isLiked 
+                                ? styles.actionButtonLiked.color 
+                                : textSecondary;
+                        }}
                     >
                         {t('like')} ({comment.likes?.length || 0})
                     </button>
@@ -262,6 +289,14 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, on
                         <button 
                             onClick={handleReply}
                             style={styles.actionButton}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = styles._hoverBg;
+                                e.currentTarget.style.color = styles._activeColor;
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.color = textSecondary;
+                            }}
                         >
                             {t('reply')}
                         </button>
@@ -269,10 +304,31 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, on
 
                     {canModify && (
                         <>
-                            <button onClick={() => setIsEditing(true)} style={styles.actionButton}>
+                            <button 
+                                onClick={() => setIsEditing(true)} 
+                                style={styles.actionButton}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = styles._hoverBg;
+                                    e.currentTarget.style.color = styles._activeColor;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                    e.currentTarget.style.color = textSecondary;
+                                }}
+                            >
                                 {t('edit_post')}
                             </button>
-                            <button onClick={handleDelete} style={styles.deleteButton} title={t('delete')}>
+                            <button 
+                                onClick={handleDelete} 
+                                style={styles.deleteButton} 
+                                title={t('delete')}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = styles._hoverBg;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                }}
+                            >
                                 <FaTimes />
                             </button>
                         </>

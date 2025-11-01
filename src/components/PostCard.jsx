@@ -116,12 +116,16 @@ const getStyles = (theme, post = {}) => {
       fontSize: "1.25rem",
       cursor: "pointer",
       color: textSecondary,
-      padding: "4px 8px",
+      padding: "8px",
+      margin: "-4px",
       borderRadius: "50%",
-      transition: "background-color 0.2s",
-      "&:hover": {
-        backgroundColor: isDark ? "#3a3b3c" : "#f0f0f0",
-      },
+      width: "32px",
+      height: "32px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      transition: "background-color 0.2s ease",
+      flexShrink: 0,
     },
     content: {
       fontSize: "0.95rem",
@@ -160,9 +164,10 @@ const getStyles = (theme, post = {}) => {
     actions: {
       display: "flex",
       justifyContent: "space-around",
-      padding: "4px 0",
+      padding: "4px 8px",
       borderTop: `1px solid ${borderSubtle}`,
       borderBottom: `1px solid ${borderSubtle}`,
+      gap: "4px",
     },
     // UPDATED: actionButton now mirrors ShareButton behavior (same visual style)
     actionButton: {
@@ -176,11 +181,13 @@ const getStyles = (theme, post = {}) => {
       justifyContent: "center",
       gap: "8px",
       color: textSecondary,
-      padding: "8px 0",
+      padding: "8px 12px",
+      margin: "0",
       fontWeight: "600",
-      borderRadius: "6px", // match share button
-      width: "100%",
-      transition: "background-color 0.2s, color 0.2s",
+      borderRadius: "6px",
+      minHeight: "36px",
+      transition: "background-color 0.2s ease, color 0.2s ease",
+      position: "relative",
     },
     actionButtonLiked: {
       color: redLike,
@@ -344,6 +351,12 @@ export default function PostCard({
             onClick={() => setShowEditModal(true)}
             style={styles.dotsButton}
             aria-label="Opções do post"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = hoverBg;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
           >
             {ICONS.Dots}
           </button>
@@ -430,15 +443,13 @@ export default function PostCard({
         >
           {ICONS.Comment} {t("comment")}
         </button>
-        <div style={{ flex: 1 }}>
-          <ShareButton
-            post={post}
-            topicId={topicId}
-            style={styles.actionButton}
-            icon={ICONS.Share}
-            theme={theme}
-          />
-        </div>
+        <ShareButton
+          post={post}
+          topicId={topicId}
+          style={styles.actionButton}
+          icon={ICONS.Share}
+          theme={theme}
+        />
       </div>
 
       {showComments && (
