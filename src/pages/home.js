@@ -8,7 +8,7 @@ import PostCard from '../components/PostCard';
 import PostModal from '../components/ui/PostModal';
 import AlertModal from '../components/ui/AlertModal';
 import { postsAPI, usersAPI, commentsAPI } from '../services/api';
-import { FaTimes, FaUsers, FaStar } from 'react-icons/fa';
+import { FaTimes, FaUsers, FaUserPlus } from 'react-icons/fa';
 
 const getStyles = (theme) => {
     const isDark = theme === 'dark';
@@ -525,6 +525,18 @@ export default function Home() {
         setAlert(prev => ({ ...prev, isOpen: false }));
     };
     
+    const loadCurrentUser = useCallback(async (userId) => {
+        try {
+            const freshUser = await usersAPI.getById(userId);
+            if (freshUser?._id) {
+                setUser(freshUser);
+                localStorage.setItem('user', JSON.stringify(freshUser));
+            }
+        } catch (err) {
+            console.error('Error loading current user:', err);
+        }
+    }, []);
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
@@ -534,8 +546,10 @@ export default function Home() {
 
         if (!token || !parsedUser?._id) { router.push('/'); return; }
 
-        setUser(parsedUser);
-    }, [router]);
+        // Buscar dados atualizados da API, como no profile.js
+        setUser(parsedUser); // Set inicial para não ficar sem dados
+        loadCurrentUser(parsedUser._id);
+    }, [router, loadCurrentUser]);
 
     // Recarregar posts quando o user mudar (para atualizar a lista de following)
     useEffect(() => {
@@ -639,24 +653,30 @@ export default function Home() {
     }, [user?._id]); // Remover posts das dependências para evitar loops
 
     useEffect(() => {
-        const handleStorageChange = () => {
+        if (!user?._id) return;
+
+        const handleStorageChange = async () => {
             const userData = localStorage.getItem('user');
-            if (userData) {
+            if (userData && user?._id) {
                 try {
                     const parsedUser = JSON.parse(userData);
-                    setUser(prevUser => {
-                        // Se o following mudou, recarregar posts
-                        const prevFollowing = prevUser?.following?.map(id => String(id)) || [];
-                        const newFollowing = parsedUser?.following?.map(id => String(id)) || [];
-                        const followingChanged = JSON.stringify(prevFollowing.sort()) !== JSON.stringify(newFollowing.sort());
-                        
-                        if (followingChanged) {
-                            // Recarregar posts quando seguir/deixar de seguir alguém
-                            setTimeout(() => loadPosts(), 100);
-                        }
-                        
-                        return parsedUser;
-                    });
+                    // Buscar dados atualizados da API ao invés de usar apenas o localStorage
+                    const freshUser = await usersAPI.getById(user._id);
+                    if (freshUser?._id) {
+                        setUser(prevUser => {
+                            // Se o following mudou, recarregar posts
+                            const prevFollowing = prevUser?.following?.map(id => String(id)) || [];
+                            const newFollowing = freshUser?.following?.map(id => String(id)) || [];
+                            const followingChanged = JSON.stringify(prevFollowing.sort()) !== JSON.stringify(newFollowing.sort());
+                            
+                            if (followingChanged) {
+                                // Recarregar posts quando seguir/deixar de seguir alguém
+                                setTimeout(() => loadPosts(), 100);
+                            }
+                            
+                            return freshUser;
+                        });
+                    }
                 } catch (e) {
                     console.error('Invalid user data:', e);
                 }
@@ -666,13 +686,13 @@ export default function Home() {
         window.addEventListener('storage', handleStorageChange);
         const interval = setInterval(() => {
             handleStorageChange();
-        }, 1000);
+        }, 3000); // Aumentar intervalo para 3 segundos para evitar muitas requisições
 
         return () => {
             window.removeEventListener('storage', handleStorageChange);
             clearInterval(interval);
         };
-    }, []);
+    }, [user?._id, loadPosts]);
 
     if (loading) {
         return (
@@ -790,8 +810,8 @@ export default function Home() {
                                 <strong style={styles.statValue}>{user?.followers?.length || 0}</strong>
                             </div>
                             <div style={styles.statItem}>
-                                <span><FaStar /> XP</span>
-                                <strong style={styles.statValue}>{user?.xp || 0}</strong>
+                                <span><FaUserPlus /> {t('following_label')}</span>
+                                <strong style={styles.statValue}>{user?.following?.length || 0}</strong>
                             </div>
                         </div>
                     </div>
