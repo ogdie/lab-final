@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useThemeLanguage } from '../../context/ThemeLanguageContext';
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
+import Navbar from '../../components/ui/Navbar';
+import Footer from '../../components/ui/Footer';
 import PostCard from '../../components/PostCard';
-import BackButton from '../../components/BackButton';
+import BackButton from '../../components/ui/BackButton';
 import { postsAPI, usersAPI, forumAPI, commentsAPI } from '../../services/api';
 
 const getStyles = (theme) => {

@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer";
+import Navbar from "../../components/ui/Navbar";
+import Footer from "../../components/ui/Footer";
 import PostCard from "../../components/PostCard";
-import AlertModal from "../../components/AlertModal";
-import MentionTextarea from "../../components/MentionTextarea";
-import ImageUpload from "../../components/ImageUpload";
+import AlertModal from "../../components/ui/AlertModal";
+import MentionTextarea from "../../components/ui/MentionTextarea";
+import ImageUpload from "../../components/ui/ImageUpload";
 import { forumAPI, postsAPI, usersAPI, commentsAPI } from "../../services/api";
 import { useThemeLanguage } from "../../context/ThemeLanguageContext";
-import BackButton from "../../components/BackButton";
+import BackButton from "../../components/ui/BackButton";
+import { FaTimes } from 'react-icons/fa';
 
 const getStyles = (theme) => {
   const isDark = theme === 'dark';
@@ -53,6 +54,8 @@ export default function TopicPage() {
   const [image, setImage] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [searchPaused, setSearchPaused] = useState(false);
+  const [lastSearchQuery, setLastSearchQuery] = useState('');
 
   const topicId = useMemo(() => {
     if (typeof window === 'undefined') return '';
@@ -259,12 +262,26 @@ export default function TopicPage() {
     if (!query?.trim()) {
       setSearchResults([]);
       setShowSearchResults(false);
+      setSearchPaused(false);
+      setLastSearchQuery('');
       return;
     }
+
+    // Se a pesquisa está pausada e a query não mudou, não fazer nada
+    if (searchPaused && query === lastSearchQuery) {
+      return;
+    }
+
+    // Se a query mudou, reativar a pesquisa
+    if (query !== lastSearchQuery) {
+      setSearchPaused(false);
+    }
+
     try {
       const users = await usersAPI.searchUsers(query);
       setSearchResults(Array.isArray(users) ? users : []);
       setShowSearchResults(true);
+      setLastSearchQuery(query);
     } catch (err) {
       console.error('Error searching users:', err);
       setSearchResults([]);
@@ -274,6 +291,7 @@ export default function TopicPage() {
   const handleCloseSearch = () => {
     setShowSearchResults(false);
     setSearchResults([]);
+    setSearchPaused(true); // Pausar a pesquisa para evitar reabertura automática
   };
 
   return (
@@ -284,26 +302,110 @@ export default function TopicPage() {
           <BackButton to="/forum" />
         </div>
         {showSearchResults && (
-          <div style={{ position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '90%', maxWidth: 500, maxHeight: 400, overflowY: 'auto', background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid #e0e0e0', background: '#f8f9fa' }}>
-              <h3 style={{ margin: 0 }}>Resultados da pesquisa</h3>
-              <button onClick={handleCloseSearch} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#606770' }}>✖</button>
-            </div>
-            {searchResults.length === 0 ? (
-              <p style={{ padding: '1rem' }}>Nenhum usuário encontrado.</p>
-            ) : (
-              searchResults.map((u) => (
-                <div key={u._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderBottom: '1px solid #e0e0e0' }}>
-                  <img src={u.profilePicture || '/default-avatar.svg'} alt={u.name} style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} />
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: 0 }}>{u.name}</h4>
-                    <p style={{ margin: '2px 0 0 0', color: '#606770', fontSize: '0.85rem' }}>{u.email}</p>
+          <>
+            {/* Overlay para fechar ao clicar fora */}
+            <div 
+              style={{ 
+                position: 'fixed', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                zIndex: 999 // Lower than search modal
+              }}
+              onClick={handleCloseSearch}
+            />
+            <div 
+              style={{ 
+                position: 'fixed', 
+                top: 80, 
+                left: '50%', 
+                transform: 'translateX(-50%)', 
+                zIndex: 1001, // Higher than overlay
+                width: '90%', 
+                maxWidth: 500, 
+                maxHeight: 400, 
+                overflowY: 'auto', 
+                background: theme === 'dark' ? '#2c2f33' : '#fff', 
+                border: `1px solid ${theme === 'dark' ? '#3e4042' : '#e0e0e0'}`, 
+                borderRadius: 8, 
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)' 
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                padding: '1rem', 
+                borderBottom: `1px solid ${theme === 'dark' ? '#3e4042' : '#e0e0e0'}`, 
+                background: theme === 'dark' ? '#3a3b3c' : '#f8f9fa' 
+              }}>
+                <h3 style={{ margin: 0, color: theme === 'dark' ? '#e4e6eb' : '#1d2129' }}>
+                  {t('search_results') || 'Resultados da pesquisa'}
+                </h3>
+                <button 
+                  onClick={handleCloseSearch} 
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    fontSize: '1.2rem', 
+                    cursor: 'pointer', 
+                    color: theme === 'dark' ? '#b0b3b8' : '#606770' 
+                  }}
+                >
+                  <FaTimes />
+                </button>
+              </div>
+              {searchResults.length === 0 ? (
+                <p style={{ padding: '1rem', color: theme === 'dark' ? '#b0b3b8' : '#606770' }}>
+                  {t('no_users_found') || 'Nenhum usuário encontrado.'}
+                </p>
+              ) : (
+                searchResults.map((u) => (
+                  <div 
+                    key={u._id} 
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '1rem', 
+                      padding: '1rem', 
+                      borderBottom: `1px solid ${theme === 'dark' ? '#3e4042' : '#e0e0e0'}` 
+                    }}
+                  >
+                    <img 
+                      src={u.profilePicture || '/default-avatar.svg'} 
+                      alt={u.name} 
+                      style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} 
+                    />
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ margin: 0, color: theme === 'dark' ? '#e4e6eb' : '#1d2129' }}>
+                        {u.name}
+                      </h4>
+                      <p style={{ margin: '2px 0 0 0', color: theme === 'dark' ? '#b0b3b8' : '#606770', fontSize: '0.85rem' }}>
+                        {u.email}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => router.push(`/profile?id=${u._id}`)} 
+                      style={{ 
+                        padding: '0.5rem 1rem', 
+                        background: '#4F46E5', 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: 24, 
+                        cursor: 'pointer', 
+                        fontSize: '0.9rem', 
+                        fontWeight: 600 
+                      }}
+                    >
+                      {t('view_profile') || 'Ver perfil'}
+                    </button>
                   </div>
-                  <button onClick={() => router.push(`/profile?id=${u._id}`)} style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: 24, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>Ver perfil</button>
-                </div>
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          </>
         )}
         {loading && <div style={styles.loading}>{t('loading')}</div>}
         {!loading && error && <div style={styles.error}>{error}</div>}

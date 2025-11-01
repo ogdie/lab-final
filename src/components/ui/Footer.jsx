@@ -1,4 +1,4 @@
-import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 
 export default function Footer() {
   const { t } = useThemeLanguage();
