@@ -1,4 +1,4 @@
-import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 
 export default function FollowButton({ userId, currentUser, onFollow }) {
   const isFollowing = currentUser?.following?.includes(userId);

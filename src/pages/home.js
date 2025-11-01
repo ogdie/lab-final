@@ -1,13 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useThemeLanguage } from '../context/ThemeLanguageContext'; 
 
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Navbar from '../components/ui/Navbar';
+import Footer from '../components/ui/Footer';
 import PostCard from '../components/PostCard';
-import PostModal from '../components/PostModal';
-import AlertModal from '../components/AlertModal';
+import PostModal from '../components/ui/PostModal';
+import AlertModal from '../components/ui/AlertModal';
 import { postsAPI, usersAPI, commentsAPI } from '../services/api';
+import { FaTimes, FaUsers, FaStar } from 'react-icons/fa';
 
 const getStyles = (theme) => {
     const isDark = theme === 'dark';
@@ -244,6 +245,8 @@ export default function Home() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
+    const [searchPaused, setSearchPaused] = useState(false);
+    const [lastSearchQuery, setLastSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [alert, setAlert] = useState({ 
@@ -253,28 +256,55 @@ export default function Home() {
         onConfirm: null,
         showCancel: false
     });
+    
+    // Ref para manter referência estável dos posts para o polling
+    const postsRef = useRef([]);
 
-    const loadPosts = async () => {
+    const loadPosts = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
             const data = await postsAPI.getAll();
             const list = Array.isArray(data) ? data : [];
-            list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            setPosts(list);
+            
+            // Filtrar posts para mostrar apenas os de usuários que o usuário está seguindo
+            // Incluir também os próprios posts do usuário
+            const followingIds = user?.following?.map(id => String(id)) || [];
+            const currentUserId = user?._id ? String(user._id) : null;
+            
+            const filteredList = list.filter(post => {
+                const authorId = post.author?._id || post.author;
+                const authorIdStr = authorId ? String(authorId) : null;
+                
+                // Incluir se for post do próprio usuário ou se o autor está sendo seguido
+                return authorIdStr && (
+                    authorIdStr === currentUserId || 
+                    followingIds.includes(authorIdStr)
+                );
+            });
+            
+            filteredList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setPosts(filteredList);
+            postsRef.current = filteredList; // Atualizar ref também
         } catch (err) {
             console.error('Error loading posts:', err);
             setError('Não foi possível carregar os posts.');
         } finally {
             setLoading(false);
         }
-    };
+    }, [user?._id, user?.following]);
 
     const handleCreatePost = async (data) => {
         if (!user?._id) return;
         try {
             const created = await postsAPI.create({ ...data, author: user._id });
-            setPosts(prev => [{ ...(created || {}), author: created?.author || user }, ...prev]);
+            // Adicionar o novo post no início da lista (já que é do próprio usuário, sempre aparece)
+            const newPost = { ...(created || {}), author: created?.author || user };
+            setPosts(prev => {
+                const updated = [newPost, ...prev];
+                postsRef.current = updated; // Atualizar ref também
+                return updated;
+            });
         } catch (err) {
             showAlert({ 
                 message: 'Erro ao criar post: ' + (err.message || 'Erro desconhecido'), 
@@ -291,9 +321,26 @@ export default function Home() {
             // Normalizar likes para strings para garantir compatibilidade
             const normalizedLikes = (updatedPost.likes || []).map(id => String(id));
             setPosts(prevPosts => 
-                prevPosts.map(p => 
-                    p._id === postId ? { ...p, likes: normalizedLikes } : p
-                )
+                prevPosts.map(p => {
+                    // Comparar IDs como strings para garantir match
+                    const currentPostId = p._id ? String(p._id) : null;
+                    const targetPostId = postId ? String(postId) : null;
+                    
+                    if (currentPostId === targetPostId) {
+                        // Criar um novo objeto completo para forçar re-render do React
+                        // Sempre criar novo array, mesmo que vazio, para garantir nova referência
+                        const updatedPost = { 
+                            ...p, 
+                            likes: [...normalizedLikes] // Nova referência de array sempre
+                        };
+                        // Atualizar ref também
+                        postsRef.current = postsRef.current.map(p => 
+                            String(p._id) === targetPostId ? updatedPost : p
+                        );
+                        return updatedPost;
+                    }
+                    return p;
+                })
             );
         } catch (err) {
             console.error('Error liking post:', err);
@@ -310,15 +357,30 @@ export default function Home() {
             // Isso mantém o scroll no lugar, como nas curtidas
             setPosts(prevPosts => 
                 prevPosts.map(post => {
-                    if (post._id === postId) {
+                    // Comparar IDs como strings para garantir match
+                    const currentPostId = post._id ? String(post._id) : null;
+                    const targetPostId = postId ? String(postId) : null;
+                    
+                    if (currentPostId === targetPostId) {
                         // Garantir que o novo comentário tem a estrutura correta
                         const commentWithDefaults = {
                             ...newComment,
+                            author: newComment.author || user,
                             likes: newComment.likes || [],
                             createdAt: newComment.createdAt || new Date().toISOString()
                         };
-                        const updatedComments = [...(post.comments || []), commentWithDefaults];
-                        return { ...post, comments: updatedComments };
+                        // Criar novos arrays e objetos para forçar re-render do React
+                        const existingComments = post.comments || [];
+                        const updatedComments = [...existingComments, commentWithDefaults];
+                        const updatedPost = { 
+                            ...post, 
+                            comments: updatedComments // Sempre nova referência de array
+                        };
+                        // Atualizar ref também
+                        postsRef.current = postsRef.current.map(p => 
+                            String(p._id) === targetPostId ? updatedPost : p
+                        );
+                        return updatedPost;
                     }
                     return post;
                 })
@@ -334,15 +396,29 @@ export default function Home() {
             const updatedComment = await commentsAPI.like(commentId, user._id);
             // Atualizar apenas o comentário específico no estado, sem recarregar todos os posts
             const normalizedLikes = (updatedComment.likes || []).map(id => String(id));
+            const commentIdStr = String(commentId);
+            
             setPosts(prevPosts => 
-                prevPosts.map(post => ({
-                    ...post,
-                    comments: (post.comments || []).map(comment =>
-                        comment._id === commentId
-                            ? { ...comment, likes: normalizedLikes }
-                            : comment
-                    )
-                }))
+                prevPosts.map(post => {
+                    const hasMatchingComment = (post.comments || []).some(
+                        c => String(c._id) === commentIdStr
+                    );
+                    
+                    if (hasMatchingComment) {
+                        // Criar novos arrays e objetos para forçar re-render
+                        return {
+                            ...post,
+                            comments: (post.comments || []).map(comment => {
+                                const currentCommentId = comment._id ? String(comment._id) : null;
+                                if (currentCommentId === commentIdStr) {
+                                    return { ...comment, likes: [...normalizedLikes] }; // Nova referência
+                                }
+                                return comment;
+                            })
+                        };
+                    }
+                    return post;
+                })
             );
         } catch (err) {
             console.error('Error liking comment:', err);
@@ -409,13 +485,26 @@ export default function Home() {
         if (!query?.trim()) {
             setSearchResults([]);
             setShowSearchResults(false);
+            setSearchPaused(false);
+            setLastSearchQuery('');
             return;
+        }
+
+        // Se a pesquisa está pausada e a query não mudou, não fazer nada
+        if (searchPaused && query === lastSearchQuery) {
+            return;
+        }
+
+        // Se a query mudou, reativar a pesquisa
+        if (query !== lastSearchQuery) {
+            setSearchPaused(false);
         }
 
         try {
             const users = await usersAPI.searchUsers(query);
             setSearchResults(Array.isArray(users) ? users : []);
             setShowSearchResults(true);
+            setLastSearchQuery(query);
         } catch (err) {
             console.error('Error searching users:', err);
             setSearchResults([]);
@@ -425,6 +514,7 @@ export default function Home() {
     const handleCloseSearch = () => {
         setShowSearchResults(false);
         setSearchResults([]);
+        setSearchPaused(true); // Pausar a pesquisa para evitar reabertura automática
     };
 
     const showAlert = ({ message, title = 'Aviso', onConfirm = null, showCancel = false }) => {
@@ -445,8 +535,108 @@ export default function Home() {
         if (!token || !parsedUser?._id) { router.push('/'); return; }
 
         setUser(parsedUser);
-        loadPosts();
     }, [router]);
+
+    // Recarregar posts quando o user mudar (para atualizar a lista de following)
+    useEffect(() => {
+        if (user?._id) {
+            loadPosts();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?._id, JSON.stringify(user?.following?.sort() || [])]);
+
+    // Atualizar ref quando posts mudarem
+    useEffect(() => {
+        postsRef.current = posts;
+    }, [posts]);
+
+    // Polling para atualizar posts quando outras pessoas curtem/comentam
+    useEffect(() => {
+        if (!user?._id) return;
+
+        const updatePostsFromServer = async () => {
+            const currentPosts = postsRef.current; // Usar ref para evitar dependência de posts
+            if (currentPosts.length === 0) return;
+
+            try {
+                // Para cada post no estado, buscar versão atualizada do servidor
+                const updatePromises = currentPosts.map(async (currentPost) => {
+                    try {
+                        const updatedPost = await postsAPI.getById(currentPost._id);
+                        if (!updatedPost) return currentPost;
+
+                        // Comparar se houve mudanças em likes ou comments
+                        const currentLikesCount = (currentPost.likes || []).length;
+                        const updatedLikesCount = (updatedPost.likes || []).length;
+                        const currentCommentsCount = (currentPost.comments || []).length;
+                        const updatedCommentsCount = (updatedPost.comments || []).length;
+
+                        // Se houve mudanças, atualizar o post
+                        if (
+                            currentLikesCount !== updatedLikesCount ||
+                            currentCommentsCount !== updatedCommentsCount
+                        ) {
+                            // Normalizar likes para strings
+                            const normalizedLikes = (updatedPost.likes || []).map(id => String(id));
+                            
+                            // Preservar estrutura do autor (pode vir como objeto populado ou ID)
+                            const author = updatedPost.author || currentPost.author;
+                            
+                            return {
+                                ...currentPost,
+                                author: author, // Manter autor do servidor ou atual
+                                likes: [...normalizedLikes],
+                                comments: updatedPost.comments || currentPost.comments || []
+                            };
+                        }
+                        
+                        return currentPost;
+                    } catch (err) {
+                        console.error(`Error updating post ${currentPost._id}:`, err);
+                        return currentPost; // Retornar post atual em caso de erro
+                    }
+                });
+
+                const updatedPostsMap = new Map(
+                    (await Promise.all(updatePromises)).map(p => [String(p._id), p])
+                );
+                
+                // Preservar ordem original e atualizar apenas posts que mudaram
+                let hasChanges = false;
+                const finalPosts = currentPosts.map(currentPost => {
+                    const postIdStr = String(currentPost._id);
+                    const updatedPost = updatedPostsMap.get(postIdStr);
+                    
+                    if (!updatedPost) return currentPost;
+                    
+                    // Comparar se houve mudanças
+                    const currentLikes = (currentPost.likes || []).map(id => String(id)).sort().join(',');
+                    const updatedLikes = (updatedPost.likes || []).map(id => String(id)).sort().join(',');
+                    const currentCommentsCount = (currentPost.comments || []).length;
+                    const updatedCommentsCount = (updatedPost.comments || []).length;
+                    
+                    if (currentLikes !== updatedLikes || currentCommentsCount !== updatedCommentsCount) {
+                        hasChanges = true;
+                        return updatedPost; // Retornar versão atualizada
+                    }
+                    
+                    return currentPost; // Sem mudanças, manter original
+                });
+
+                if (hasChanges) {
+                    setPosts(finalPosts);
+                    postsRef.current = finalPosts; // Atualizar ref também
+                }
+            } catch (err) {
+                console.error('Error updating posts from server:', err);
+            }
+        };
+
+        // Polling a cada 5 segundos para atualizar posts
+        const interval = setInterval(updatePostsFromServer, 5000);
+
+        return () => clearInterval(interval);
+    }, [user?._id]); // Remover posts das dependências para evitar loops
 
     useEffect(() => {
         const handleStorageChange = () => {
@@ -454,7 +644,19 @@ export default function Home() {
             if (userData) {
                 try {
                     const parsedUser = JSON.parse(userData);
-                    setUser(parsedUser);
+                    setUser(prevUser => {
+                        // Se o following mudou, recarregar posts
+                        const prevFollowing = prevUser?.following?.map(id => String(id)) || [];
+                        const newFollowing = parsedUser?.following?.map(id => String(id)) || [];
+                        const followingChanged = JSON.stringify(prevFollowing.sort()) !== JSON.stringify(newFollowing.sort());
+                        
+                        if (followingChanged) {
+                            // Recarregar posts quando seguir/deixar de seguir alguém
+                            setTimeout(() => loadPosts(), 100);
+                        }
+                        
+                        return parsedUser;
+                    });
                 } catch (e) {
                     console.error('Invalid user data:', e);
                 }
@@ -504,37 +706,54 @@ export default function Home() {
             />
 
             {showSearchResults && (
-                <div style={styles.searchResults}>
-                    <div style={styles.searchHeader}>
-                        <h3 style={{color: styles.textPrimary}}>{t('search_results')}</h3>
-                        <button onClick={handleCloseSearch} style={styles.closeButton}>
-                            ✖
-                        </button>
-                    </div>
-                    {searchResults.length === 0 ? (
-                        <p style={{padding: '1rem', color: styles.textSecondary}}>{t('no_users_found')}</p>
-                    ) : (
-                        searchResults.map((userResult) => (
-                            <div key={userResult._id} style={styles.userResult}>
-                                <img
-                                    src={userResult.profilePicture || '/default-avatar.svg'}
-                                    alt={userResult.name || 'Usuário'}
-                                    style={styles.resultAvatar}
-                                />
-                                <div style={styles.resultInfo}>
-                                    <h4 style={{color: styles.textPrimary, margin: 0}}>{userResult.name || 'Nome indisponível'}</h4>
-                                    <p style={{color: styles.textSecondary, margin: '2px 0 0 0', fontSize: '0.85rem'}}>{userResult.email || 'Email indisponível'}</p>
+                <>
+                    {/* Overlay para fechar ao clicar fora */}
+                    <div 
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 999, // Lower than search modal
+                        }}
+                        onClick={handleCloseSearch}
+                    />
+                    <div 
+                        style={{...styles.searchResults, zIndex: 1001}}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={styles.searchHeader}>
+                            <h3 style={{color: styles.textPrimary}}>{t('search_results')}</h3>
+                            <button onClick={handleCloseSearch} style={styles.closeButton}>
+                                <FaTimes />
+                            </button>
+                        </div>
+                        {searchResults.length === 0 ? (
+                            <p style={{padding: '1rem', color: styles.textSecondary}}>{t('no_users_found')}</p>
+                        ) : (
+                            searchResults.map((userResult) => (
+                                <div key={userResult._id} style={styles.userResult}>
+                                    <img
+                                        src={userResult.profilePicture || '/default-avatar.svg'}
+                                        alt={userResult.name || 'Usuário'}
+                                        style={styles.resultAvatar}
+                                    />
+                                    <div style={styles.resultInfo}>
+                                        <h4 style={{color: styles.textPrimary, margin: 0}}>{userResult.name || 'Nome indisponível'}</h4>
+                                        <p style={{color: styles.textSecondary, margin: '2px 0 0 0', fontSize: '0.85rem'}}>{userResult.email || 'Email indisponível'}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => router.push(`/profile?id=${userResult._id}`)}
+                                        style={styles.viewProfileButton}
+                                    >
+                                        {t('view_profile')}
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => router.push(`/profile?id=${userResult._id}`)}
-                                    style={styles.viewProfileButton}
-                                >
-                                    {t('view_profile')}
-                                </button>
-                            </div>
-                        ))
-                    )}
-                </div>
+                            ))
+                        )}
+                    </div>
+                </>
             )}
             {showChatModal && (
                 <ChatModal
@@ -567,11 +786,11 @@ export default function Home() {
                         </div>
                         <div style={styles.statsSection}>
                             <div style={styles.statItem}>
-                                <span>👥 {t('followers_label')}</span>
+                                <span><FaUsers /> {t('followers_label')}</span>
                                 <strong style={styles.statValue}>{user?.followers?.length || 0}</strong>
                             </div>
                             <div style={styles.statItem}>
-                                <span>⭐ XP</span>
+                                <span><FaStar /> XP</span>
                                 <strong style={styles.statValue}>{user?.xp || 0}</strong>
                             </div>
                         </div>
@@ -597,7 +816,10 @@ export default function Home() {
                         </div>
                     ) : (
                         posts.map((post) => (
-                            <div key={post._id || Math.random()} style={styles.postWrapper}>
+                            <div 
+                                key={post._id || Math.random()} 
+                                style={styles.postWrapper}
+                            >
                                 <PostCard
                                     post={post}
                                     currentUser={user}

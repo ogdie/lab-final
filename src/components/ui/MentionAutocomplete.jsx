@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { usersAPI } from '../services/api';
+import { usersAPI } from '../../services/api';
 
 export default function MentionAutocomplete({ 
   text, 

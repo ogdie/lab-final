@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react';
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/ui/Navbar';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
-import Footer from '../components/Footer';
-import EditProfileModal from '../components/EditProfileModal';
-import FollowButton from '../components/FollowButton';
-import AlertModal from '../components/AlertModal';
+import Footer from '../components/ui/Footer';
+import EditProfileModal from '../components/ui/EditProfileModal';
+import FollowButton from '../components/ui/FollowButton';
+import AlertModal from '../components/ui/AlertModal';
+import UsersListModal from '../components/ui/UsersListModal';
 import { usersAPI } from '../services/api';
-import AddAchievementModal from '../components/AddAchievementModal';
+import AddAchievementModal from '../components/ui/AddAchievementModal';
 import AchievementCard from '../components/AchievementCard';
+import { FaTimes, FaEdit, FaTrophy, FaStar, FaShare } from 'react-icons/fa';
 
 // Função para estilos dinâmicos da página de perfil
 const getPageStyles = (theme) => {
@@ -166,11 +170,15 @@ export default function Profile() {
   const [user, setUser] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAchievementModal, setShowAchievementModal] = useState(false);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
   const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [searchPaused, setSearchPaused] = useState(false);
+  const [lastSearchQuery, setLastSearchQuery] = useState('');
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -203,15 +211,58 @@ export default function Profile() {
     }
 
     setCurrentUser(parsedUser);
+  }, []);
 
-    const userId = searchParams?.get("id") || parsedUser._id;
+  // Separar useEffect para searchParams para evitar interferência na navegação
+  useEffect(() => {
+    if (!currentUser?._id) return;
+    
+    let userId;
+    try {
+      userId = searchParams?.get("id") || currentUser._id;
+    } catch (e) {
+      userId = currentUser._id;
+    }
+    
     if (userId) {
       loadUser(userId);
     } else {
       setError("ID de usuário inválido.");
       setLoading(false);
     }
-  }, [searchParams]);
+    // Usar apenas currentUser._id como dependência para evitar loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?._id]);
+
+  // Listener adicional para mudanças na URL (para navegação do Next.js)
+  useEffect(() => {
+    if (!currentUser?._id || typeof window === 'undefined') return;
+    
+    const checkUrlChange = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlUserId = params.get("id") || currentUser._id;
+        // Só recarregar se o userId mudou
+        if (urlUserId && urlUserId !== user?._id) {
+          loadUser(urlUserId);
+        }
+      } catch (e) {
+        // Ignorar erros
+      }
+    };
+    
+    // Verificar mudanças na URL periodicamente (fallback para Next.js router)
+    const interval = setInterval(checkUrlChange, 300);
+    
+    // Listener para popstate (botões back/forward)
+    window.addEventListener('popstate', checkUrlChange);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('popstate', checkUrlChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?._id, user?._id]);
 
   const loadUser = async (userId) => {
     try {
@@ -274,13 +325,26 @@ export default function Profile() {
     if (!query?.trim()) {
       setSearchResults([]);
       setShowSearchResults(false);
+      setSearchPaused(false);
+      setLastSearchQuery('');
       return;
+    }
+
+    // Se a pesquisa está pausada e a query não mudou, não fazer nada
+    if (searchPaused && query === lastSearchQuery) {
+      return;
+    }
+
+    // Se a query mudou, reativar a pesquisa
+    if (query !== lastSearchQuery) {
+      setSearchPaused(false);
     }
 
     try {
       const users = await usersAPI.searchUsers(query);
       setSearchResults(Array.isArray(users) ? users : []);
       setShowSearchResults(true);
+      setLastSearchQuery(query);
     } catch (err) {
       console.error("Error searching users:", err);
       setSearchResults([]);
@@ -290,6 +354,29 @@ export default function Profile() {
   const handleCloseSearch = () => {
     setShowSearchResults(false);
     setSearchResults([]);
+    setSearchPaused(true); // Pausar a pesquisa para evitar reabertura automática
+  };
+
+  const handleShareProfile = async () => {
+    if (!user?._id) return;
+    
+    const profileUrl = `${window.location.origin}/profile?id=${user._id}`;
+    
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      setAlert({
+        isOpen: true,
+        message: t('profile_link_copied'),
+        title: t('success'),
+      });
+    } catch (err) {
+      console.error('Erro ao copiar link:', err);
+      setAlert({
+        isOpen: true,
+        message: 'Não foi possível copiar o link.',
+        title: 'Erro',
+      });
+    }
   };
 
   const handleAddAchievement = async (formData) => {
@@ -313,6 +400,27 @@ export default function Profile() {
       setShowAchievementModal(false);
     }
   };
+
+  // Funções estáveis para os modais de seguidores/seguindo
+  const fetchFollowers = useCallback(async () => {
+    if (!user?._id) return [];
+    try {
+      return await usersAPI.getFollowers(user._id);
+    } catch (err) {
+      console.error('Error loading followers:', err);
+      return [];
+    }
+  }, [user?._id]);
+
+  const fetchFollowing = useCallback(async () => {
+    if (!user?._id) return [];
+    try {
+      return await usersAPI.getFollowing(user._id);
+    } catch (err) {
+      console.error('Error loading following:', err);
+      return [];
+    }
+  }, [user?._id]);
 
   if (loading) {
     return (
@@ -356,97 +464,120 @@ export default function Profile() {
 
       {/* Modal de Busca */}
       {showSearchResults && (
-        <div
-          style={{
-            position: "fixed",
-            top: "80px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "white",
-            border: "1px solid #e0e0e0",
-            borderRadius: "8px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-            zIndex: 1000,
-            width: "90%",
-            maxWidth: "500px",
-            maxHeight: "400px",
-            overflowY: "auto",
-          }}
-        >
+        <>
+          {/* Overlay para fechar ao clicar fora */}
+          <div 
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 999, // Lower than search modal
+            }}
+            onClick={handleCloseSearch}
+          />
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "1rem",
-              borderBottom: "1px solid #e0e0e0",
-              background: "#f8f9fa",
+              position: "fixed",
+              top: "80px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              background: isDark ? "#2c2f33" : "#ffffff",
+              border: `1px solid ${isDark ? "#3e4042" : "#e0e0e0"}`,
+              borderRadius: "8px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              zIndex: 1001, // Higher than overlay
+              width: "90%",
+              maxWidth: "500px",
+              maxHeight: "400px",
+              overflowY: "auto",
             }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <h3>Resultados da busca</h3>
-            <button
-              onClick={handleCloseSearch}
+            <div
               style={{
-                background: "none",
-                border: "none",
-                fontSize: "1.2rem",
-                cursor: "pointer",
-                color: "#666",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "1rem",
+                borderBottom: `1px solid ${isDark ? "#3e4042" : "#e0e0e0"}`,
+                background: isDark ? "#3a3b3c" : "#f8f9fa",
               }}
             >
-              ✖
-            </button>
-          </div>
-          {searchResults.length === 0 ? (
-            <p style={{ padding: "2rem", textAlign: "center", color: "#666" }}>
-              Nenhum usuário encontrado
-            </p>
-          ) : (
-            searchResults.map((userResult) => (
-              <div
-                key={userResult._id}
+              <h3 style={{ color: isDark ? "#e4e6eb" : "#1d2129", margin: 0 }}>
+                {t('search_results') || 'Resultados da busca'}
+              </h3>
+              <button
+                onClick={handleCloseSearch}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1rem",
-                  padding: "1rem",
-                  borderBottom: "1px solid #f0f0f0",
+                  background: "none",
+                  border: "none",
+                  fontSize: "1.2rem",
+                  cursor: "pointer",
+                  color: isDark ? "#b0b3b8" : "#666",
                 }}
               >
-                <img
-                  src={userResult.profilePicture || "/default-avatar.svg"}
-                  alt={userResult.name || "Usuário"}
+                <FaTimes />
+              </button>
+            </div>
+            {searchResults.length === 0 ? (
+              <p style={{ padding: "2rem", textAlign: "center", color: isDark ? "#b0b3b8" : "#666" }}>
+                {t('no_users_found') || 'Nenhum usuário encontrado'}
+              </p>
+            ) : (
+              searchResults.map((userResult) => (
+                <div
+                  key={userResult._id}
                   style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                  }}
-                />
-                <div style={{ flex: 1 }}>
-                  <h4>{userResult.name || "Nome indisponível"}</h4>
-                  <p>{userResult.email || "Email indisponível"}</p>
-                  <p>⭐ {userResult.xp || 0} XP</p>
-                </div>
-                <button
-                  onClick={() => router.push(`/profile?id=${userResult._id}`)}
-                  style={{
-                    padding: "0.5rem 1rem",
-                    background: "#4F46E5",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "0.9rem",
-                    fontWeight: "600",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                    padding: "1rem",
+                    borderBottom: `1px solid ${isDark ? "#3e4042" : "#f0f0f0"}`,
                   }}
                 >
-                  Ver Perfil
-                </button>
-              </div>
-            ))
-          )}
-        </div>
+                  <img
+                    src={userResult.profilePicture || "/default-avatar.svg"}
+                    alt={userResult.name || "Usuário"}
+                    style={{
+                      width: "48px",
+                      height: "48px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                    }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ color: isDark ? "#e4e6eb" : "#1d2129", margin: 0 }}>
+                      {userResult.name || "Nome indisponível"}
+                    </h4>
+                    <p style={{ color: isDark ? "#b0b3b8" : "#606770", margin: "2px 0", fontSize: "0.85rem" }}>
+                      {userResult.email || "Email indisponível"}
+                    </p>
+                    <p style={{ color: isDark ? "#b0b3b8" : "#606770", margin: "2px 0", fontSize: "0.85rem" }}>
+                      <FaStar /> {userResult.xp || 0} XP
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => router.push(`/profile?id=${userResult._id}`)}
+                    style={{
+                      padding: "0.5rem 1rem",
+                      background: "#4F46E5",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {t('view_profile') || 'Ver Perfil'}
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </>
       )}
 
       <div style={styles.content}>
@@ -459,11 +590,39 @@ export default function Profile() {
               style={styles.profileImage}
             />
             <div style={styles.info}>
-              <h1 style={styles.name}>{user.name || "Nome indisponível"}</h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                <h1 style={styles.name}>{user.name || "Nome indisponível"}</h1>
+                <button
+                  onClick={handleShareProfile}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: isDark ? '#b0b3b8' : '#606770',
+                    fontSize: '1.2rem',
+                    padding: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderRadius: '50%',
+                    transition: 'background-color 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = isDark ? '#3a3b3c' : '#f0f0f0';
+                    e.currentTarget.style.color = '#4F46E5';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = isDark ? '#b0b3b8' : '#606770';
+                  }}
+                  title={t('share')}
+                >
+                  <FaShare />
+                </button>
+              </div>
               {currentUser && currentUser._id === user._id && (
                 <div style={{ display: "flex", gap: "0.75rem", margin: "0.75rem 0 1rem 0" }}>
                   <button onClick={() => setShowEditModal(true)} style={styles.editButton}>
-                    ✏️ {t("edit_profile")}
+                    <FaEdit /> {t("edit_profile")}
                   </button>
                   <button
                     onClick={() => setShowAchievementModal(true)}
@@ -472,7 +631,7 @@ export default function Profile() {
                       background: "#8B5CF6",
                     }}
                   >
-                    🏆 {t('add_achievement')}
+                    <FaTrophy /> {t('add_achievement')}
                   </button>
                 </div>
               )}
@@ -501,11 +660,17 @@ export default function Profile() {
                   <strong style={styles.statsStrong}>{user.xp || 0}</strong>
                   <span style={styles.statsSpan}>{t("xp")}</span>
                 </div>
-                <div style={styles.statsItem}>
+                <div 
+                  style={{ ...styles.statsItem, cursor: 'pointer' }}
+                  onClick={() => setShowFollowersModal(true)}
+                >
                   <strong style={styles.statsStrong}>{user.followers?.length || 0}</strong>
                   <span style={styles.statsSpan}>{t("followers_label")}</span>
                 </div>
-                <div style={styles.statsItem}>
+                <div 
+                  style={{ ...styles.statsItem, cursor: 'pointer' }}
+                  onClick={() => setShowFollowingModal(true)}
+                >
                   <strong style={styles.statsStrong}>{user.following?.length || 0}</strong>
                   <span style={styles.statsSpan}>{t("following_label")}</span>
                 </div>
@@ -582,10 +747,36 @@ export default function Profile() {
                 {/* Nome + botões na mesma linha */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
                   <h1 style={styles.name}>{user.name || "Nome indisponível"}</h1>
+                  <button
+                    onClick={handleShareProfile}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: isDark ? '#b0b3b8' : '#606770',
+                      fontSize: '1.2rem',
+                      padding: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      borderRadius: '50%',
+                      transition: 'background-color 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = isDark ? '#3a3b3c' : '#f0f0f0';
+                      e.currentTarget.style.color = '#4F46E5';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = isDark ? '#b0b3b8' : '#606770';
+                    }}
+                    title={t('share')}
+                  >
+                    <FaShare />
+                  </button>
                   {currentUser && currentUser._id === user._id && (
                     <div style={{ display: "flex", gap: "0.75rem" }}>
                       <button onClick={() => setShowEditModal(true)} style={styles.editButton}>
-                        ✏️ {t("edit_profile")}
+                        <FaEdit /> {t("edit_profile")}
                       </button>
                       <button
                         onClick={() => setShowAchievementModal(true)}
@@ -594,7 +785,7 @@ export default function Profile() {
                           background: "#8B5CF6",
                         }}
                       >
-                        🏆 {t('add_achievement')}
+                        <FaTrophy /> {t('add_achievement')}
                       </button>
                     </div>
                   )}
@@ -625,11 +816,17 @@ export default function Profile() {
                     <strong style={styles.statsStrong}>{user.xp || 0}</strong>
                     <span style={styles.statsSpan}>{t("xp")}</span>
                   </div>
-                  <div style={styles.statsItem}>
+                  <div 
+                    style={{ ...styles.statsItem, cursor: 'pointer' }}
+                    onClick={() => setShowFollowersModal(true)}
+                  >
                     <strong style={styles.statsStrong}>{user.followers?.length || 0}</strong>
                     <span style={styles.statsSpan}>{t("followers_label")}</span>
                   </div>
-                  <div style={styles.statsItem}>
+                  <div 
+                    style={{ ...styles.statsItem, cursor: 'pointer' }}
+                    onClick={() => setShowFollowingModal(true)}
+                  >
                     <strong style={styles.statsStrong}>{user.following?.length || 0}</strong>
                     <span style={styles.statsSpan}>{t("following_label")}</span>
                   </div>
@@ -702,11 +899,28 @@ export default function Profile() {
         onClose={closeAlert}
         message={alert.message}
         title={alert.title}
+        theme={theme}
       />
       <AddAchievementModal
         isOpen={showAchievementModal}
         onClose={() => setShowAchievementModal(false)}
         onSave={handleAddAchievement}
+        theme={theme}
+      />
+
+      <UsersListModal
+        isOpen={showFollowersModal}
+        onClose={() => setShowFollowersModal(false)}
+        title={t('followers_label') || 'Seguidores'}
+        fetchUsers={fetchFollowers}
+        theme={theme}
+      />
+
+      <UsersListModal
+        isOpen={showFollowingModal}
+        onClose={() => setShowFollowingModal(false)}
+        title={t('following_label') || 'Seguindo'}
+        fetchUsers={fetchFollowing}
         theme={theme}
       />
 

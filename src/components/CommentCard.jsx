@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
-import MentionTextarea from './MentionTextarea';
+import MentionTextarea from './ui/MentionTextarea';
 import { renderTextWithMentions } from '../utils/mentionRenderer';
+import { FaTimes } from 'react-icons/fa';
 
 // Formata a diferença de tempo de forma sucinta (reutilizando lógica do PostCard)
 function formatRelativeTime(dateInput) {
@@ -45,6 +47,7 @@ const getStyles = (theme) => {
         commentContainer: {
             display: 'flex',
             gap: '8px',
+            marginTop: '16px',
             marginBottom: '12px',
             alignItems: 'flex-start',
         },
@@ -154,6 +157,7 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, on
     // Inicialização dos estilos com o tema
     const styles = getStyles(theme);
     const { t } = useThemeLanguage();
+    const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(comment.content || '');
     const [showReplyForm, setShowReplyForm] = useState(false);
@@ -163,6 +167,13 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, on
     const canModify = currentUser && (comment.author?._id === currentUser._id || String(comment.author?._id) === String(currentUser._id));
     // Para fins de demonstração, assumimos que 'author' pode ter um campo 'title'
     const authorTitle = comment.author?.title || t('member_of_network');
+
+    const handleAuthorClick = () => {
+        const authorId = comment.author?._id || comment.author;
+        if (authorId) {
+            router.push(`/profile?id=${authorId}`);
+        }
+    };
 
     const handleLike = () => {
         if (onLike) {
@@ -203,12 +214,18 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, on
                 src={comment.author?.profilePicture || '/default-avatar.svg'} 
                 alt={comment.author?.name || 'Autor'}
                 style={avatarStyle}
+                onClick={handleAuthorClick}
             />
             
             <div style={bubbleStyle}>
                 <div style={styles.header}>
                     <div style={styles.authorInfo}>
-                        <div style={styles.name}>{comment.author?.name || t('user')}</div>
+                        <div 
+                            style={styles.name}
+                            onClick={handleAuthorClick}
+                        >
+                            {comment.author?.name || t('user')}
+                        </div>
                         <div style={styles.title}>{authorTitle}</div> 
                     </div>
                 </div>
@@ -256,7 +273,7 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, on
                                 {t('edit_post')}
                             </button>
                             <button onClick={handleDelete} style={styles.deleteButton} title={t('delete')}>
-                                ✕
+                                <FaTimes />
                             </button>
                         </>
                     )}

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
-import AlertModal from './AlertModal';
+import AlertModal from './ui/AlertModal';
 import { chatAPI } from '../services/api';
+import { FaTimes } from 'react-icons/fa';
 
 export default function ChatPane({ currentUser, otherUser, onConversationDeleted, onMessageSent, onMessagesRead }) {
   const { t, theme } = useThemeLanguage();
@@ -155,7 +156,9 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
           >
             <span>{msg.content}</span>
             {msg.sender._id === currentUser._id && (
-              <button onClick={() => handleDeleteMessage(msg._id)} style={styles.deleteMsgButton}>✖</button>
+              <button onClick={() => handleDeleteMessage(msg._id)} style={styles.deleteMsgButton}>
+                <FaTimes />
+              </button>
             )}
           </div>
         ))}

@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import { FaMedal, FaGraduationCap, FaRocket, FaTrophy, FaFileAlt, FaCheckCircle } from 'react-icons/fa';
 
-// Ícones simples baseados em emoji (sem dependência externa)
+// Ícones usando react-icons
 const getIconByType = (type) => {
   switch (type) {
-    case 'certification': return '🏅';
-    case 'course': return '🎓';
-    case 'project': return '🚀';
-    case 'competition': return '🏆';
-    case 'publication': return '📝';
-    default: return '✅';
+    case 'certification': return <FaMedal />;
+    case 'course': return <FaGraduationCap />;
+    case 'project': return <FaRocket />;
+    case 'competition': return <FaTrophy />;
+    case 'publication': return <FaFileAlt />;
+    default: return <FaCheckCircle />;
   }
 };
 

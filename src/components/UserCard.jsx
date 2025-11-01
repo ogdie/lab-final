@@ -1,5 +1,6 @@
-import FollowButton from './FollowButton';
+import FollowButton from './ui/FollowButton';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import { FaStar } from 'react-icons/fa';
 
 export default function UserCard({ user, currentUser, onFollow }) {
   const { t } = useThemeLanguage();
@@ -18,7 +19,7 @@ export default function UserCard({ user, currentUser, onFollow }) {
         <p style={styles.email}>{user.email}</p>
         <p style={styles.bio}>{user.bio}</p>
         <div style={styles.xp}>
-          ⭐ {user.xp || 0} {t('xp')} | {(() => {
+          <FaStar /> {user.xp || 0} {t('xp')} | {(() => {
             const typeMap = {
               'Estudante': 'user_type_student',
               'Professor': 'user_type_professor',

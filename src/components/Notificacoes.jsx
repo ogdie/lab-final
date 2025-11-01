@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { notificationsAPI, usersAPI } from '../services/api';
+import { FaTimes, FaHeart, FaComment, FaBell, FaCheckCircle, FaBullhorn } from 'react-icons/fa';
 
 export default function Notificacoes({ userId, onClose, onNotificationsUpdated }) {
   const router = useRouter();
@@ -116,13 +117,31 @@ export default function Notificacoes({ userId, onClose, onNotificationsUpdated }
   const styles = getStyles(theme);
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3>{t('notifications')}</h3>
-        <button onClick={onClose} style={styles.closeButton}>✖</button>
-      </div>
-      
-      <div style={styles.list}>
+    <>
+      {/* Overlay para fechar ao clicar fora */}
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 999,
+        }}
+        onClick={onClose}
+      />
+      <div 
+        style={styles.container}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={styles.header}>
+          <h3>{t('notifications')}</h3>
+          <button onClick={onClose} style={styles.closeButton}>
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div style={styles.list}>
         {notifications.map((notif) => (
           <div 
             key={notif._id}
@@ -137,11 +156,11 @@ export default function Notificacoes({ userId, onClose, onNotificationsUpdated }
               />
             ) : (
               <div style={styles.icon}>
-                {notif.type === 'like' && '❤️'}
-                {notif.type === 'comment' && '💬'}
-                {notif.type === 'connection_request' && '🔔'}
-                {notif.type === 'connection_accepted' && '✅'}
-                {notif.type === 'mention' && '📢'}
+                {notif.type === 'like' && <FaHeart />}
+                {notif.type === 'comment' && <FaComment />}
+                {notif.type === 'connection_request' && <FaBell />}
+                {notif.type === 'connection_accepted' && <FaCheckCircle />}
+                {notif.type === 'mention' && <FaBullhorn />}
               </div>
             )}
             <div style={styles.content}>
@@ -191,6 +210,7 @@ export default function Notificacoes({ userId, onClose, onNotificationsUpdated }
         ))}
       </div>
     </div>
+    </>
   );
 }
 
@@ -213,7 +233,7 @@ const getStyles = (theme) => {
       border: `1px solid ${borderSubtle}`,
       borderRadius: '8px',
       boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-      zIndex: 1000,
+      zIndex: 1001,
       overflow: 'hidden',
       color: textPrimary,
     },

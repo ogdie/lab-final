@@ -1,9 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useThemeLanguage } from '../context/ThemeLanguageContext'; 
-import Notificacoes from './Notificacoes';
-import CodemiaLogo from './CodemiaLogo'; 
+import { useThemeLanguage } from '../../context/ThemeLanguageContext'; 
+import Notificacoes from '../Notificacoes';
+import CodemiaLogo from './CodemiaLogo';
+import { FaBell, FaComments, FaBullhorn, FaCog, FaSearch, FaTimes } from 'react-icons/fa'; 
 
 const getStyles = (theme) => {
     const isDark = theme === 'dark';
@@ -206,7 +207,7 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
     const fetchUnreadNotifications = async () => {
         if (!user?._id) return;
         try {
-            const { notificationsAPI } = await import('../services/api');
+            const { notificationsAPI } = await import('../../services/api');
             const notifications = await notificationsAPI.getAll(user._id);
             const unreadCount = Array.isArray(notifications) 
                 ? notifications.filter(n => !n.read).length 
@@ -220,7 +221,7 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
     const fetchUnreadMessages = async () => {
         if (!user?._id) return;
         try {
-            const { chatAPI } = await import('../services/api');
+            const { chatAPI } = await import('../../services/api');
             const conversations = await chatAPI.getConversations(user._id);
             const totalUnread = Array.isArray(conversations)
                 ? conversations.reduce((sum, conv) => sum + (conv.unread || 0), 0)
@@ -239,7 +240,7 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
         // Se está abrindo, marcar todas como lidas
         if (willShow && user?._id && notificationsCount > 0) {
             try {
-                const { notificationsAPI } = await import('../services/api');
+                const { notificationsAPI } = await import('../../services/api');
                 const notifications = await notificationsAPI.getAll(user._id);
                 const unreadNotifications = Array.isArray(notifications) 
                     ? notifications.filter(n => !n.read) 
@@ -310,7 +311,7 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                                 aria-label="Executar busca"
                                 title="Buscar"
                             >
-                                🔍
+                                <FaSearch />
                             </button>
                             <button
                                 style={styles.clearButton}
@@ -321,7 +322,7 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                                 aria-label={t('clear')}
                                 title={t('clear')}
                             >
-                                ✖️
+                                <FaTimes />
                             </button>
                         </>
                     )}
@@ -335,7 +336,7 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                         onClick={handleNotificationsClick} 
                         title={t('notifications')}
                     >
-                        🔔 
+                        <FaBell /> 
                         {notificationsCount > 0 && (
                             <span style={{
                                 ...styles.badge,
@@ -353,7 +354,7 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                     
                     {/* Outros Ícones */}
                     <Link href="/chat" style={styles.iconButton} title={t('chat')}>
-                        💬
+                        <FaComments />
                         {unreadMessagesCount > 0 && (
                             <span style={{
                                 ...styles.badge,
@@ -368,8 +369,12 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                             </span>
                         )}
                     </Link>
-                    <Link href="/forum" style={styles.iconButton} title={t('forum')}>📢</Link>
-                    <Link href="/settings" style={styles.iconButton} title={t('settings')}>⚙️</Link>
+                    <Link href="/forum" style={styles.iconButton} title={t('forum')}>
+                        <FaBullhorn />
+                    </Link>
+                    <Link href="/settings" style={styles.iconButton} title={t('settings')}>
+                        <FaCog />
+                    </Link>
 
                     {/* Informações do Usuário (Avatar e Nome) */}
                     {user && (

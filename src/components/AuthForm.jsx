@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import BackButton from './BackButton';
+import BackButton from './ui/BackButton';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 const INSTITUTIONS = [

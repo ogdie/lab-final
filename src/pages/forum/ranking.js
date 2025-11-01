@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Navbar from '../../components/Navbar';
-import BackButton from '../../components/BackButton';
-import Footer from '../../components/Footer';
+import Navbar from '../../components/ui/Navbar';
+import BackButton from '../../components/ui/BackButton';
+import Footer from '../../components/ui/Footer';
 import { rankingAPI, usersAPI } from '../../services/api';
 import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 
@@ -16,6 +16,8 @@ export default function Ranking() {
   const [infoHover, setInfoHover] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [searchPaused, setSearchPaused] = useState(false);
+  const [lastSearchQuery, setLastSearchQuery] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -52,12 +54,26 @@ export default function Ranking() {
     if (!query?.trim()) {
       setSearchResults([]);
       setShowSearchResults(false);
+      setSearchPaused(false);
+      setLastSearchQuery('');
       return;
     }
+
+    // Se a pesquisa está pausada e a query não mudou, não fazer nada
+    if (searchPaused && query === lastSearchQuery) {
+      return;
+    }
+
+    // Se a query mudou, reativar a pesquisa
+    if (query !== lastSearchQuery) {
+      setSearchPaused(false);
+    }
+
     try {
       const users = await usersAPI.searchUsers(query);
       setSearchResults(Array.isArray(users) ? users : []);
       setShowSearchResults(true);
+      setLastSearchQuery(query);
     } catch (err) {
       console.error('Error searching users:', err);
       setSearchResults([]);
@@ -67,6 +83,7 @@ export default function Ranking() {
   const handleCloseSearch = () => {
     setShowSearchResults(false);
     setSearchResults([]);
+    setSearchPaused(true); // Pausar a pesquisa para evitar reabertura automática
   };
 
   const styles = getStyles(theme);
@@ -106,26 +123,43 @@ export default function Ranking() {
           <BackButton to="/forum" />
         </div>
         {showSearchResults && (
-          <div style={styles.searchResults}>
-            <div style={styles.searchHeader}>
-              <h3 style={{ margin: 0 }}>{t('search_results')}</h3>
-              <button onClick={handleCloseSearch} style={styles.closeButton}>✖</button>
-            </div>
-            {searchResults.length === 0 ? (
-              <p style={{ padding: '1rem' }}>{t('no_users_found')}</p>
-            ) : (
-              searchResults.map((u) => (
-                <div key={u._id} style={styles.userResult}>
-                  <img src={u.profilePicture || '/default-avatar.svg'} alt={u.name} style={styles.resultAvatar} />
-                  <div style={styles.resultInfo}>
-                    <h4 style={{ margin: 0 }}>{u.name}</h4>
-                    <p style={{ margin: '2px 0 0 0', color: '#606770', fontSize: '0.85rem' }}>{u.email}</p>
+          <>
+            {/* Overlay para fechar ao clicar fora */}
+            <div 
+              style={{ 
+                position: 'fixed', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                zIndex: 999 
+              }}
+              onClick={handleCloseSearch}
+            />
+            <div 
+              style={{...styles.searchResults, zIndex: 1001}}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={styles.searchHeader}>
+                <h3 style={{ margin: 0 }}>{t('search_results')}</h3>
+                <button onClick={handleCloseSearch} style={styles.closeButton}>✖</button>
+              </div>
+              {searchResults.length === 0 ? (
+                <p style={{ padding: '1rem' }}>{t('no_users_found')}</p>
+              ) : (
+                searchResults.map((u) => (
+                  <div key={u._id} style={styles.userResult}>
+                    <img src={u.profilePicture || '/default-avatar.svg'} alt={u.name} style={styles.resultAvatar} />
+                    <div style={styles.resultInfo}>
+                      <h4 style={{ margin: 0 }}>{u.name}</h4>
+                      <p style={{ margin: '2px 0 0 0', color: '#606770', fontSize: '0.85rem' }}>{u.email}</p>
+                    </div>
+                    <button onClick={() => router.push(`/profile?id=${u._id}`)} style={styles.viewProfileButton}>{t('view_profile')}</button>
                   </div>
-                  <button onClick={() => router.push(`/profile?id=${u._id}`)} style={styles.viewProfileButton}>{t('view_profile')}</button>
-                </div>
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          </>
         )}
         <h1 style={styles.title}>🏆 {t('xp')} Ranking</h1>
 
