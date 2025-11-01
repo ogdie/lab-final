@@ -44,7 +44,7 @@ export default function Ranking() {
       const data = await rankingAPI.getRanking();
       setRanking(Array.isArray(data) ? data : []);
     } catch {
-      setError('Não foi possível carregar o ranking.');
+      setError(t('error_loading_ranking') || 'Não foi possível carregar o ranking.');
     } finally {
       setLoading(false);
     }
@@ -59,15 +59,8 @@ export default function Ranking() {
       return;
     }
 
-    // Se a pesquisa está pausada e a query não mudou, não fazer nada
-    if (searchPaused && query === lastSearchQuery) {
-      return;
-    }
-
-    // Se a query mudou, reativar a pesquisa
-    if (query !== lastSearchQuery) {
-      setSearchPaused(false);
-    }
+    if (searchPaused && query === lastSearchQuery) return;
+    if (query !== lastSearchQuery) setSearchPaused(false);
 
     try {
       const users = await usersAPI.searchUsers(query);
@@ -83,7 +76,7 @@ export default function Ranking() {
   const handleCloseSearch = () => {
     setShowSearchResults(false);
     setSearchResults([]);
-    setSearchPaused(true); // Pausar a pesquisa para evitar reabertura automática
+    setSearchPaused(true);
   };
 
   const styles = getStyles(theme);
@@ -122,22 +115,22 @@ export default function Ranking() {
         <div style={{ marginBottom: '12px' }}>
           <BackButton to="/forum" />
         </div>
+
         {showSearchResults && (
           <>
-            {/* Overlay para fechar ao clicar fora */}
-            <div 
-              style={{ 
-                position: 'fixed', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0, 
-                zIndex: 999 
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 999,
               }}
               onClick={handleCloseSearch}
             />
-            <div 
-              style={{...styles.searchResults, zIndex: 1001}}
+            <div
+              style={{ ...styles.searchResults, zIndex: 1001 }}
               onClick={(e) => e.stopPropagation()}
             >
               <div style={styles.searchHeader}>
@@ -149,19 +142,29 @@ export default function Ranking() {
               ) : (
                 searchResults.map((u) => (
                   <div key={u._id} style={styles.userResult}>
-                    <img src={u.profilePicture || '/default-avatar.svg'} alt={u.name} style={styles.resultAvatar} />
+                    <img
+                      src={u.profilePicture || '/default-avatar.svg'}
+                      alt={u.name}
+                      style={styles.resultAvatar}
+                    />
                     <div style={styles.resultInfo}>
                       <h4 style={{ margin: 0 }}>{u.name}</h4>
                       <p style={{ margin: '2px 0 0 0', color: '#606770', fontSize: '0.85rem' }}>{u.email}</p>
                     </div>
-                    <button onClick={() => router.push(`/profile?id=${u._id}`)} style={styles.viewProfileButton}>{t('view_profile')}</button>
+                    <button
+                      onClick={() => router.push(`/profile?id=${u._id}`)}
+                      style={styles.viewProfileButton}
+                    >
+                      {t('view_profile')}
+                    </button>
                   </div>
                 ))
               )}
             </div>
           </>
         )}
-        <h1 style={styles.title}>🏆 {t('xp')} Ranking</h1>
+
+        <h1 style={styles.title}>🏆 {t('xp')} {t('ranking_title')}</h1>
 
         <div
           style={{
@@ -171,14 +174,11 @@ export default function Ranking() {
           onMouseEnter={() => setInfoHover(true)}
           onMouseLeave={() => setInfoHover(false)}
         >
-          <p style={styles.infoText}>
-            At the end of each month, participants who reach the top of the ranking will receive an exclusive prize from Codemia!
-            Join in, do your best, and earn special rewards for your dedication and performance.
-          </p>
+          <p style={styles.infoText}>{t('ranking_info_text')}</p>
         </div>
 
         {top10.length === 0 ? (
-          <p style={styles.empty}>{'Nenhum usuário no ranking ainda.'}</p>
+          <p style={styles.empty}>{t('no_users_in_ranking')}</p>
         ) : (
           <div style={styles.ranking}>
             {top10.map((rankedUser, index) => (
@@ -191,12 +191,15 @@ export default function Ranking() {
                 />
                 <div style={styles.info}>
                   <div style={styles.name}>
-                    {rankedUser.name || 'Nome indisponível'}
+                    {rankedUser.name || t('name_unavailable')}
                   </div>
                   <div style={styles.type}>
                     {(() => {
-                      const type = (rankedUser.userType || '').toString();
-                      return type.toLowerCase() === 'estudante' ? 'Student' : (type || 'Tipo não definido');
+                      const type = (rankedUser.userType || '').toString().toLowerCase();
+                      if (type === 'estudante' || type === 'student') return t('user_type_student');
+                      if (type === 'professor' || type === 'teacher') return t('user_type_professor');
+                      if (type === 'recrutador' || type === 'recruiter') return t('user_type_recruiter');
+                      return t('user_type_undefined');
                     })()}
                   </div>
                 </div>
