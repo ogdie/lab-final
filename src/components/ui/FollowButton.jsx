@@ -1,4 +1,5 @@
 import { useThemeLanguage } from '../../context/ThemeLanguageContext';
+import { FaUserPlus, FaUserMinus } from 'react-icons/fa';
 
 export default function FollowButton({ userId, currentUser, onFollow }) {
   const isFollowing = currentUser?.following?.includes(userId);
@@ -19,7 +20,17 @@ export default function FollowButton({ userId, currentUser, onFollow }) {
         color: 'white'
       }}
     >
-      {isFollowing ? t('unfollow') : t('follow')}
+      {isFollowing ? (
+        <>
+          <FaUserMinus style={{ marginRight: '6px' }} />
+          {t('unfollow')}
+        </>
+      ) : (
+        <>
+          <FaUserPlus style={{ marginRight: '6px' }} />
+          {t('follow')}
+        </>
+      )}
     </button>
   );
 }
@@ -32,7 +43,10 @@ const styles = {
     cursor: 'pointer',
     fontSize: '0.9rem',
     fontWeight: 'bold',
-    transition: 'background 0.2s'
+    transition: 'background 0.2s',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   }
 };
 

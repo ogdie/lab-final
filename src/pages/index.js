@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import AuthForm from '../components/AuthForm';
+import LoginForm from '../components/LoginForm';
+import RegisterForm from '../components/RegisterForm';
 import AlertModal from '../components/ui/AlertModal';
 import { authAPI } from '../services/api';
 import { handleOAuthCallback, checkOAuthError } from '../utils/auth';
@@ -10,6 +11,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
+  const resetAnimationCallbackRef = useRef(null);
 
   useEffect(() => {
     // Check for OAuth callback
@@ -115,6 +118,10 @@ export default function Home() {
 
   const closeAlert = () => {
     setAlert({ isOpen: false, message: '', title: 'Aviso' });
+    // Resetar animação do botão quando o modal de erro fechar
+    if (resetAnimationCallbackRef.current && typeof resetAnimationCallbackRef.current === 'function') {
+      resetAnimationCallbackRef.current();
+    }
   };
 
   const handleSuccessModalClose = () => {
@@ -124,14 +131,23 @@ export default function Home() {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Codemia</h1>
-      <p style={styles.subtitle}>Rede social para estudantes de programação</p>
-
-      {loading ? (
-        <div style={styles.loading}>Carregando...</div>
-      ) : (
-        <AuthForm onLogin={handleLogin} onRegister={handleRegister} />
-      )}
+      <div style={styles.formOverlay}>
+        {loading ? (
+          <div style={styles.loading}>Carregando...</div>
+        ) : isLogin ? (
+          <LoginForm 
+            onLogin={handleLogin}
+            onErrorReset={(fn) => { resetAnimationCallbackRef.current = fn; }}
+            onSwitchToRegister={() => setIsLogin(false)}
+          />
+        ) : (
+          <RegisterForm 
+            onRegister={handleRegister}
+            onErrorReset={(fn) => { resetAnimationCallbackRef.current = fn; }}
+            onSwitchToLogin={() => setIsLogin(true)}
+          />
+        )}
+      </div>
 
       <AlertModal
         isOpen={alert.isOpen}
@@ -152,24 +168,31 @@ export default function Home() {
 
 const styles = {
   container: {
-    minHeight: '100vh',
+    position: 'relative',
+    width: '100vw',
+    height: '100vh',
+    overflow: 'hidden',
+    fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+    backgroundImage: 'url("/bk.png")',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+  },
+  formOverlay: {
+    position: 'fixed',
+    top: '50%',
+    right: '-3%',
+    transform: 'translateY(-50%)',
+    width: '460px',
+    maxWidth: '90vw',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    padding: '2rem',
-  },
-  title: {
-    fontSize: '3rem',
-    color: 'white',
-    marginBottom: '1rem',
-  },
-  subtitle: {
-    fontSize: '1.2rem',
-    color: 'rgba(255,255,255,0.9)',
-    marginBottom: '2rem',
-    textAlign: 'center',
+    padding: '1.5rem',
+    boxSizing: 'border-box',
+    backgroundColor: 'transparent',
+    zIndex: 10,
   },
   loading: {
     color: 'white',

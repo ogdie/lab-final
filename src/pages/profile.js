@@ -12,7 +12,7 @@ import UsersListModal from '../components/ui/UsersListModal';
 import { usersAPI } from '../services/api';
 import AddAchievementModal from '../components/ui/AddAchievementModal';
 import AchievementCard from '../components/AchievementCard';
-import { FaTimes, FaEdit, FaTrophy, FaStar, FaShare } from 'react-icons/fa';
+import { FaTimes, FaEdit, FaTrophy, FaStar, FaShare, FaPaperPlane } from 'react-icons/fa';
 
 // Função para estilos dinâmicos da página de perfil
 const getPageStyles = (theme) => {
@@ -685,8 +685,9 @@ export default function Profile() {
               />
               <button
                 onClick={() => router.push(`/chat?userId=${user._id}`)}
-                style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
+                style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
+                <FaPaperPlane />
                 Enviar mensagem
               </button>
             </div>
@@ -841,8 +842,9 @@ export default function Profile() {
                     />
                     <button
                       onClick={() => router.push(`/chat?userId=${user._id}`)}
-                      style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
+                      style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                     >
+                      <FaPaperPlane />
                       {t('send_message')}
                     </button>
                   </div>

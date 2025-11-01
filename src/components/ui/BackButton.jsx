@@ -1,5 +1,6 @@
 import { useRouter } from 'next/navigation';
 import { useThemeLanguage } from '../../context/ThemeLanguageContext';
+import { FaArrowLeft } from 'react-icons/fa';
 
 export default function BackButton({ to = '/forum', style = {}, onClick }) {
   const router = useRouter();
@@ -10,21 +11,16 @@ export default function BackButton({ to = '/forum', style = {}, onClick }) {
     button: {
       display: 'inline-flex',
       alignItems: 'center',
-      gap: '8px',
-      padding: '8px 12px',
-      borderRadius: '8px',
-      border: `1px solid ${isDark ? '#3e4042' : '#d1d1d1'}`,
-      background: isDark ? '#2c2f33' : '#ffffff',
+      justifyContent: 'center',
+      padding: '8px',
+      background: 'none',
+      border: 'none',
       color: isDark ? '#e4e6eb' : '#1d2129',
       cursor: 'pointer',
-      fontWeight: 600,
-      textDecoration: 'none',
-      boxShadow: '0 0 0 1px rgb(0 0 0 / 6%)',
+      fontSize: '1.5rem',
       ...style,
     },
   };
-
-  const label = language === 'pt' ? 'Voltar' : 'Back';
 
   const handleClick = () => {
     if (typeof onClick === 'function') {
@@ -36,7 +32,7 @@ export default function BackButton({ to = '/forum', style = {}, onClick }) {
 
   return (
     <button onClick={handleClick} style={styles.button}>
-      ← {label}
+      <FaArrowLeft />
     </button>
   );
 }
