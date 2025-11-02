@@ -2,6 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import AlertModal from "./AlertModal";
 import { useThemeLanguage } from "../../context/ThemeLanguageContext";
 import { FaShare } from 'react-icons/fa';
+import { FaLinkedin } from "react-icons/fa";
+import { FaFacebookSquare } from "react-icons/fa";
+import { FaWhatsapp } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { FaCopy } from "react-icons/fa";
 
 // Função de estilos dinâmicos baseada no tema
 const getStyles = (theme) => {
@@ -133,7 +138,7 @@ export default function ShareButton({
     setShowMenu(false);
   };
 
-  // ✅ Fecha o menu se clicar fora
+  // Fecha o menu se clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -195,11 +200,11 @@ export default function ShareButton({
                   (e.currentTarget.style.background = "none")
                 }
               >
-                {platform === "twitter" && "🐦 "}
-                {platform === "facebook" && "📘 "}
-                {platform === "linkedin" && "💼 "}
-                {platform === "whatsapp" && "📱 "}
-                {platform === "copy" && "📋 "}
+                {platform === "twitter" && <FaXTwitter />}
+                {platform === "facebook" && <FaFacebookSquare />}
+                {platform === "linkedin" && <FaLinkedin />}
+                {platform === "whatsapp" && <FaWhatsapp />}
+                {platform === "copy" && <FaCopy />}
                 {platform === "copy" ? t("copy_link") : t(platform)}
               </button>
             )

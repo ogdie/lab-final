@@ -6,6 +6,8 @@ import TopicCard from "../../components/TopicCard";
 import TopicModal from "../../components/ui/TopicModal";
 import { forumAPI, usersAPI } from "../../services/api";
 import { useThemeLanguage } from "../../context/ThemeLanguageContext";
+import { RiGameFill } from "react-icons/ri";
+import { IoGameController } from "react-icons/io5";
 
 const getStyles = (theme) => {
   const isDark = theme === "dark";
@@ -517,7 +519,7 @@ export default function Forum() {
                 style={styles.statItem}
                 onClick={() => router.push("/forum/ranking")}
               >
-                <span>⭐ {t('xp')} {language === 'pt' ? 'no Fórum' : 'in the Forum'}</span>
+                <span><IoGameController /> {t('xp')} {language === 'pt' ? 'no Fórum' : 'in the Forum'}</span>
                 <strong style={styles.statValue}>{user.xp || 0}</strong>
               </div>
             </div>
