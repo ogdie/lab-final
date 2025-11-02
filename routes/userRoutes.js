@@ -251,17 +251,28 @@ router.put('/:id/achievements/:achievementId', async (req, res) => {
 // Delete achievement - DEVE VIR ANTES da rota POST (rotas mais específicas primeiro)
 router.delete('/:id/achievements/:achievementId', async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
+    // Verificar se o usuário existe primeiro
+    const userExists = await User.findById(req.params.id).lean();
+    if (!userExists) {
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
-    user.achievements = user.achievements.filter(
-      a => a._id.toString() !== req.params.achievementId
+    // Usar updateOne diretamente para evitar validações
+    const result = await User.updateOne(
+      { _id: req.params.id },
+      { $pull: { achievements: { _id: req.params.achievementId } } }
     );
 
-    await user.save();
-    const updatedUser = await User.findById(req.params.id).select('-password');
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    // Buscar o usuário atualizado usando lean() para retornar objeto simples sem validações
+    const updatedUser = await User.findById(req.params.id).select('-password').lean();
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
 
     res.json(updatedUser);
   } catch (error) {

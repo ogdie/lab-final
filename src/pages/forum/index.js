@@ -9,6 +9,7 @@ import { forumAPI, usersAPI } from "../../services/api";
 import { useThemeLanguage } from "../../context/ThemeLanguageContext";
 import { RiGameFill } from "react-icons/ri";
 import { IoGameController } from "react-icons/io5";
+import { FaStar } from "react-icons/fa";
 
 const getStyles = (theme) => {
   const isDark = theme === "dark";
@@ -241,6 +242,18 @@ const getStyles = (theme) => {
 export default function Forum() {
   const router = useRouter();
   const { t, theme, language } = useThemeLanguage();
+
+  // Função helper para traduzir userType
+  const translateUserType = (userType) => {
+    if (!userType) return null;
+    const typeMap = {
+      'Estudante': 'user_type_student',
+      'Professor': 'user_type_professor',
+      'Recrutador': 'user_type_recruiter'
+    };
+    return t(typeMap[userType]) || userType;
+  };
+
   const [user, setUser] = useState(null);
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -485,6 +498,9 @@ export default function Forum() {
                     <div style={styles.resultInfo}>
                       <h4 style={{ margin: 0, color: styles.title.color }}>{u.name}</h4>
                       <p style={{ margin: '2px 0 0 0', color: styles.subtitle.color, fontSize: '0.85rem' }}>{u.email}</p>
+                      <p style={{ margin: '2px 0', color: styles.subtitle.color, fontSize: '0.85rem' }}>
+                        <FaStar /> {u.xp || 0} XP
+                      </p>
                     </div>
                     <button onClick={() => router.push(`/profile?id=${u._id}`)} style={styles.viewProfileButton}>{t('view_profile')}</button>
                   </div>
@@ -504,7 +520,7 @@ export default function Forum() {
               />
               <h3 style={styles.cardTitle}>{user.name || t('user')}</h3>
               <p style={styles.cardSubtitle}>
-                {user.title || 'Developer'}
+                {translateUserType(user.userType) || user.title || t('user')}
               </p>
             </div>
             <div style={styles.statsSection}>

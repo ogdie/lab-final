@@ -48,6 +48,16 @@ Rede social para estudantes, professores e recrutadores de programação com gam
 - ✅ Edição de perfil completa com upload de imagem
 - ✅ Interface moderna com botões arredondados e cores roxas (#8B5CF6)
 - ✅ Componentes responsivos e otimizados para mobile
+- ✅ Sidebar de artigos recomendados ("TOP ARTIGOS PARA VOCÊ") na home e fórum
+  - Artigos com imagens, títulos bilíngues (PT/EN) e instituições publicadoras
+  - Borda roxa padronizada (#8B5CF6)
+  - Layout sticky que acompanha o scroll
+- ✅ Design system unificado com bordas roxas em todos os modais
+- ✅ Sistema de busca padronizado com exibição de XP
+  - Ícone de estrela colorido usando React Icons
+  - Alinhamento consistente em todas as páginas
+- ✅ Cards de usuário com exibição de tipo (userType) traduzido
+  - Exibição dinâmica: Estudante/Student, Professor/Teacher, Recrutador/Recruiter
 
 ## 📋 Requisitos
 
@@ -282,6 +292,21 @@ O ranking exibe os top 100 usuários ordenados por XP total.
 ## 🤝 Contribuindo
 
 Contribuições são bem-vindas! Por favor, faça um fork e envie um pull request.
+
+## 🎨 Design System
+
+### Cores Principais
+- **Cor de ação (botões, links, destaques)**: `#8B5CF6` (Roxo)
+- **Bordas padronizadas**: Todos os modais e componentes UI usam borda roxa (`#8B5CF6`)
+- **Ranking**: Bordas especiais para top 3 (Dourado `#FFD700`, Prateado `#C0C0C0`, Bronze `#CD7F32`)
+
+### Componentes Padronizados
+- **Modais**: Bordas roxas unificadas em todos os modais da aplicação
+- **Sidebars**: Borda roxa e layout sticky que acompanha o scroll
+- **Botões**: Bordas arredondadas (`borderRadius: '24px'`), estilo consistente
+- **Responsividade**: Componentes otimizados para mobile e desktop
+- **Sistema de Busca**: Exibição de XP padronizada com ícone de estrela
+- **Cards de Usuário**: Exibição de `userType` traduzido dinamicamente
 
 ## 📄 Licença
 

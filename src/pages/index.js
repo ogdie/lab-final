@@ -165,7 +165,6 @@ export default function Home() {
     </div>
   );
 }
-
 const styles = {
   container: {
     position: 'relative',

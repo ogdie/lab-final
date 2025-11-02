@@ -5,6 +5,7 @@ import Navbar from '../components/ui/Navbar';
 import Footer from '../components/ui/Footer';
 import ChatPane from '../components/ChatPane';
 import { chatAPI, usersAPI } from '../services/api';
+import { FaStar } from 'react-icons/fa';
 
 export default function Chat() {
   const router = useRouter();
@@ -242,7 +243,9 @@ export default function Chat() {
                   <div style={{ flex: 1 }}>
                     <h4 style={{ margin: 0, color: theme === 'dark' ? '#e4e6eb' : '#1d2129' }}>{userResult.name || t('user')}</h4>
                     <p style={{ margin: '0.25rem 0', color: theme === 'dark' ? '#b0b3b8' : '#666' }}>{userResult.email || t('user')}</p>
-                    <p style={{ margin: 0, color: theme === 'dark' ? '#b0b3b8' : '#666' }}>⭐ {userResult.xp || 0} {t('xp')}</p>
+                    <p style={{ margin: '2px 0', color: theme === 'dark' ? '#b0b3b8' : '#606770', fontSize: '0.85rem' }}>
+                      <FaStar /> {userResult.xp || 0} XP
+                    </p>
                   </div>
                   <button
                     onClick={() => router.push(`/profile?id=${userResult._id}`)}
@@ -320,7 +323,6 @@ export default function Chat() {
     </div>
   );
 }
-
 const getStyles = (theme) => {
   const isDark = theme === 'dark';
   const backgroundCard = isDark ? '#2c2f33' : 'white';

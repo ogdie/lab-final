@@ -6,7 +6,7 @@ import Footer from '../components/ui/Footer';
 import EditProfileModal from '../components/ui/EditProfileModal';
 import AlertModal from '../components/ui/AlertModal';
 import { usersAPI } from '../services/api';
-import { FaEdit } from 'react-icons/fa';
+import { FaEdit, FaStar } from 'react-icons/fa';
 
 // --- Função de Estilo (getStyles) ---
 
@@ -352,7 +352,7 @@ export default function Settings() {
                                         {userResult.email || 'Email indisponível'}
                                     </p>
                                     <p style={{ color: isDark ? '#b0b3b8' : '#606770', margin: '2px 0', fontSize: '0.85rem' }}>
-                                        ⭐ {userResult.xp || 0} XP
+                                        <FaStar /> {userResult.xp || 0} XP
                                     </p>
                                 </div>
                                 <button

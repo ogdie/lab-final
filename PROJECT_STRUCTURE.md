@@ -168,8 +168,9 @@ lab-final/
 │   │       ├── EditProfileModal.jsx      # Modal para editar perfil
 │   │       ├── TopicModal.jsx            # Modal para criar novo tópico no fórum
 │   │       ├── AddAchievementModal.jsx   # Modal para adicionar/editar conquista ao perfil
-       ├── AchievementDetailsModal.jsx # Modal para visualizar detalhes completos de uma conquista
+│   │       ├── AchievementDetailsModal.jsx # Modal para visualizar detalhes completos de uma conquista
 │   │       ├── UsersListModal.jsx        # Modal para exibir lista de usuários (seguidores, seguindo)
+│   │       ├── ArticlesSidebar.jsx       # Sidebar de artigos recomendados ("TOP ARTIGOS PARA VOCÊ")
 │   │       ├── FollowButton.jsx          # Botão de seguir/deixar de seguir (com ícones)
 │   │       ├── BackButton.jsx            # Botão de voltar (com ícone de seta)
 │   │       ├── CodemiaLogo.jsx           # Logo da aplicação
@@ -355,10 +356,12 @@ lab-final/
 - **Cor de ação (botões, links, destaques)**: `#8B5CF6` (Roxo)
 - **Cor secundária**: `#4F46E5` (Azul) - usado apenas em botão "Adicionar Conquista"
 - **Ranking**: Bordas especiais para top 3 (Dourado `#FFD700`, Prateado `#C0C0C0`, Bronze `#CD7F32`)
+- **Bordas padronizadas**: Todos os modais, sidebars e componentes UI usam borda roxa (`#8B5CF6`)
 
 ### Componentes UI
 - **Botões**: Bordas arredondadas (`borderRadius: '24px'`), estilo consistente
-- **Modais**: Suporte completo a dark mode, tamanhos otimizados
+- **Modais**: Suporte completo a dark mode, tamanhos otimizados, **bordas roxas padronizadas**
+- **Sidebar de Artigos**: Componente sticky com artigos recomendados, borda roxa, títulos bilíngues
 - **Upload de imagens**: Compressão inteligente (até 2MB), qualidade preservada (qualidade inicial 0.9)
 - **Tooltips**: Bordas roxas, posicionamento preciso
 
@@ -369,5 +372,38 @@ lab-final/
 
 ---
 
-*Última atualização: Documentação completa da estrutura do projeto CodeConnect com sistema de conquistas e melhorias de UI*
+## 🆕 Novidades Recentes
+
+### Sidebar de Artigos Recomendados
+- **Componente**: `ArticlesSidebar.jsx`
+- **Localização**: Integrada nas páginas `home.js` e `forum/index.js`
+- **Funcionalidades**:
+  - Exibe 5 artigos técnicos recomendados
+  - Títulos bilíngues (PT/EN) dinâmicos baseados no idioma do usuário
+  - Imagens dos artigos com fallback para placeholder
+  - Links externos para os artigos
+  - Layout sticky que acompanha o scroll
+  - Borda roxa padronizada (#8B5CF6)
+
+### Padronização Visual
+- **Modais**: Todos os modais agora possuem borda roxa unificada (#8B5CF6)
+  - AlertModal, PostModal, TopicModal, EditProfileModal, EditPostModal
+  - UsersListModal, AddAchievementModal, AchievementDetailsModal
+  - Modais inline em `forum/topic.js`
+- **Modais de Busca**: Todos os modais de busca nas páginas também possuem borda roxa
+  - home.js, chat.js, forum/index.js, profile.js
+
+### Melhorias de UX
+- **Sistema de Busca**: Padronizado em todas as páginas
+  - Exibição de XP com ícone de estrela colorido (React Icons)
+  - Alinhamento consistente entre estrela e texto de XP
+  - Cores padronizadas em todos os modais de busca
+- **Cards de Usuário**: Exibição de `userType` traduzido
+  - Substituição do texto estático "Developer" pelo tipo real do usuário
+  - Tradução automática (Estudante/Student, Professor/Teacher, Recrutador/Recruiter)
+  - Implementado em `home.js` e `forum/index.js`
+
+---
+
+*Última atualização: Padronização de busca e exibição de userType nos cards de usuário*
 

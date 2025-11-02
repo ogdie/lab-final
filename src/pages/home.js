@@ -9,7 +9,7 @@ import PostModal from '../components/ui/PostModal';
 import AlertModal from '../components/ui/AlertModal';
 import ArticlesSidebar from '../components/ui/ArticlesSidebar';
 import { postsAPI, usersAPI, commentsAPI } from '../services/api';
-import { FaTimes, FaUsers, FaUserPlus } from 'react-icons/fa';
+import { FaTimes, FaUsers, FaUserPlus, FaStar } from 'react-icons/fa';
 import { IoGameController } from 'react-icons/io5';
 
 const getStyles = (theme) => {
@@ -235,6 +235,17 @@ export default function Home() {
     const isDark = theme === 'dark';
     const backgroundCard = isDark ? '#2c2f33' : '#ffffff';
     const blueAction = '#8B5CF6';
+
+    // Função helper para traduzir userType
+    const translateUserType = (userType) => {
+        if (!userType) return null;
+        const typeMap = {
+            'Estudante': 'user_type_student',
+            'Professor': 'user_type_professor',
+            'Recrutador': 'user_type_recruiter'
+        };
+        return t(typeMap[userType]) || userType;
+    };
 
     const [user, setUser] = useState(null);
     const [posts, setPosts] = useState([]);
@@ -760,6 +771,9 @@ export default function Home() {
                                     <div style={styles.resultInfo}>
                                         <h4 style={{color: styles.textPrimary, margin: 0}}>{userResult.name || 'Nome indisponível'}</h4>
                                         <p style={{color: styles.textSecondary, margin: '2px 0 0 0', fontSize: '0.85rem'}}>{userResult.email || 'Email indisponível'}</p>
+                                        <p style={{color: styles.textSecondary, margin: '2px 0', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px'}}>
+                                            <FaStar style={{ color: isDark ? '#b0b3b8' : '#606770' }} /> <span>{userResult.xp || 0} XP</span>
+                                        </p>
                                     </div>
                                     <button
                                         onClick={() => router.push(`/profile?id=${userResult._id}`)}
@@ -801,7 +815,7 @@ export default function Home() {
                             />
                             <h3 style={styles.cardTitle}>{user.name || t('user')}</h3>
                             <p style={styles.cardSubtitle}>
-                                {user.title || 'Developer'}
+                                {translateUserType(user.userType) || user.title || t('user')}
                             </p>
                         </div>
                         <div style={styles.statsSection}>
