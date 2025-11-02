@@ -11,8 +11,9 @@ import AlertModal from '../components/ui/AlertModal';
 import UsersListModal from '../components/ui/UsersListModal';
 import { usersAPI } from '../services/api';
 import AddAchievementModal from '../components/ui/AddAchievementModal';
+import AchievementDetailsModal from '../components/ui/AchievementDetailsModal';
 import AchievementCard from '../components/AchievementCard';
-import { FaTimes, FaEdit, FaTrophy, FaStar, FaShare, FaPaperPlane } from 'react-icons/fa';
+import { FaTimes, FaEdit, FaTrophy, FaStar, FaShare, FaPaperPlane, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
 
 // Função para estilos dinâmicos da página de perfil
 const getPageStyles = (theme) => {
@@ -106,6 +107,32 @@ const getPageStyles = (theme) => {
     achievementsSection: {
       marginTop: '2rem',
     },
+    achievementsContainer: {
+      display: 'flex',
+      flexWrap: 'nowrap',
+      gap: '0.75rem',
+      marginTop: '1rem',
+      alignItems: 'flex-start',
+      position: 'relative',
+    },
+    achievementsWrapper: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.75rem',
+    },
+    arrowButton: {
+      background: 'none',
+      border: 'none',
+      color: '#8B5CF6',
+      cursor: 'pointer',
+      padding: '0.5rem',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '1.5rem',
+      transition: 'opacity 0.2s',
+      flexShrink: 0,
+    },
     achievementsTitle: {
       fontSize: '1.25rem',
       fontWeight: '600',
@@ -175,9 +202,22 @@ export default function Profile() {
   const [user, setUser] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAchievementModal, setShowAchievementModal] = useState(false);
+  const [showAchievementDetailsModal, setShowAchievementDetailsModal] = useState(false);
+  const [selectedAchievement, setSelectedAchievement] = useState(null);
+  const [editingAchievement, setEditingAchievement] = useState(null);
+  const [achievementPage, setAchievementPage] = useState(0);
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
-  const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso' });
+  const [alert, setAlert] = useState({ 
+    isOpen: false, 
+    message: '', 
+    title: 'Aviso',
+    onConfirm: null,
+    showCancel: false,
+    confirmText: null,
+    cancelText: null,
+    isDelete: false
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
@@ -387,23 +427,83 @@ export default function Profile() {
   const handleAddAchievement = async (formData) => {
     if (!user?._id) return;
     try {
-      await usersAPI.addAchievement(user._id, formData);
-      await loadUser(user._id);
-      setAlert({
-        isOpen: true,
-        message: 'Conquista adicionada com sucesso!',
-        title: 'Sucesso!',
-      });
+      if (editingAchievement?._id) {
+        // Atualizar conquista existente
+        await usersAPI.updateAchievement(user._id, editingAchievement._id, formData);
+        await loadUser(user._id);
+        setAlert({
+          isOpen: true,
+          message: t('achievement_updated_success') || (language === 'en' ? 'Achievement updated successfully!' : 'Conquista atualizada com sucesso!'),
+          title: t('success') || (language === 'en' ? 'Success!' : 'Sucesso!'),
+        });
+      } else {
+        // Adicionar nova conquista
+        await usersAPI.addAchievement(user._id, formData);
+        await loadUser(user._id);
+        setAlert({
+          isOpen: true,
+          message: t('achievement_added_success') || (language === 'en' ? 'Achievement added successfully!' : 'Conquista adicionada com sucesso!'),
+          title: t('success') || (language === 'en' ? 'Success!' : 'Sucesso!'),
+        });
+      }
+      // Resetar página de conquistas para mostrar a primeira página
+      setAchievementPage(0);
     } catch (err) {
-      console.error('Erro ao adicionar conquista:', err);
-      setAlert({
-        isOpen: true,
-        message: err.message || 'Não foi possível salvar a conquista.',
-        title: 'Erro',
-      });
+      console.error('Erro ao salvar conquista:', err);
+        setAlert({
+          isOpen: true,
+          message: err.message || (t('achievement_save_error') || (language === 'en' ? 'Could not save the achievement.' : 'Não foi possível salvar a conquista.')),
+          title: t('error') || (language === 'en' ? 'Error' : 'Erro'),
+        });
     } finally {
       setShowAchievementModal(false);
+      setEditingAchievement(null);
     }
+  };
+
+  const handleEditAchievement = (achievement) => {
+    setEditingAchievement(achievement);
+    setShowAchievementModal(true);
+  };
+
+  const handleDeleteAchievement = (achievementId) => {
+    const confirmDelete = async () => {
+      if (!user?._id) return;
+      try {
+        await usersAPI.deleteAchievement(user._id, achievementId);
+        await loadUser(user._id);
+        // Ajustar página atual se necessário após deletar
+        const remainingAchievements = (user.achievements || []).length - 1;
+        const itemsPerPage = 3;
+        const maxPage = Math.max(0, Math.ceil(remainingAchievements / itemsPerPage) - 1);
+        if (achievementPage > maxPage) {
+          setAchievementPage(maxPage);
+        }
+        setAlert({
+          isOpen: true,
+          message: t('achievement_removed_success') || (language === 'en' ? 'Achievement removed successfully!' : 'Conquista removida com sucesso!'),
+          title: t('success') || (language === 'en' ? 'Success!' : 'Sucesso!'),
+        });
+      } catch (err) {
+        console.error('Erro ao remover conquista:', err);
+        setAlert({
+          isOpen: true,
+          message: err.message || (t('achievement_remove_error') || (language === 'en' ? 'Could not remove the achievement.' : 'Não foi possível remover a conquista.')),
+          title: t('error') || (language === 'en' ? 'Error' : 'Erro'),
+        });
+      }
+    };
+
+    setAlert({
+      isOpen: true,
+      message: t('delete_achievement_confirm') || (language === 'en' ? 'Are you sure you want to delete this achievement? This action cannot be undone.' : 'Tem certeza que deseja remover esta conquista? Esta ação não pode ser desfeita.'),
+      title: t('delete_achievement_title') || (language === 'en' ? 'Delete achievement?' : 'Remover conquista?'),
+      showCancel: true,
+      onConfirm: confirmDelete,
+      confirmText: t('delete') || (language === 'en' ? 'Delete' : 'Deletar'),
+      cancelText: t('cancel') || (language === 'en' ? 'Cancel' : 'Cancelar'),
+      isDelete: true,
+    });
   };
 
   // Funções estáveis para os modais de seguidores/seguindo
@@ -699,34 +799,82 @@ export default function Profile() {
           )}
 
               {/* Conquistas */}
-              {Array.isArray(user.achievements) && user.achievements.length > 0 && (
-                <div style={styles.achievementsSection}>
-                  <h2 style={styles.achievementsTitle}>{t('achievements')}</h2>
-                  <div>
-                    {user.achievements
-                      .sort((a, b) => new Date(b.date) - new Date(a.date))
-                      .map((ach) => (
-                        <AchievementCard
-                          key={ach._id || ach.title + ach.date}
-                          achievement={ach}
-                          theme={theme}
-                        />
-                      ))}
+              {Array.isArray(user.achievements) && user.achievements.length > 0 && (() => {
+                const sortedAchievements = [...user.achievements].sort((a, b) => new Date(b.date) - new Date(a.date));
+                const itemsPerPage = 3;
+                const totalPages = Math.ceil(sortedAchievements.length / itemsPerPage);
+                const startIndex = achievementPage * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const visibleAchievements = sortedAchievements.slice(startIndex, endIndex);
+                const hasMore = endIndex < sortedAchievements.length;
+
+                return (
+                  <div style={styles.achievementsSection}>
+                    <h2 style={styles.achievementsTitle}>{t('achievements')}</h2>
+                    <div style={styles.achievementsWrapper}>
+                      {achievementPage > 0 && (
+                        <button
+                          onClick={() => setAchievementPage(prev => prev - 1)}
+                          style={styles.arrowButton}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.opacity = '0.7';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.opacity = '1';
+                          }}
+                          title="Voltar para conquistas anteriores"
+                        >
+                          <FaArrowLeft />
+                        </button>
+                      )}
+                      <div style={styles.achievementsContainer}>
+                        {visibleAchievements.map((ach) => (
+                          <AchievementCard
+                            key={ach._id || ach.title + ach.date}
+                            achievement={ach}
+                            theme={theme}
+                            canEdit={currentUser && currentUser._id === user._id}
+                            onEdit={handleEditAchievement}
+                            onDelete={handleDeleteAchievement}
+                            onClick={() => {
+                              setSelectedAchievement(ach);
+                              setShowAchievementDetailsModal(true);
+                            }}
+                          />
+                        ))}
+                      </div>
+                      {hasMore && (
+                        <button
+                          onClick={() => setAchievementPage(prev => prev + 1)}
+                          style={styles.arrowButton}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.opacity = '0.7';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.opacity = '1';
+                          }}
+                          title="Ver mais conquistas"
+                        >
+                          <FaArrowRight />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {currentUser &&
                 currentUser._id === user._id &&
                 (!user.achievements || user.achievements.length === 0) && (
                   <div style={styles.noAchievements}>
                     <p>
-                      {t('no_achievements_yet')}
+                      {t('no_achievements_yet') || (language === 'en' ? 'You haven\'t added any achievements yet.' : 'Você ainda não adicionou nenhuma conquista.')}
+                      {' '}
                       <button
                         onClick={() => setShowAchievementModal(true)}
                         style={styles.addAchievementLink}
                       >
-                        {t('add_now')}
+                        {t('add_now') || (language === 'en' ? 'Add now' : 'Adicione agora')}
                       </button>
                     </p>
                   </div>
@@ -858,34 +1006,82 @@ export default function Profile() {
             </div>
 
             {/* Conquistas abaixo do bloco principal */}
-            {Array.isArray(user.achievements) && user.achievements.length > 0 && (
-              <div style={{ ...styles.achievementsSection, marginTop: '2rem' }}>
-                <h2 style={styles.achievementsTitle}>Conquistas</h2>
-                <div>
-                  {user.achievements
-                    .sort((a, b) => new Date(b.date) - new Date(a.date))
-                    .map((ach) => (
-                      <AchievementCard
-                        key={ach._id || ach.title + ach.date}
-                        achievement={ach}
-                        theme={theme}
-                      />
-                    ))}
+            {Array.isArray(user.achievements) && user.achievements.length > 0 && (() => {
+              const sortedAchievements = [...user.achievements].sort((a, b) => new Date(b.date) - new Date(a.date));
+              const itemsPerPage = 3;
+              const totalPages = Math.ceil(sortedAchievements.length / itemsPerPage);
+              const startIndex = achievementPage * itemsPerPage;
+              const endIndex = startIndex + itemsPerPage;
+              const visibleAchievements = sortedAchievements.slice(startIndex, endIndex);
+              const hasMore = endIndex < sortedAchievements.length;
+
+              return (
+                <div style={{ ...styles.achievementsSection, marginTop: '2rem' }}>
+                  <h2 style={styles.achievementsTitle}>{t('achievements')}</h2>
+                  <div style={styles.achievementsWrapper}>
+                    {achievementPage > 0 && (
+                      <button
+                        onClick={() => setAchievementPage(prev => prev - 1)}
+                        style={styles.arrowButton}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.opacity = '0.7';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = '1';
+                        }}
+                        title="Voltar para conquistas anteriores"
+                      >
+                        <FaArrowLeft />
+                      </button>
+                    )}
+                    <div style={styles.achievementsContainer}>
+                      {visibleAchievements.map((ach) => (
+                        <AchievementCard
+                          key={ach._id || ach.title + ach.date}
+                          achievement={ach}
+                          theme={theme}
+                          canEdit={currentUser && currentUser._id === user._id}
+                          onEdit={handleEditAchievement}
+                          onDelete={handleDeleteAchievement}
+                          onClick={() => {
+                            setSelectedAchievement(ach);
+                            setShowAchievementDetailsModal(true);
+                          }}
+                        />
+                      ))}
+                    </div>
+                    {hasMore && (
+                      <button
+                        onClick={() => setAchievementPage(prev => prev + 1)}
+                        style={styles.arrowButton}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.opacity = '0.7';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = '1';
+                        }}
+                        title="Ver mais conquistas"
+                      >
+                        <FaArrowRight />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {currentUser &&
               currentUser._id === user._id &&
               (!user.achievements || user.achievements.length === 0) && (
                 <div style={{ ...styles.noAchievements, marginTop: '2rem' }}>
                   <p>
-                    Você ainda não adicionou nenhuma conquista.
+                    {t('no_achievements_yet') || (language === 'en' ? 'You haven\'t added any achievements yet.' : 'Você ainda não adicionou nenhuma conquista.')}
+                    {' '}
                     <button
                       onClick={() => setShowAchievementModal(true)}
                       style={styles.addAchievementLink}
                     >
-                      Adicione agora
+                      {t('add_now') || (language === 'en' ? 'Add now' : 'Adicione agora')}
                     </button>
                   </p>
                 </div>
@@ -906,12 +1102,31 @@ export default function Profile() {
         onClose={closeAlert}
         message={alert.message}
         title={alert.title}
+        onConfirm={alert.onConfirm}
+        showCancel={alert.showCancel}
+        confirmText={alert.confirmText}
+        cancelText={alert.cancelText}
+        isDelete={alert.isDelete}
         theme={theme}
       />
       <AddAchievementModal
         isOpen={showAchievementModal}
-        onClose={() => setShowAchievementModal(false)}
+        onClose={() => {
+          setShowAchievementModal(false);
+          setEditingAchievement(null);
+        }}
         onSave={handleAddAchievement}
+        theme={theme}
+        achievement={editingAchievement}
+      />
+
+      <AchievementDetailsModal
+        isOpen={showAchievementDetailsModal}
+        onClose={() => {
+          setShowAchievementDetailsModal(false);
+          setSelectedAchievement(null);
+        }}
+        achievement={selectedAchievement}
         theme={theme}
       />
 

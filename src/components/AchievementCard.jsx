@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
-import { FaMedal, FaGraduationCap, FaRocket, FaTrophy, FaFileAlt, FaCheckCircle } from 'react-icons/fa';
+import { FaMedal, FaGraduationCap, FaRocket, FaTrophy, FaFileAlt, FaCheckCircle, FaEdit, FaTrash } from 'react-icons/fa';
 
 // Ícones usando react-icons
 const getIconByType = (type) => {
@@ -14,7 +14,7 @@ const getIconByType = (type) => {
   }
 };
 
-export default function AchievementCard({ achievement, theme = 'light' }) {
+export default function AchievementCard({ achievement, theme = 'light', onEdit, onDelete, canEdit = false, onClick }) {
   const [imageError, setImageError] = useState(false);
   const { t, language } = useThemeLanguage();
   const isDark = theme === 'dark';
@@ -22,6 +22,11 @@ export default function AchievementCard({ achievement, theme = 'light' }) {
   const textSecondary = isDark ? '#b0b3b8' : '#606770';
   const background = isDark ? '#3e4042' : '#f6f8fa';
   const border = isDark ? '#4e5052' : '#dddfe2';
+
+  // Resetar erro de imagem quando a imagem mudar
+  useEffect(() => {
+    setImageError(false);
+  }, [achievement?.image]);
 
   // Labels traduzidos
   const getTypeLabel = (type) => {
@@ -38,101 +43,209 @@ export default function AchievementCard({ achievement, theme = 'light' }) {
     });
   };
 
-  const showImage = achievement.image && !imageError;
+  // Verificar se a imagem existe e não está vazia
+  const hasImage = achievement?.image && achievement.image.trim() !== '';
+  const showImage = hasImage && !imageError;
+  const blueAction = '#8B5CF6';
+
+  const handleCardClick = (e) => {
+    // Não abrir modal se clicar nos botões de editar/deletar ou nos seus containers
+    const clickedButton = e.target.closest('button');
+    const clickedButtonContainer = e.target.closest('[data-button-container]');
+    
+    if (clickedButton || clickedButtonContainer) {
+      return;
+    }
+    
+    if (onClick) {
+      onClick(e);
+    }
+  };
 
   return (
-    <div style={{
-      background,
-      border: `1px solid ${border}`,
-      borderRadius: '8px',
-      padding: '1.25rem',
-      marginBottom: '1rem',
-      display: 'flex',
-      gap: '1rem'
-    }}>
-      {showImage ? (
-        <img 
-          src={achievement.image} 
-          alt={achievement.title}
-          style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '8px',
-            objectFit: 'cover',
-            flexShrink: 0
-          }}
-          onError={() => setImageError(true)}
-        />
-      ) : (
-        <div style={{
-          fontSize: '2rem',
-          flexShrink: 0
-        }}>
-          {getIconByType(achievement.type)}
-        </div>
-      )}
-      <div style={{ flex: 1 }}>
-        <div style={{
+    <div 
+      onClick={handleCardClick}
+      style={{
+        background,
+        border: `1px solid ${blueAction}`,
+        borderRadius: '8px',
+        marginBottom: '0.75rem',
+        marginRight: '0.75rem',
+        width: '200px',
+        maxWidth: '100%',
+        position: 'relative',
+        verticalAlign: 'top',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        cursor: onClick ? 'pointer' : 'default',
+        transition: onClick ? 'transform 0.2s, box-shadow 0.2s' : 'none'
+      }}
+      onMouseEnter={onClick ? (e) => {
+        e.currentTarget.style.transform = 'scale(1.02)';
+        e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.3)';
+      } : undefined}
+      onMouseLeave={onClick ? (e) => {
+        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.boxShadow = 'none';
+      } : undefined}
+    >
+      {/* Container da imagem ocupando todo o espaço superior */}
+      <div 
+        style={{
+          width: '100%',
+          height: '200px',
+          position: 'relative',
+          overflow: 'hidden',
+          background: isDark ? '#2c2f33' : '#e7e7e7',
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: '0.25rem'
-        }}>
-          <h3 style={{
-            fontSize: '1.1rem',
-            fontWeight: '600',
-            color: textPrimary,
-            margin: 0
-          }}>
-            {achievement.title}
-          </h3>
-          <span style={{
-            fontSize: '0.85rem',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        {showImage ? (
+          <img 
+            src={achievement.image} 
+            alt={achievement.title}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+              width: 'auto',
+              height: 'auto',
+              objectFit: 'contain',
+              objectPosition: 'center',
+              pointerEvents: 'none'
+            }}
+            onError={(e) => {
+              console.error('Erro ao carregar imagem da conquista:', achievement.image);
+              setImageError(true);
+            }}
+            onLoad={() => {
+              // Resetar erro quando a imagem carregar com sucesso
+              setImageError(false);
+            }}
+            loading="lazy"
+          />
+        ) : (
+          <div style={{
+            width: '100%',
+            height: '100%',
+            fontSize: '3rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             color: textSecondary,
-            whiteSpace: 'nowrap'
+            pointerEvents: 'none'
           }}>
-            {formatDate(achievement.date)}
-          </span>
-        </div>
-
-        <p style={{
-          fontSize: '0.9rem',
-          color: textSecondary,
-          margin: '0.25rem 0'
-        }}>
-          {getTypeLabel(achievement.type)}
-        </p>
-
-        {achievement.description && (
-          <p style={{
-            fontSize: '0.95rem',
-            color: textPrimary,
-            marginTop: '0.5rem',
-            lineHeight: 1.4
-          }}>
-            {achievement.description}
-          </p>
-        )}
-
-        {achievement.technologies && achievement.technologies.length > 0 && (
-          <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-            {achievement.technologies.map((tech, i) => (
-              <span
-                key={i}
-                style={{
-                  background: isDark ? '#4e5052' : '#e7e7e7',
-                  color: textPrimary,
-                  padding: '0.25rem 0.5rem',
-                  borderRadius: '4px',
-                  fontSize: '0.8rem',
-                  fontWeight: '500'
-                }}
-              >
-                {tech}
-              </span>
-            ))}
+            {getIconByType(achievement.type)}
           </div>
         )}
+        
+        {/* Botões de editar e deletar posicionados absolutamente no canto superior direito */}
+        {canEdit && (onEdit || onDelete) && (
+          <div 
+            data-button-container
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              display: 'flex',
+              gap: '0.5rem',
+              zIndex: 10,
+              pointerEvents: 'auto'
+            }}
+          >
+            {onEdit && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(achievement);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: blueAction,
+                  cursor: 'pointer',
+                  padding: '0.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '4px',
+                  transition: 'opacity 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '0.7';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
+                title={t('edit') || 'Editar'}
+              >
+                <FaEdit size={14} />
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(achievement._id);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#f44336',
+                  cursor: 'pointer',
+                  padding: '0.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '4px',
+                  transition: 'opacity 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '0.7';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
+                title={t('delete') || 'Remover'}
+              >
+                <FaTrash size={14} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Área de informações embaixo da imagem */}
+      <div 
+        style={{
+          padding: '0.75rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.25rem',
+          alignItems: 'center',
+          textAlign: 'center',
+          pointerEvents: 'none'
+        }}
+      >
+        <h3 style={{
+          fontSize: '1rem',
+          fontWeight: '600',
+          color: textPrimary,
+          margin: 0,
+          wordBreak: 'break-word'
+        }}>
+          {achievement.title}
+        </h3>
+        <span style={{
+          fontSize: '0.8rem',
+          color: textSecondary
+        }}>
+          {formatDate(achievement.date)}
+        </span>
       </div>
     </div>
   );

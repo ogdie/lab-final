@@ -49,19 +49,25 @@ const getStyles = (theme) => {
     button: {
       padding: '0.75rem 1.5rem',
       border: 'none',
-      borderRadius: '4px',
-      fontSize: '1rem',
+      borderRadius: '24px',
+      fontSize: '0.9rem',
+      fontWeight: '600',
       cursor: 'pointer',
       flex: 1,
       background: blueAction,
-      color: 'white'
+      color: 'white',
+      transition: 'background 0.2s'
     },
     cancelButton: {
-      background: isDark ? '#474a4d' : '#e0e0e0',
+      background: isDark ? '#474a4d' : '#e7e7e7',
       color: textPrimary
     },
     confirmButton: {
       background: blueAction,
+      color: 'white'
+    },
+    deleteButton: {
+      background: '#f44336',
       color: 'white'
     }
   };
@@ -76,6 +82,7 @@ export default function AlertModal({
   showCancel = false,
   confirmText,
   cancelText,
+  isDelete = false,
   theme
 }) {
   if (!isOpen) return null;
@@ -84,7 +91,7 @@ export default function AlertModal({
   const styles = getStyles(appliedTheme);
   
   const finalTitle = title || t('warning');
-  const finalConfirm = confirmText || t('confirm');
+  const finalConfirm = confirmText || (isDelete ? (t('delete') || 'Deletar') : t('confirm'));
   const finalCancel = cancelText || t('cancel');
 
   const handleConfirm = () => {
@@ -105,7 +112,11 @@ export default function AlertModal({
           )}
           <button 
             onClick={handleConfirm} 
-            style={showCancel ? { ...styles.button, ...styles.confirmButton } : styles.button}
+            style={showCancel 
+              ? (isDelete 
+                  ? { ...styles.button, ...styles.deleteButton } 
+                  : { ...styles.button, ...styles.confirmButton })
+              : styles.button}
           >
             {showCancel ? finalConfirm : t('close')}
           </button>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 import MentionTextarea from './MentionTextarea';
+import ImageUpload from './ImageUpload';
 // Modal component for editing a post
 export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete, theme: propTheme }) {
   const [content, setContent] = useState('');
@@ -30,6 +31,7 @@ export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete,
 
   if (!isOpen) return null;
 
+  const isDark = theme === 'dark';
   const styles = getStyles(theme);
 
   return (
@@ -46,13 +48,31 @@ export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete,
             theme={theme}
             required
           />
-          <input
-            type="text"
-            placeholder={t('image_url_optional')}
-            value={image}
-            onChange={(e) => setImage(e.target.value)}
-            style={styles.input}
-          />
+          <div style={{ marginBottom: '1rem' }}>
+            <ImageUpload
+              value={image}
+              onChange={setImage}
+              placeholder={t('select_image') || "Selecione uma imagem do computador"}
+              theme={theme}
+            />
+            {!image && (
+              <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: isDark ? '#b0b3b8' : '#666' }}>
+                {t('or')}{' '}
+                <input
+                  type="text"
+                  placeholder={t('image_url_optional') || 'Cole uma URL de imagem'}
+                  value={image}
+                  onChange={(e) => setImage(e.target.value)}
+                  style={{
+                    ...styles.input,
+                    marginTop: '0.5rem',
+                    fontSize: '0.85rem',
+                    padding: '0.5rem'
+                  }}
+                />
+              </div>
+            )}
+          </div>
           <div style={styles.actions}>
             <button type="submit" style={styles.submitButton}>
               {t('save')}

@@ -14,8 +14,9 @@ Rede social para estudantes, professores e recrutadores de programação com gam
 - ✅ Feed de posts com timeline
 - ✅ Sistema de curtidas e comentários
 - ✅ Menções de usuários (@usuario)
-- ✅ Upload de imagens em posts
+- ✅ Upload de imagens em posts com compressão inteligente (até 2MB, qualidade preservada)
 - ✅ Edição e exclusão de posts/comentários
+- ✅ Tooltips informativos em componentes de upload
 
 ### Social
 - ✅ Sistema de seguir/deixar de seguir
@@ -32,15 +33,21 @@ Rede social para estudantes, professores e recrutadores de programação com gam
 
 ### Gamificação
 - ✅ Sistema de XP (Experience Points)
-- ✅ Ranking de usuários por XP
-- ✅ Conquistas (achievements) personalizáveis
-- ✅ Níveis baseados em XP
+- ✅ Ranking de usuários por XP (top 3 com bordas douradas/prateadas/bronze)
+- ✅ Sistema completo de conquistas (achievements) com CRUD
+  - Adicionar, editar e remover conquistas
+  - Tipos: Certificação, Curso, Projeto, Competição, Publicação, Outros
+  - Upload de imagens de alta qualidade para conquistas
+  - Modal de detalhes com informações completas
+  - Paginação (3 conquistas por vez)
+  - Suporte completo a traduções (PT/EN)
 
 ### Personalização
-- ✅ Tema claro/escuro
-- ✅ Suporte multilíngue (PT/EN)
-- ✅ Edição de perfil completa
-- ✅ Upload de foto de perfil
+- ✅ Tema claro/escuro (dark mode completo)
+- ✅ Suporte multilíngue completo (PT/EN) com traduções dinâmicas
+- ✅ Edição de perfil completa com upload de imagem
+- ✅ Interface moderna com botões arredondados e cores roxas (#8B5CF6)
+- ✅ Componentes responsivos e otimizados para mobile
 
 ## 📋 Requisitos
 
@@ -102,7 +109,7 @@ labfinal/
 
 ## 🎯 Endpoints API
 
-**Total: 48 endpoints REST**
+**Total: 50 endpoints REST**
 
 ### Autenticação (`/api/auth`, `/auth`)
 - `POST /api/auth/register` - Registrar novo usuário
@@ -126,6 +133,8 @@ labfinal/
 - `GET /api/users/:id/notifications` - Notificações
 - `POST /api/users/:id/follow` - Seguir/Deixar de seguir
 - `POST /api/users/:id/achievements` - Adicionar conquista
+- `PUT /api/users/:id/achievements/:achievementId` - Atualizar conquista
+- `DELETE /api/users/:id/achievements/:achievementId` - Remover conquista
 
 ### Posts (`/api/posts`)
 - `GET /api/posts` - Listar posts do feed
@@ -155,7 +164,8 @@ labfinal/
 - `GET /api/chat/:userId/messages` - Obter mensagens
 - `POST /api/chat/:userId/messages` - Enviar mensagem
 - `PUT /api/chat/:userId/read` - Marcar como lida
-- `DELETE /api/chat/:userId` - Deletar conversa
+- `DELETE /api/chat/messages/:messageId` - Deletar mensagem específica
+- `DELETE /api/chat/:userId` - Deletar conversa completa
 
 ### Notificações (`/api/notifications`)
 - `GET /api/notifications?userId=ID` - Listar notificações

@@ -80,6 +80,13 @@ export const usersAPI = {
   addAchievement: (id, data) => fetchAPI(`/users/${id}/achievements`, {
     method: 'POST',
     body: JSON.stringify(data)
+  }),
+  updateAchievement: (id, achievementId, data) => fetchAPI(`/users/${id}/achievements/${achievementId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+  deleteAchievement: (id, achievementId) => fetchAPI(`/users/${id}/achievements/${achievementId}`, {
+    method: 'DELETE'
   })
 };
 

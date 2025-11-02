@@ -9,6 +9,7 @@ import PostModal from '../components/ui/PostModal';
 import AlertModal from '../components/ui/AlertModal';
 import { postsAPI, usersAPI, commentsAPI } from '../services/api';
 import { FaTimes, FaUsers, FaUserPlus } from 'react-icons/fa';
+import { IoGameController } from 'react-icons/io5';
 
 const getStyles = (theme) => {
     const isDark = theme === 'dark';
@@ -42,57 +43,47 @@ const getStyles = (theme) => {
         sidebar: {
             position: 'sticky',
             top: '72px',
-            width: '260px', 
+            width: '240px',
             flexShrink: 0,
+            background: backgroundCard,
+            borderRadius: '12px',
+            boxShadow: linkedInShadow,
+            border: `1px solid ${blueAction}`,
+            overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px', 
-            height: 'calc(100vh - 72px - 32px)',
-            overflowY: 'auto',
+            textAlign: 'center',
             zIndex: 10,
         },
         sidebarHeader: {
             height: '54px',
             background: blueAction,
             marginBottom: '-32px',
-            borderRadius: '12px 12px 0 0',
         },
-        profileCard: {
+        userCard: {
+            padding: '16px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            background: backgroundCard,
-            borderRadius: '12px',
-            boxShadow: linkedInShadow,
-            border: `1px solid ${borderSubtle}`,
-            overflow: 'hidden',
+            gap: '8px',
         },
-        profileCardContent: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '0 16px 16px 16px',
-            width: '100%',
-            cursor: 'pointer',
-        },
-        sidebarAvatar: {
+        avatar: {
             width: '72px',
             height: '72px',
             borderRadius: '50%',
             objectFit: 'cover',
             border: `2px solid ${backgroundCard}`,
         },
-        sidebarName: {
-            fontSize: '1rem',
+        cardTitle: {
+            fontSize: '1.2rem',
             fontWeight: '600',
             color: textPrimary,
-            margin: '8px 0 4px 0',
+            margin: '4px 0 0 0',
         },
-        sidebarEmail: {
-            fontSize: '0.875rem',
+        cardSubtitle: {
+            fontSize: '0.9rem',
             color: textSecondary,
-            margin: 0,
-            textAlign: 'center',
+            margin: '0 0 16px 0',
         },
         statsSection: {
             padding: '12px 16px',
@@ -102,31 +93,34 @@ const getStyles = (theme) => {
         statItem: {
             display: 'flex',
             justifyContent: 'space-between',
+            alignItems: 'center',
             fontSize: '0.9rem',
             color: textSecondary,
             width: '100%',
             padding: '4px 0',
+            cursor: 'pointer',
         },
         statValue: {
-            color: blueAction, 
+            color: blueAction,
             fontWeight: 'bold',
         },
-        createPostButton: {
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            gap: '12px',
+        userCardButtons: {
             padding: '12px 16px',
+            borderTop: `1px solid ${borderSubtle}`,
+            width: '100%',
+        },
+        forumButton: {
+            width: '100%',
+            padding: '8px 16px',
             background: backgroundCard,
-            border: `1px solid ${borderSubtle}`,
-            borderRadius: '8px', 
+            border: `1px solid ${blueAction}`,
+            borderRadius: '24px',
             fontSize: '1rem',
             fontWeight: '600',
-            color: textPrimary,
+            color: blueAction,
             cursor: 'pointer',
-            transition: 'background 0.2s',
-            boxShadow: linkedInShadow,
+            transition: 'background 0.2s, border-color 0.2s',
+            marginBottom: '8px',
         },
         mainArea: {
             flex: 1,
@@ -235,8 +229,11 @@ const getStyles = (theme) => {
 
 export default function Home() {
     const router = useRouter();
-    const { theme, t } = useThemeLanguage(); 
+    const { theme, t, language } = useThemeLanguage(); 
     const styles = getStyles(theme);
+    const isDark = theme === 'dark';
+    const backgroundCard = isDark ? '#2c2f33' : '#ffffff';
+    const blueAction = '#8B5CF6';
 
     const [user, setUser] = useState(null);
     const [posts, setPosts] = useState([]);
@@ -792,17 +789,19 @@ export default function Home() {
             />
 
             <div style={styles.mainLayout}>
-                <aside style={styles.sidebar}>
-                    <div style={styles.profileCard} onClick={() => router.push(`/profile?id=${user?._id}`)}>
+                {user && (
+                    <aside style={styles.sidebar}>
                         <div style={styles.sidebarHeader} />
-                        <div style={styles.profileCardContent}>
+                        <div style={styles.userCard}>
                             <img
-                                src={user?.profilePicture || '/default-avatar.svg'}
-                                alt={user?.name || 'Você'}
-                                style={styles.sidebarAvatar}
+                                src={user.profilePicture || "/default-avatar.svg"}
+                                alt={user.name}
+                                style={styles.avatar}
                             />
-                            <div style={styles.sidebarName}>{user?.name || 'Usuário'}</div>
-                            <div style={styles.sidebarEmail}>{user?.title || user?.email || 'Bem-vindo(a)'}</div>
+                            <h3 style={styles.cardTitle}>{user.name || t('user')}</h3>
+                            <p style={styles.cardSubtitle}>
+                                {user.title || 'Developer'}
+                            </p>
                         </div>
                         <div style={styles.statsSection}>
                             <div style={styles.statItem}>
@@ -814,19 +813,27 @@ export default function Home() {
                                 <strong style={styles.statValue}>{user?.following?.length || 0}</strong>
                             </div>
                         </div>
-                    </div>
-
-                    <div 
-                        onClick={() => setShowPostModal(true)} 
-                        style={styles.createPostButton}
-                    >
-                        <span style={{...styles.sidebarAvatar, width: '32px', height: '32px', color: '#8B5CF6'}}>+</span>
-                        <span style={{ color: '#8B5CF6' }}>{t('start_post')}</span>
-                    </div>
-
-                    {/* Você pode adicionar mais cards laterais aqui, como "Grupos" ou "Sugestões" */}
-
-                </aside>
+                        <div style={styles.userCardButtons}>
+                            <button
+                                style={styles.forumButton}
+                                onClick={() => setShowPostModal(true)}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = isDark ? '#3a3b3c' : '#f8f9ff';
+                                    e.currentTarget.style.borderColor = '#9d68f7';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = backgroundCard;
+                                    e.currentTarget.style.borderColor = blueAction;
+                                }}
+                            >
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>+</span>
+                                    <span>{t('start_post')}</span>
+                                </span>
+                            </button>
+                        </div>
+                    </aside>
+                )}
 
                 <main style={styles.mainArea}>
                     {posts.length === 0 ? (

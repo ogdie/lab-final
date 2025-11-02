@@ -118,7 +118,7 @@ const getStyles = (theme) => {
 };
 // --- FIM getStyles ---
 
-export default function AddAchievementModal({ isOpen, onClose, onSave, theme = 'light' }) {
+export default function AddAchievementModal({ isOpen, onClose, onSave, theme = 'light', achievement = null }) {
   const [formData, setFormData] = useState({
     title: '',
     type: ACHIEVEMENT_TYPES[0],
@@ -131,19 +131,32 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
   const styles = getStyles(theme);
   const { t } = useThemeLanguage();
 
-  // Resetar formulário ao abrir/fechar
+  // Resetar formulário ao abrir/fechar ou preencher se estiver editando
   useEffect(() => {
     if (isOpen) {
-      setFormData({
-        title: '',
-        type: ACHIEVEMENT_TYPES[0],
-        description: '',
-        date: '',
-        technologies: '',
-        image: ''
-      });
+      if (achievement) {
+        // Preencher com dados da conquista para edição
+        setFormData({
+          title: achievement.title || '',
+          type: achievement.type || ACHIEVEMENT_TYPES[0],
+          description: achievement.description || '',
+          date: achievement.date ? new Date(achievement.date).toISOString().split('T')[0] : '',
+          technologies: Array.isArray(achievement.technologies) ? achievement.technologies.join(', ') : '',
+          image: achievement.image || ''
+        });
+      } else {
+        // Resetar formulário para nova conquista
+        setFormData({
+          title: '',
+          type: ACHIEVEMENT_TYPES[0],
+          description: '',
+          date: '',
+          technologies: '',
+          image: ''
+        });
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, achievement]);
 
   if (!isOpen) return null;
 
@@ -158,6 +171,15 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
         .filter(t => t.length > 0)
     };
     if (onSave) onSave(data);
+    // Resetar formulário antes de fechar
+    setFormData({
+      title: '',
+      type: ACHIEVEMENT_TYPES[0],
+      description: '',
+      date: '',
+      technologies: '',
+      image: ''
+    });
     onClose();
   };
 
@@ -169,7 +191,7 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2 style={styles.title}>{t('add_achievement')}</h2>
+        <h2 style={styles.title}>{achievement ? (t('edit_achievement') || 'Editar conquista') : t('add_achievement')}</h2>
         <form onSubmit={handleSubmit}>
           {/* Título */}
           <div style={styles.field}>
@@ -271,7 +293,22 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
 
           {/* Ações */}
           <div style={styles.actions}>
-            <button type="button" onClick={onClose} style={styles.cancelButton}>
+            <button 
+              type="button" 
+              onClick={() => {
+                // Resetar formulário ao cancelar
+                setFormData({
+                  title: '',
+                  type: ACHIEVEMENT_TYPES[0],
+                  description: '',
+                  date: '',
+                  technologies: '',
+                  image: ''
+                });
+                onClose();
+              }} 
+              style={styles.cancelButton}
+            >
               {t('cancel')}
             </button>
             <button type="submit" style={styles.saveButton}>

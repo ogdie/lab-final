@@ -207,7 +207,69 @@ router.post('/:id/follow', async (req, res) => {
   }
 });
 
-// Add achievement to user
+// Update achievement - DEVE VIR ANTES da rota POST (rotas mais específicas primeiro)
+router.put('/:id/achievements/:achievementId', async (req, res) => {
+  try {
+    const { title, type, description, date, technologies, image } = req.body;
+    
+    if (!title || !type || !date) {
+      return res.status(400).json({ error: 'Título, tipo e data são obrigatórios' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    const achievementIndex = user.achievements.findIndex(
+      a => a._id.toString() === req.params.achievementId
+    );
+
+    if (achievementIndex === -1) {
+      return res.status(404).json({ error: 'Conquista não encontrada' });
+    }
+
+    user.achievements[achievementIndex] = {
+      ...user.achievements[achievementIndex].toObject(),
+      title: title.trim(),
+      type,
+      description: description || '',
+      date: new Date(date),
+      technologies: Array.isArray(technologies) ? technologies : (technologies || []),
+      image: image || ''
+    };
+
+    await user.save();
+    const updatedUser = await User.findById(req.params.id).select('-password');
+
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete achievement - DEVE VIR ANTES da rota POST (rotas mais específicas primeiro)
+router.delete('/:id/achievements/:achievementId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    user.achievements = user.achievements.filter(
+      a => a._id.toString() !== req.params.achievementId
+    );
+
+    await user.save();
+    const updatedUser = await User.findById(req.params.id).select('-password');
+
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add achievement to user - Rotas mais genéricas por último
 router.post('/:id/achievements', async (req, res) => {
   try {
     const { title, type, description, date, technologies, image } = req.body;

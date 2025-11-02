@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FaImage } from 'react-icons/fa';
 import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 
-const MAX_FILE_SIZE = 1.5 * 1024 * 1024;
-const MAX_WIDTH = 1280;
-const MAX_HEIGHT = 1280;
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // Aumentado para 2MB
+const MAX_WIDTH = 1920; // Aumentado para melhor qualidade
+const MAX_HEIGHT = 1920;
 
 export default function ImageUpload({ 
   value, 
@@ -21,6 +21,14 @@ export default function ImageUpload({
   const fileInputRef = useRef(null);
   const { t } = useThemeLanguage();
   const isDark = theme === 'dark';
+
+  // Sincronizar preview com value quando value mudar externamente
+  useEffect(() => {
+    setPreview(value || '');
+    if (!value && fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [value]);
 
   const compressImage = (file) => {
     return new Promise((resolve, reject) => {
@@ -48,15 +56,18 @@ export default function ImageUpload({
             return (base64Data.length * 3) / 4;
           };
 
-          const qualities = [0.75, 0.65, 0.55, 0.45, 0.35];
+          const qualities = [0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5];
           const tryCompress = (index) => {
             if (index >= qualities.length) {
-              const smallerWidth = Math.round(width * 0.8);
-              const smallerHeight = Math.round(height * 0.8);
+              // Se ainda não coube, reduzir dimensões um pouco e tentar qualidade menor
+              const smallerWidth = Math.round(width * 0.9);
+              const smallerHeight = Math.round(height * 0.9);
               canvas.width = smallerWidth;
               canvas.height = smallerHeight;
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
               ctx.drawImage(img, 0, 0, smallerWidth, smallerHeight);
-              const finalBase64 = canvas.toDataURL('image/jpeg', 0.3);
+              const finalBase64 = canvas.toDataURL('image/jpeg', 0.5);
               resolve(finalBase64);
               return;
             }

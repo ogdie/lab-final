@@ -2,7 +2,7 @@
 
 ## 📊 Resumo de Endpoints
 
-**Total: 48 endpoints REST**
+**Total: 50 endpoints REST**
 
 ### Autenticação (`/api/auth` e `/auth`) - 7 endpoints
 - `POST /api/auth/register` - Registrar novo usuário
@@ -13,7 +13,7 @@
 - `GET /auth/github` - Iniciar OAuth GitHub
 - `GET /auth/github/callback` - Callback OAuth GitHub
 
-### Usuários (`/api/users`) - 14 endpoints
+### Usuários (`/api/users`) - 16 endpoints
 - `GET /api/users` - Listar todos os usuários
 - `GET /api/users/search?name=TERMO` - Buscar usuários por nome
 - `GET /api/users/:id` - Obter usuário por ID
@@ -28,6 +28,8 @@
 - `GET /api/users/:id/notifications` - Listar notificações do usuário
 - `POST /api/users/:id/follow` - Seguir/Deixar de seguir usuário
 - `POST /api/users/:id/achievements` - Adicionar conquista ao usuário
+- `PUT /api/users/:id/achievements/:achievementId` - Atualizar conquista do usuário
+- `DELETE /api/users/:id/achievements/:achievementId` - Remover conquista do usuário
 
 ### Posts (`/api/posts`) - 8 endpoints
 - `GET /api/posts` - Listar posts do feed (exclui posts do fórum)
@@ -63,7 +65,7 @@
 ### Chat (`/api/chat`) - 6 endpoints
 - `GET /api/chat?userId=ID` - Listar conversas do usuário
 - `PUT /api/chat/:userId/read?currentUserId=ID` - Marcar mensagens como lidas
-- `DELETE /api/chat/messages/:messageId?currentUserId=ID` - Deletar mensagem
+- `DELETE /api/chat/messages/:messageId?currentUserId=ID` - Deletar mensagem específica (permanente)
 - `GET /api/chat/:userId/messages?currentUserId=ID` - Obter mensagens entre dois usuários
 - `POST /api/chat/:userId/messages` - Enviar mensagem
 - `DELETE /api/chat/:userId?currentUserId=ID` - Deletar conversa completa
@@ -165,7 +167,8 @@ lab-final/
 │   │       ├── EditPostModal.jsx         # Modal para editar post existente
 │   │       ├── EditProfileModal.jsx      # Modal para editar perfil
 │   │       ├── TopicModal.jsx            # Modal para criar novo tópico no fórum
-│   │       ├── AddAchievementModal.jsx   # Modal para adicionar conquista ao perfil
+│   │       ├── AddAchievementModal.jsx   # Modal para adicionar/editar conquista ao perfil
+       ├── AchievementDetailsModal.jsx # Modal para visualizar detalhes completos de uma conquista
 │   │       ├── UsersListModal.jsx        # Modal para exibir lista de usuários (seguidores, seguindo)
 │   │       ├── FollowButton.jsx          # Botão de seguir/deixar de seguir (com ícones)
 │   │       ├── BackButton.jsx            # Botão de voltar (com ícone de seta)
@@ -217,6 +220,7 @@ lab-final/
 1. Frontend: `chat.js` → `chatAPI.getConversations()` → Agrupa mensagens por usuário
 2. Seleciona conversa → `chatAPI.getMessages()` → Exibe mensagens em tempo real (polling)
 3. Enviar: `chatAPI.sendMessage()` → Cria mensagem → Atualiza lista
+4. Deletar: `chatAPI.deleteMessage()` → Remove mensagem permanentemente do backend
 
 ### Notificações
 1. Backend: Ações (like, comment, follow) → Cria `Notification` → Salva no MongoDB
@@ -229,6 +233,14 @@ lab-final/
 - Curtidas no fórum: +1 XP (ao curtir post com `topic`)
 - Feed: Nenhum XP (posts do feed não geram XP)
 
+### Sistema de Conquistas (Achievements)
+1. Frontend: `profile.js` → Usuário adiciona conquista via `AddAchievementModal`
+2. Backend: `POST /api/users/:id/achievements` → Salva no array `user.achievements`
+3. Edição: `PUT /api/users/:id/achievements/:achievementId` → Atualiza conquista existente
+4. Remoção: `DELETE /api/users/:id/achievements/:achievementId` → Remove do array
+5. Visualização: `AchievementCard` → Exibe 3 conquistas por vez com paginação
+6. Detalhes: `AchievementDetailsModal` → Modal completo ao clicar em uma conquista
+
 ---
 
 ## 🗄️ Modelos de Dados (Mongoose Schemas)
@@ -239,7 +251,15 @@ lab-final/
   name, email, password (hash), userType, institution, birthDate,
   bio, profilePicture, xp (default: 0),
   followers: [ObjectId], following: [ObjectId], connections: [ObjectId],
-  achievements: [{ title, type, description, date, technologies, image }],
+  achievements: [{
+    _id: ObjectId,
+    title: String (required),
+    type: String (enum: certification, course, project, competition, publication, other),
+    description: String,
+    date: Date (required),
+    technologies: [String],
+    image: String (URL base64 ou externa)
+  }],
   language, theme,
   createdAt, updatedAt
 }
@@ -329,7 +349,25 @@ lab-final/
 - **Autenticação**: JWT + OAuth 2.0 (Google, GitHub)
 - **Deployment**: Node.js server (custom server.js)
 
+## 🎨 Design System
+
+### Cores Principais
+- **Cor de ação (botões, links, destaques)**: `#8B5CF6` (Roxo)
+- **Cor secundária**: `#4F46E5` (Azul) - usado apenas em botão "Adicionar Conquista"
+- **Ranking**: Bordas especiais para top 3 (Dourado `#FFD700`, Prateado `#C0C0C0`, Bronze `#CD7F32`)
+
+### Componentes UI
+- **Botões**: Bordas arredondadas (`borderRadius: '24px'`), estilo consistente
+- **Modais**: Suporte completo a dark mode, tamanhos otimizados
+- **Upload de imagens**: Compressão inteligente (até 2MB), qualidade preservada (qualidade inicial 0.9)
+- **Tooltips**: Bordas roxas, posicionamento preciso
+
+### Internacionalização
+- Suporte completo PT/EN via `ThemeLanguageContext`
+- Traduções dinâmicas para todos os textos da interface
+- Formatação de datas localizada
+
 ---
 
-*Última atualização: Documentação completa da estrutura do projeto CodeConnect*
+*Última atualização: Documentação completa da estrutura do projeto CodeConnect com sistema de conquistas e melhorias de UI*
 
