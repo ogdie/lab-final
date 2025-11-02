@@ -31,7 +31,7 @@ export default function RegisterForm({ onRegister, onErrorReset, onSwitchToLogin
   });
   const [error, setError] = useState('');
 
-  // Registrar função de reset para ser chamada quando o modal fechar
+  
   useEffect(() => {
     if (onErrorReset) {
       const resetFn = () => {
@@ -56,7 +56,7 @@ export default function RegisterForm({ onRegister, onErrorReset, onSwitchToLogin
       ...prev,
       [name]: value
     }));
-    // Limpar erro quando o usuário começar a digitar
+    
     if (error) {
       setError('');
     }
@@ -118,7 +118,7 @@ export default function RegisterForm({ onRegister, onErrorReset, onSwitchToLogin
     setTimeout(() => {
       const syntheticEvent = { preventDefault: () => {} };
       handleSubmit(syntheticEvent);
-    }, 2500); // 1.5s animação + 1s delay extra
+    }, 2500); 
   };
 
   return (
@@ -298,9 +298,9 @@ const styles = {
   },
   slideLeft: {
     position: 'fixed',
-    top: '57.7vh',
-    left: '-31.8vw',
-    transform: 'translate(-50%, -50%) scale(1.4)',
+    top: '50vh',
+    left: '-35.5vw',
+    transform: 'translate(-50%, -50%) scale(1.6)',
     transition: 'all 1.5s cubic-bezier(0.25, 1, 0.5, 1)',
     zIndex: 9999,
   },

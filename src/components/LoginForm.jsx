@@ -63,7 +63,7 @@ export default function LoginForm({ onLogin, onErrorReset, onSwitchToRegister })
     setTimeout(() => {
       const syntheticEvent = { preventDefault: () => {} };
       handleSubmit(syntheticEvent);
-    }, 2500); // 1.5s animação + 1s delay extra
+    }, 2500); 
   };
 
   const handleOAuthLogin = (provider) => {
@@ -230,9 +230,9 @@ const styles = {
   },
   slideLeft: {
     position: 'fixed',
-    top: '57vh',
-    left: '-31.8vw',
-    transform: 'translate(-50%, -50%) scale(1.3)',
+    top: '48.5vh',
+    left: '-35.5vw',
+    transform: 'translate(-50%, -50%) scale(1.45)',
     transition: 'all 1.5s cubic-bezier(0.25, 1, 0.5, 1)',
     zIndex: 9999,
   },

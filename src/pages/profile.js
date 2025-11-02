@@ -42,7 +42,7 @@ const getPageStyles = (theme) => {
       height: '144px',
       borderRadius: '50%',
       objectFit: 'cover',
-      border: '4px solid #4F46E5',
+      border: '4px solid #8B5CF6',
     },
     info: {
       flex: 1,
@@ -487,7 +487,7 @@ export default function Profile() {
               border: `1px solid ${isDark ? "#3e4042" : "#e0e0e0"}`,
               borderRadius: "8px",
               boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-              zIndex: 1001, // Higher than overlay
+              zIndex: 1001,
               width: "90%",
               maxWidth: "500px",
               maxHeight: "400px",
