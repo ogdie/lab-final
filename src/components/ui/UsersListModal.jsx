@@ -6,6 +6,7 @@ import { FaTimes } from 'react-icons/fa';
 
 const getStyles = (theme) => {
   const isDark = theme === 'dark';
+  const purpleBorder = '#8B5CF6';
   return {
     overlay: {
       position: 'fixed',
@@ -27,6 +28,7 @@ const getStyles = (theme) => {
       maxHeight: '80vh',
       borderTopLeftRadius: '20px',
       borderTopRightRadius: '20px',
+      borderTop: `3px solid ${purpleBorder}`,
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',

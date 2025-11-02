@@ -29,6 +29,7 @@ const getStyles = (theme) => {
     const backgroundModal = isDark ? '#242526' : 'white';
     const borderInput = isDark ? '#3e4042' : '#ddd';
     const blueAction = '#8B5CF6'; // Azul de ação principal (Salvar)
+    const purpleBorder = '#8B5CF6';
     const grayCancel = isDark ? '#474a4d' : '#e7e7e7'; // Cinza de cancelamento
 
     return {
@@ -55,7 +56,7 @@ const getStyles = (theme) => {
             maxHeight: '90vh',
             overflow: 'auto',
             boxShadow: '0 4px 12px rgba(0,0,0,0.25)', // Sombra profissional
-            border: isDark ? '1px solid #3e4042' : 'none',
+            border: `1px solid ${purpleBorder}`,
         },
         title: {
             fontSize: '1.5rem',

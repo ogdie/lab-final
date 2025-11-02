@@ -19,6 +19,7 @@ const getStyles = (theme) => {
   const backgroundCard = isDark ? '#242526' : 'white';
   const borderSubtle = isDark ? '#42423eff' : '#e0e0e0';
   const blueAction = '#8B5CF6';
+  const purpleBorder = '#8B5CF6';
   return {
     container: { minHeight: '100vh', display: 'flex', flexDirection: 'column', background: backgroundPrimary },
     main: { maxWidth: '760px', width: '100%', margin: '0 auto', padding: '1rem', flex: 1 },
@@ -29,7 +30,7 @@ const getStyles = (theme) => {
     loading: { color: textPrimary, textAlign: 'center', padding: '2rem' },
     error: { color: '#d32f2f', textAlign: 'center', padding: '1rem' },
     modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 },
-    modal: { background: backgroundCard, border: `1px solid ${borderSubtle}`, borderRadius: 8, padding: '1.25rem', width: '90%', maxWidth: 520 },
+    modal: { background: backgroundCard, border: `1px solid ${purpleBorder}`, borderRadius: 8, padding: '1.25rem', width: '90%', maxWidth: 520 },
     label: { display: 'block', marginBottom: 6, color: textSecondary },
     input: { width: '100%', padding: '0.75rem', border: `1px solid ${borderSubtle}`, borderRadius: 6, marginBottom: '0.75rem', background: backgroundCard, color: textPrimary },
     textarea: { width: '100%', padding: '0.75rem', border: `1px solid ${borderSubtle}`, borderRadius: 6, minHeight: 120, background: backgroundCard, color: textPrimary },

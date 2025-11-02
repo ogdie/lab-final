@@ -60,6 +60,7 @@ const getStyles = (theme) => {
   const backgroundModal = isDark ? '#242526' : 'white';
   const borderInput = isDark ? '#3e4042' : '#ddd';
   const blueAction = '#8B5CF6';
+  const purpleBorder = '#8B5CF6';
   const grayCancel = isDark ? '#474a4d' : '#e7e7e7';
 
   return {
@@ -85,7 +86,7 @@ const getStyles = (theme) => {
       display: 'flex',
       flexDirection: 'column',
       gap: '1rem',
-      border: isDark ? '1px solid #3e4042' : 'none',
+      border: `1px solid ${purpleBorder}`,
     },
     title: {
       margin: 0,

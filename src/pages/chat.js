@@ -220,7 +220,7 @@ export default function Chat() {
             onClick={handleCloseSearch}
           />
           <div 
-            style={{ position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)', background: theme === 'dark' ? '#2c2f33' : 'white', border: `1px solid ${theme === 'dark' ? '#3e4042' : '#e0e0e0'}`, borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', zIndex: 1001, width: '90%', maxWidth: '500px', maxHeight: '400px', overflowY: 'auto' }}
+            style={{ position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)', background: theme === 'dark' ? '#2c2f33' : 'white', border: `1px solid #8B5CF6`, borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', zIndex: 1001, width: '90%', maxWidth: '500px', maxHeight: '400px', overflowY: 'auto' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: `1px solid ${theme === 'dark' ? '#3e4042' : '#e0e0e0'}`, background: theme === 'dark' ? '#3a3b3c' : '#f8f9fa' }}>

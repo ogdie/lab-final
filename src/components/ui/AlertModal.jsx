@@ -7,6 +7,7 @@ const getStyles = (theme) => {
   const backgroundCard = isDark ? '#2c2f33' : '#ffffff';
   const borderSubtle = isDark ? '#3e4042' : '#d1d1d1';
   const blueAction = '#8B5CF6';
+  const purpleBorder = '#8B5CF6';
 
   return {
     overlay: {
@@ -23,7 +24,7 @@ const getStyles = (theme) => {
     },
     modal: {
       background: backgroundCard,
-      border: `1px solid ${borderSubtle}`,
+      border: `1px solid ${purpleBorder}`,
       borderRadius: '8px',
       padding: '2rem',
       maxWidth: '400px',

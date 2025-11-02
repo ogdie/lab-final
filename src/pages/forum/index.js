@@ -4,6 +4,7 @@ import Navbar from "../../components/ui/Navbar";
 import Footer from "../../components/ui/Footer";
 import TopicCard from "../../components/TopicCard";
 import TopicModal from "../../components/ui/TopicModal";
+import ArticlesSidebar from "../../components/ui/ArticlesSidebar";
 import { forumAPI, usersAPI } from "../../services/api";
 import { useThemeLanguage } from "../../context/ThemeLanguageContext";
 import { RiGameFill } from "react-icons/ri";
@@ -166,7 +167,7 @@ const getStyles = (theme) => {
       left: "50%",
       transform: "translateX(-50%)",
       background: backgroundCard,
-      border: `1px solid ${borderSubtle}`,
+      border: `1px solid ${blueAction}`,
       borderRadius: "8px",
       boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
       zIndex: 1000,
@@ -556,7 +557,8 @@ export default function Forum() {
             )}
           </div>
         </main>
-        {/* Espaço para um feed lateral de "Sugestões para você" ou "Trending" no futuro, mantendo o layout LinkedIn de 3 colunas em telas grandes, mas só implementamos 2 colunas aqui (Sidebar + MainArea) */}
+
+        <ArticlesSidebar theme={theme} />
       </div>
 
       <TopicModal

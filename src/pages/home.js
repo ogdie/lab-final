@@ -7,6 +7,7 @@ import Footer from '../components/ui/Footer';
 import PostCard from '../components/PostCard';
 import PostModal from '../components/ui/PostModal';
 import AlertModal from '../components/ui/AlertModal';
+import ArticlesSidebar from '../components/ui/ArticlesSidebar';
 import { postsAPI, usersAPI, commentsAPI } from '../services/api';
 import { FaTimes, FaUsers, FaUserPlus } from 'react-icons/fa';
 import { IoGameController } from 'react-icons/io5';
@@ -172,7 +173,7 @@ const getStyles = (theme) => {
             left: '50%',
             transform: 'translateX(-50%)',
             background: backgroundCard,
-            border: `1px solid ${borderSubtle}`,
+            border: `1px solid ${blueAction}`,
             borderRadius: '8px',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
             zIndex: 1000,
@@ -864,6 +865,8 @@ export default function Home() {
                         ))
                     )}
                 </main>
+
+                <ArticlesSidebar theme={theme} />
             </div>
 
             <AlertModal

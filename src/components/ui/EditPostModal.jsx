@@ -97,6 +97,7 @@ const getStyles = (theme) => {
   const backgroundCard = isDark ? '#2c2f33' : '#ffffff';
   const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
   const blueAction = '#8B5CF6';
+  const purpleBorder = '#8B5CF6';
 
   return {
     overlay: {
@@ -121,7 +122,7 @@ const getStyles = (theme) => {
       overflow: 'auto',
       display: 'flex',
       flexDirection: 'column',
-      border: `1px solid ${borderSubtle}`,
+      border: `1px solid ${purpleBorder}`,
     },
     title: {
       fontSize: '1.5rem',
