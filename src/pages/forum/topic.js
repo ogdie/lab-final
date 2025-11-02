@@ -18,7 +18,7 @@ const getStyles = (theme) => {
   const backgroundPrimary = isDark ? '#1d2226' : '#f0f2f5';
   const backgroundCard = isDark ? '#242526' : 'white';
   const borderSubtle = isDark ? '#42423eff' : '#e0e0e0';
-  const blueAction = '#4F46E5';
+  const blueAction = '#8B5CF6';
   return {
     container: { minHeight: '100vh', display: 'flex', flexDirection: 'column', background: backgroundPrimary },
     main: { maxWidth: '760px', width: '100%', margin: '0 auto', padding: '1rem', flex: 1 },

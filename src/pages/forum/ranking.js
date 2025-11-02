@@ -222,7 +222,7 @@ const getStyles = (theme) => {
   const backgroundPrimary = isDark ? '#1d2226' : '#f3f2ef';
   const backgroundCard = isDark ? '#2c2f33' : 'white';
   const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
-  const blueAction = '#4F46E5';
+  const blueAction = '#8B5CF6';
 
   return {
     container: {

@@ -353,7 +353,7 @@ export default function Settings() {
                                 </div>
                                 <button
                                     onClick={() => router.push(`/profile?id=${userResult._id}`)}
-                                    style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
+                                    style={{ padding: '0.5rem 1rem', background: '#8B5CF6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
                                 >
                                     {t('viewProfile') || 'Ver Perfil'}
                                 </button>
