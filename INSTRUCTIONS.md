@@ -42,30 +42,36 @@ Crie uma conta pelo formulário de registro na página inicial.
 ## 📱 Funcionalidades Principais
 
 ### Páginas Disponíveis:
-- **/** - Login e Registro
-- **/home** - Feed principal com posts
+- **/** - Login e Registro (com OAuth Google/GitHub)
+- **/home** - Feed principal com posts e timeline
 - **/forum** - Fórum por tópicos de programação
+- **/forum/topic?id=TOPIC_ID** - Visualização de tópico específico
 - **/forum/ranking** - Ranking de XP dos usuários
-- **/profile?id=USER_ID** - Perfil do usuário
-- **/settings** - Configurações (idioma, tema, perfil)
-- **/chat** - Mensagens e conversas
+- **/profile?id=USER_ID** - Perfil do usuário (próprio ou outros)
+- **/post/[id]** - Visualização individual de post
+- **/settings** - Configurações (idioma, tema, perfil, conquistas)
+- **/chat?userId=USER_ID** - Mensagens e conversas privadas
 
 ### Recursos:
-- ✅ Sistema de autenticação JWT
-- ✅ Posts e comentários com XP
+- ✅ Sistema de autenticação JWT com OAuth (Google e GitHub)
+- ✅ Posts do feed e comentários
+- ✅ Sistema de curtidas e menções (@usuario)
 - ✅ Notificações em tempo real
-- ✅ Sistema de conexões (como LinkedIn)
-- ✅ Chat entre usuários
-- ✅ Fórum técnico por linguagem
-- ✅ Ranking de XP (gamificação)
-- ✅ Configurações de idioma e tema
+- ✅ Sistema de seguir/deixar de seguir
+- ✅ Chat privado entre usuários
+- ✅ Fórum técnico por tópicos de programação
+- ✅ Sistema de XP e ranking (gamificação)
+- ✅ Conquistas (achievements) personalizáveis
+- ✅ Configurações de idioma (PT/EN) e tema (light/dark)
+- ✅ Busca de usuários
+- ✅ Edição de perfil com upload de imagem
 
 ## 🎮 Sistema de XP
 
-- **Criar Post**: +20 XP
-- **Comentar**: +3 XP
-- **Receber Curtida**: +1 XP
 - **Postar no Fórum**: +15 XP
+- **Comentar no Fórum**: +3 XP
+- **Receber Curtida no Fórum**: +1 XP
+- **Nota**: Posts do feed não geram XP, apenas interações no fórum
 
 ## 🛠️ Estrutura de Arquivos
 

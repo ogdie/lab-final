@@ -42,7 +42,7 @@ const styles = {
   },
   button: {
     padding: '0.75rem 1.5rem',
-    background: '#4F46E5',
+    background: '#8B5CF6',
     color: 'white',
     border: 'none',
     borderRadius: '0 4px 4px 0',

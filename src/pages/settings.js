@@ -6,6 +6,7 @@ import Footer from '../components/ui/Footer';
 import EditProfileModal from '../components/ui/EditProfileModal';
 import AlertModal from '../components/ui/AlertModal';
 import { usersAPI } from '../services/api';
+import { FaEdit } from 'react-icons/fa';
 
 // --- Função de Estilo (getStyles) ---
 
@@ -16,7 +17,7 @@ const getStyles = (theme) => {
     const backgroundPrimary = isDark ? '#1d2226' : '#f3f2ef';
     const backgroundCard = isDark ? '#242526' : 'white';
     const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
-    const blueAction = '#4F46E5';
+    const blueAction = '#8B5CF6';
 
     return {
         // --- Layout Geral ---
@@ -94,7 +95,7 @@ const getStyles = (theme) => {
         },
         button: {
             padding: '0.5rem 1rem',
-            background: blueAction,
+            background: '#8B5CF6',
             color: 'white',
             border: 'none',
             borderRadius: '24px', 
@@ -103,6 +104,9 @@ const getStyles = (theme) => {
             fontWeight: '600',
             transition: 'background 0.2s',
             outline: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
         },
         loading: {
             textAlign: 'center',
@@ -131,7 +135,7 @@ export default function Settings() {
             settings: 'Configurações',
             account: 'Configurações da Conta',
             profile: 'Perfil',
-            editProfile: '✏️ Editar Perfil',
+            editProfile: 'Editar Perfil',
             theme: 'Tema',
             light: 'Claro',
             dark: 'Escuro',
@@ -150,7 +154,7 @@ export default function Settings() {
             settings: 'Settings',
             account: 'Account Settings',
             profile: 'Profile',
-            editProfile: '✏️ Edit Profile',
+            editProfile: 'Edit Profile',
             theme: 'Theme',
             light: 'Light',
             dark: 'Dark',
@@ -353,7 +357,7 @@ export default function Settings() {
                                 </div>
                                 <button
                                     onClick={() => router.push(`/profile?id=${userResult._id}`)}
-                                    style={{ padding: '0.5rem 1rem', background: '#8B5CF6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
+                                    style={{ padding: '0.5rem 1rem', background: '#8B5CF6', color: 'white', border: 'none', borderRadius: '24px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
                                 >
                                     {t('viewProfile') || 'Ver Perfil'}
                                 </button>
@@ -437,7 +441,7 @@ export default function Settings() {
                             onClick={() => setShowEditModal(true)}
                             style={styles.button}
                         >
-                            {t('editProfile')}
+                            <FaEdit /> {t('editProfile')}
                         </button>
                     </div>
                 </div>

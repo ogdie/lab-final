@@ -283,7 +283,7 @@ const getStyles = (theme) => {
     resultAvatar: { width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' },
     viewProfileButton: {
       padding: '0.5rem 1rem',
-      background: '#4F46E5',
+      background: '#8B5CF6',
       color: 'white',
       border: 'none',
       borderRadius: '24px',

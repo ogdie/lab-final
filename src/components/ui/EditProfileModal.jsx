@@ -28,7 +28,7 @@ const getStyles = (theme) => {
     const textSecondary = isDark ? '#b0b3b8' : '#606770';
     const backgroundModal = isDark ? '#242526' : 'white';
     const borderInput = isDark ? '#3e4042' : '#ddd';
-    const blueAction = '#4F46E5'; // Azul de ação principal (Salvar)
+    const blueAction = '#8B5CF6'; // Azul de ação principal (Salvar)
     const grayCancel = isDark ? '#474a4d' : '#e7e7e7'; // Cinza de cancelamento
 
     return {
@@ -206,7 +206,6 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
                     </div>
                     
                     <div style={styles.field}>
-                        <label style={styles.label}>{t('profile_picture') || 'Foto de perfil'}</label>
                         <ImageUpload
                             value={formData.profilePicture}
                             onChange={(value) => setFormData({ ...formData, profilePicture: value })}

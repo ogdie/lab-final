@@ -14,7 +14,7 @@ const getStyles = (theme) => {
     const borderNavbar = isDark ? '#3e4042' : '#e0e0e0';
     const backgroundSearch = isDark ? '#3a3b3c' : '#eef3f8';
     const blueAction = '#8B5CF6';
-    const logoColor = isDark ? textPrimary : blueAction; 
+    const logoColor = blueAction; // Sempre usa #8B5CF6 
 
     return {
         navbar: {
@@ -45,6 +45,7 @@ const getStyles = (theme) => {
             height: '120px',
             width: '200px', 
             display: 'block',
+            color: blueAction, // Garante que a logo sempre use #8B5CF6
         },
         searchContainer: {
             flex: 1,

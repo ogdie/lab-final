@@ -10,10 +10,12 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [alert, setAlert] = useState({ isOpen: false, message: '', title: 'Aviso', onConfirm: null, showCancel: false });
+  const [selectedMessageId, setSelectedMessageId] = useState(null);
 
   useEffect(() => {
     if (currentUser?._id && otherUser?._id) {
       fetchMessages();
+      setSelectedMessageId(null); // Limpar seleção ao mudar de conversa
       
       // Polling para atualizar mensagens em tempo real (a cada 2 segundos)
       const interval = setInterval(() => {
@@ -71,12 +73,16 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
         // Se não há mensagens anteriores, retornar as novas
         if (prevMessages.length === 0) return newMessages;
         
-        // Verificar se há novas mensagens comparando IDs
+        // Criar sets de IDs para comparação
         const prevIds = new Set(prevMessages.map(m => m._id?.toString()));
-        const hasNewMessages = newMessages.some(m => !prevIds.has(m._id?.toString()));
+        const newIds = new Set(newMessages.map(m => m._id?.toString()));
         
-        // Se há novas mensagens, atualizar
-        if (hasNewMessages || newMessages.length !== prevMessages.length) {
+        // Verificar se há novas mensagens ou se alguma foi removida
+        const hasNewMessages = newMessages.some(m => !prevIds.has(m._id?.toString()));
+        const hasRemovedMessages = prevMessages.some(m => !newIds.has(m._id?.toString()));
+        
+        // Se há novas mensagens ou mensagens foram removidas (incluindo deletadas), atualizar
+        if (hasNewMessages || hasRemovedMessages || newMessages.length !== prevMessages.length) {
           return newMessages;
         }
         
@@ -128,12 +134,42 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
     });
   };
 
-  const handleDeleteMessage = async (messageId) => {
+  const handleDeleteMessage = async (e, messageId) => {
+    e.stopPropagation(); // Prevenir que o clique dispare o onClick da mensagem
+    if (!currentUser?._id) return;
     try {
-      await fetch(`/api/chat/messages/${messageId}`, { method: 'DELETE' });
-      setMessages(prev => prev.filter(m => m._id !== messageId));
+      const response = await fetch(`/api/chat/messages/${messageId}?currentUserId=${currentUser._id}`, { 
+        method: 'DELETE' 
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao deletar mensagem');
+      }
+      
+      // Remover a mensagem do estado local imediatamente
+      setMessages(prev => prev.filter(m => {
+        const msgId = m._id?.toString();
+        const deleteId = messageId?.toString();
+        return msgId !== deleteId;
+      }));
+      
+      // Limpar seleção se a mensagem deletada estava selecionada
+      if (selectedMessageId === messageId) {
+        setSelectedMessageId(null);
+      }
     } catch (err) {
       console.error('Error deleting message:', err);
+      // Mostrar erro para o usuário se necessário
+    }
+  };
+
+  const handleMessageClick = (messageId) => {
+    // Se clicar na mesma mensagem, desselecionar
+    if (selectedMessageId === messageId) {
+      setSelectedMessageId(null);
+    } else {
+      setSelectedMessageId(messageId);
     }
   };
 
@@ -143,25 +179,49 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
         <h3 style={{ margin: 0, color: styles.textPrimary }}>{otherUser?.name || t('user')}</h3>
         <button onClick={handleDeleteConversation} style={styles.deleteConvButton}>🗑️</button>
       </div>
-      <div style={styles.messages}>
-        {messages.map((msg) => (
-          <div
-            key={msg._id}
-            style={{
-              ...styles.message,
-              alignSelf: msg.sender._id === currentUser._id ? 'flex-end' : 'flex-start',
-              background: msg.sender._id === currentUser._id ? '#4F46E5' : styles.messageOtherBg,
-              color: msg.sender._id === currentUser._id ? 'white' : styles.messageOtherColor
-            }}
-          >
-            <span>{msg.content}</span>
-            {msg.sender._id === currentUser._id && (
-              <button onClick={() => handleDeleteMessage(msg._id)} style={styles.deleteMsgButton}>
-                <FaTimes />
-              </button>
-            )}
-          </div>
-        ))}
+      <div 
+        style={styles.messages}
+        onClick={(e) => {
+          // Se clicar na área de mensagens (não em uma mensagem específica), desselecionar
+          if (e.target === e.currentTarget || e.target.closest('form')) {
+            setSelectedMessageId(null);
+          }
+        }}
+      >
+        {messages.map((msg) => {
+          const isSelected = selectedMessageId === msg._id;
+          const isOwnMessage = msg.sender._id === currentUser._id;
+          return (
+            <div
+              key={msg._id}
+              onClick={() => isOwnMessage && handleMessageClick(msg._id)}
+              style={{
+                ...styles.message,
+                alignSelf: isOwnMessage ? 'flex-end' : 'flex-start',
+                background: isOwnMessage 
+                  ? (isSelected ? '#9d68f7' : '#8B5CF6') 
+                  : styles.messageOtherBg,
+                color: isOwnMessage ? 'white' : styles.messageOtherColor,
+                cursor: isOwnMessage ? 'pointer' : 'default',
+                opacity: isSelected ? 0.95 : 1,
+                transform: isSelected ? 'scale(1.02)' : 'scale(1)',
+                transition: 'all 0.2s ease',
+                boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.2)' : 'none'
+              }}
+            >
+              <span>{msg.content}</span>
+              {isOwnMessage && isSelected && (
+                <button 
+                  onClick={(e) => handleDeleteMessage(e, msg._id)} 
+                  style={styles.deleteMsgButton}
+                  title={t('delete') || 'Deletar'}
+                >
+                  <FaTimes />
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
       <form onSubmit={handleSend} style={styles.form}>
         <input
@@ -261,7 +321,7 @@ const getStyles = (theme) => {
     },
     sendButton: {
       padding: '0.6rem 1rem',
-      background: '#4F46E5',
+      background: '#8B5CF6',
       color: 'white',
       border: 'none',
       borderRadius: '0 4px 4px 0',

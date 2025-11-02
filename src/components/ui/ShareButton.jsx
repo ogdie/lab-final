@@ -16,7 +16,7 @@ const getStyles = (theme) => {
   const background = isDark ? "#2c2f33" : "#ffffff";
   const borderColor = isDark ? "#3e4042" : "#d1d1d1";
   const hoverBg = isDark ? "#3a3b3c" : "#f0f0f0";
-  const blueAction = "#4F46E5";
+  const blueAction = "#8B5CF6";
 
   return {
     shareDropdown: {
@@ -173,7 +173,7 @@ export default function ShareButton({
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor =
             getStyles(appliedTheme).shareOptionHover.background;
-          e.currentTarget.style.color = "#4F46E5";
+          e.currentTarget.style.color = "#8B5CF6";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = "transparent";

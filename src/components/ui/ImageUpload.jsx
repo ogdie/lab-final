@@ -137,16 +137,27 @@ export default function ImageUpload({
     position: 'relative',
     marginTop: '0.5rem',
     display: 'inline-block',
-    maxWidth: '100%'
+    maxWidth: '100%',
+    lineHeight: 0, // Remove espaço extra abaixo da imagem inline
+    width: 'fit-content', // Container se ajusta ao tamanho da imagem
+    fontSize: 0, // Remove espaço entre elementos inline
+    padding: 0,
+    margin: 0
   };
 
   const previewStyle = {
     display: 'block',
-    width: '100%',
+    maxWidth: '100%',
     maxHeight: '300px',
+    height: 'auto',
+    width: 'auto',
     borderRadius: '8px',
     objectFit: 'contain',
-    border: `1px solid ${isDark ? '#3e4042' : '#ddd'}`
+    border: `1px solid ${isDark ? '#3e4042' : '#ddd'}`,
+    verticalAlign: 'top', // Remove espaço extra abaixo
+    margin: 0, // Remove margens
+    padding: 0, // Remove padding
+    outline: 'none' // Remove outline do navegador
   };
 
   const removeButtonStyle = {
@@ -154,19 +165,21 @@ export default function ImageUpload({
     color: 'white',
     border: 'none',
     borderRadius: '50%',
-    width: '28px',
-    height: '28px',
+    width: '18px',
+    height: '18px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    fontSize: '0.9rem',
+    fontSize: '0.65rem',
     position: 'absolute',
-    top: '-8px',
-    right: '-8px',
+    top: '4px',
+    right: '4px',
     zIndex: 10,
-    boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
-    fontWeight: 'bold'
+    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+    fontWeight: 'bold',
+    padding: 0,
+    transform: 'translate(0, 0)' // Garantir que está posicionado relativo à imagem
   };
 
   const errorStyle = {

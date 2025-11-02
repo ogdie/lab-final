@@ -320,7 +320,7 @@ const styles = {
   toggleLink: {
     background: 'none',
     border: 'none',
-    color: '#4F46E5',
+    color: '#8B5CF6',
     fontWeight: '500',
     cursor: 'pointer',
     padding: 0,
@@ -330,7 +330,7 @@ const styles = {
     width: '130px',
     margin: '0 auto 4px auto',
     display: 'block',
-    color: '#4F46E5',
+    color: '#8B5CF6',
   },
   errorTooltip: {
     position: 'absolute',

@@ -6,7 +6,7 @@ const getStyles = (theme) => {
   const textSecondary = isDark ? '#b0b3b8' : '#606770';
   const backgroundCard = isDark ? '#2c2f33' : '#ffffff';
   const borderSubtle = isDark ? '#3e4042' : '#d1d1d1';
-  const blueAction = '#4F46E5';
+  const blueAction = '#8B5CF6';
 
   return {
     overlay: {

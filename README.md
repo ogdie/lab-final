@@ -1,19 +1,46 @@
 # CodeConnect
 
-Rede social para estudantes de programação com gamificação, fóruns técnicos e sistema de XP.
+Rede social para estudantes, professores e recrutadores de programação com gamificação, fóruns técnicos e sistema de XP.
 
 ## 🚀 Funcionalidades
 
-- ✅ Autenticação JWT
-- ✅ Posts e Comentários
-- ✅ Sistema de Curtidas
-- ✅ Sistema de Conexões
+### Autenticação
+- ✅ Autenticação JWT (email/senha)
+- ✅ OAuth 2.0 com Google e GitHub
+- ✅ Registro com validação de instituições
+- ✅ Gestão de sessão e tokens
+
+### Conteúdo
+- ✅ Feed de posts com timeline
+- ✅ Sistema de curtidas e comentários
+- ✅ Menções de usuários (@usuario)
+- ✅ Upload de imagens em posts
+- ✅ Edição e exclusão de posts/comentários
+
+### Social
+- ✅ Sistema de seguir/deixar de seguir
+- ✅ Chat privado entre usuários
 - ✅ Notificações em tempo real
-- ✅ Chat entre usuários
-- ✅ Fórum por tópicos de linguagem
-- ✅ Ranking de XP
-- ✅ Gamificação (XP por ações)
-- ✅ Configurações de idioma e tema
+- ✅ Busca de usuários
+- ✅ Visualização de perfil (próprio e outros)
+
+### Fórum Técnico
+- ✅ Fórum por tópicos de programação
+- ✅ Categorização por linguagem/tecnologia
+- ✅ Respostas e discussões
+- ✅ Sistema de XP baseado em participação
+
+### Gamificação
+- ✅ Sistema de XP (Experience Points)
+- ✅ Ranking de usuários por XP
+- ✅ Conquistas (achievements) personalizáveis
+- ✅ Níveis baseados em XP
+
+### Personalização
+- ✅ Tema claro/escuro
+- ✅ Suporte multilíngue (PT/EN)
+- ✅ Edição de perfil completa
+- ✅ Upload de foto de perfil
 
 ## 📋 Requisitos
 
@@ -55,79 +82,192 @@ npm run dev
 
 ```
 labfinal/
-├── lib/
-│   └── mongodb.js          # Conexão MongoDB
-├── models/                  # Modelos Mongoose
-├── routes/                  # Rotas Express
+├── lib/                    # Bibliotecas e utilitários (MongoDB, Passport)
+├── models/                 # Modelos Mongoose (User, Post, Comment, Topic, etc.)
+├── routes/                 # Rotas Express (API endpoints)
+├── public/                 # Arquivos estáticos (imagens, SVGs)
 ├── src/
-│   ├── components/         # Componentes React
-│   ├── pages/              # Páginas Next.js
-│   ├── services/           # API services
-│   └── styles/             # Estilos
-├── server.js               # Servidor principal
+│   ├── components/         # Componentes React reutilizáveis
+│   │   └── ui/            # Componentes UI básicos
+│   ├── pages/             # Páginas Next.js e API routes
+│   ├── services/          # Serviços de API (cliente HTTP)
+│   ├── context/           # Contextos React (tema, idioma)
+│   ├── utils/             # Utilitários do frontend
+│   └── styles/            # Estilos globais
+├── server.js              # Servidor Express + Next.js
 └── package.json
 ```
 
+📖 **Para documentação detalhada da estrutura, veja [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)**
+
 ## 🎯 Endpoints API
 
-### Auth
-- `POST /api/auth/register` - Cadastro
-- `POST /api/auth/login` - Login
+**Total: 48 endpoints REST**
+
+### Autenticação (`/api/auth`, `/auth`)
+- `POST /api/auth/register` - Registrar novo usuário
+- `POST /api/auth/login` - Login com email/senha
 - `POST /api/auth/logout` - Logout
+- `GET /auth/google` - Iniciar OAuth Google
+- `GET /auth/google/callback` - Callback OAuth Google
+- `GET /auth/github` - Iniciar OAuth GitHub
+- `GET /auth/github/callback` - Callback OAuth GitHub
 
-### Users
-- `GET /api/users` - Listar usuários
-- `GET /api/users/:id` - Obter usuário
+### Usuários (`/api/users`)
+- `GET /api/users` - Listar todos os usuários
+- `GET /api/users/search?name=TERMO` - Buscar usuários
+- `GET /api/users/:id` - Obter usuário por ID
 - `PUT /api/users/:id` - Atualizar usuário
-- `DELETE /api/users/:id` - Deletar usuário
+- `PUT /api/users/:id/settings` - Atualizar configurações
+- `PUT /api/users/:id/edit` - Editar perfil
+- `GET /api/users/:id/followers` - Listar seguidores
+- `GET /api/users/:id/following` - Listar seguindo
+- `GET /api/users/:id/posts` - Posts do usuário
+- `GET /api/users/:id/notifications` - Notificações
+- `POST /api/users/:id/follow` - Seguir/Deixar de seguir
+- `POST /api/users/:id/achievements` - Adicionar conquista
 
-### Posts
-- `GET /api/posts` - Listar posts
+### Posts (`/api/posts`)
+- `GET /api/posts` - Listar posts do feed
 - `POST /api/posts` - Criar post
 - `GET /api/posts/:id` - Obter post
 - `PUT /api/posts/:id` - Atualizar post
 - `DELETE /api/posts/:id` - Deletar post
-- `POST /api/posts/:id/like` - Curtir post
+- `POST /api/posts/:id/like` - Curtir/Descurtir
 - `POST /api/posts/:id/comments` - Adicionar comentário
+- `GET /api/posts/:id/comments` - Listar comentários
 
-### Chat
-- `GET /api/chat` - Listar conversas
-- `GET /api/chat/:id/messages` - Obter mensagens
-- `POST /api/chat/:id/messages` - Enviar mensagem
+### Comentários (`/api/comments`)
+- `GET /api/comments` - Listar comentários
+- `GET /api/comments/:id` - Obter comentário
+- `PUT /api/comments/:id` - Atualizar comentário
+- `DELETE /api/comments/:id` - Deletar comentário
+- `POST /api/comments/:id/like` - Curtir comentário
 
-### Fórum
+### Fórum (`/api/forum`)
 - `GET /api/forum/topics` - Listar tópicos
 - `POST /api/forum/topics` - Criar tópico
 - `GET /api/forum/topics/:id` - Obter tópico
+- `POST /api/forum/topics/:id/reply` - Adicionar resposta
 
-### Ranking
-- `GET /api/ranking` - Ranking de XP
+### Chat (`/api/chat`)
+- `GET /api/chat?userId=ID` - Listar conversas
+- `GET /api/chat/:userId/messages` - Obter mensagens
+- `POST /api/chat/:userId/messages` - Enviar mensagem
+- `PUT /api/chat/:userId/read` - Marcar como lida
+- `DELETE /api/chat/:userId` - Deletar conversa
+
+### Notificações (`/api/notifications`)
+- `GET /api/notifications?userId=ID` - Listar notificações
+- `PUT /api/notifications/:id/read` - Marcar como lida
+- `DELETE /api/notifications/:id` - Deletar notificação
+
+### Ranking (`/api/ranking`)
+- `GET /api/ranking` - Top 100 usuários por XP
+
+📖 **Para lista completa e detalhada, veja [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)**
 
 ## 💻 Tecnologias
 
-- **Frontend**: Next.js 16, React 19
-- **Backend**: Express.js 5, Node.js
-- **Database**: MongoDB com Mongoose
-- **Authentication**: JWT
-- **UI**: CSS com Tailwind CSS opcional
+### Frontend
+- **Next.js 16** - Framework React (SSR/SSG)
+- **React 19** - Biblioteca UI
+- **React Icons** - Ícones SVG
+- **CSS-in-JS** - Estilos inline
+
+### Backend
+- **Express.js 5** - Framework Node.js
+- **Node.js** (ES Modules) - Runtime JavaScript
+- **MongoDB** - Banco de dados NoSQL
+- **Mongoose 8** - ODM para MongoDB
+
+### Autenticação
+- **JWT** (jsonwebtoken) - Tokens de autenticação
+- **Passport.js** - Middleware de autenticação
+- **OAuth 2.0** - Google OAuth 20 e GitHub OAuth2
+- **bcryptjs** - Hash de senhas
+
+### Outras
+- **Express Session** - Gerenciamento de sessões
+- **CORS** - Cross-Origin Resource Sharing
 
 ## 📝 Sistema de XP
 
-- Criar post: +20 XP
-- Comentar: +3 XP
-- Receber curtida: +1 XP
-- Participar no fórum: +15 XP
+O sistema de gamificação recompensa apenas a participação no **fórum técnico**:
+
+- ✅ **Postar no fórum**: +15 XP
+- ✅ **Comentar no fórum**: +3 XP  
+- ✅ **Receber curtida no fórum**: +1 XP
+
+❌ **Posts do feed não geram XP** (apenas interações no fórum são recompensadas)
+
+O ranking exibe os top 100 usuários ordenados por XP total.
 
 ## 🔐 Segurança
 
-- Senhas criptografadas com bcryptjs
-- Autenticação JWT
-- Validação de dados
-- CORS configurado
+- ✅ Senhas criptografadas com **bcryptjs**
+- ✅ Autenticação **JWT** com tokens expiráveis
+- ✅ **OAuth 2.0** para login social (Google, GitHub)
+- ✅ Validação de dados em todas as rotas
+- ✅ **CORS** configurado adequadamente
+- ✅ Sanitização de inputs (normalização de emails, trim de strings)
+- ✅ Validação de instituições permitidas no registro
 
-## 📱 Responsividade
+## 📱 Páginas Disponíveis
 
-Interface otimizada para desktop, tablet e mobile.
+- **/** - Login e Registro (com OAuth)
+- **/home** - Feed principal com timeline
+- **/forum** - Lista de tópicos do fórum
+- **/forum/topic?id=ID** - Visualização de tópico específico
+- **/forum/ranking** - Ranking de XP
+- **/profile?id=USER_ID** - Perfil do usuário
+- **/post/[id]** - Visualização individual de post
+- **/settings** - Configurações (idioma, tema, perfil)
+- **/chat?userId=USER_ID** - Chat privado
+
+## 📚 Documentação Adicional
+
+- **[INSTRUCTIONS.md](./INSTRUCTIONS.md)** - Guia de instalação e execução
+- **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - Estrutura completa do projeto e todos os endpoints
+- **[OAUTH_SETUP.md](./OAUTH_SETUP.md)** - Configuração OAuth (Google/GitHub)
+
+## 🚀 Quick Start
+
+1. **Clone o repositório**
+   ```bash
+   git clone <url-do-repositorio>
+   cd lab-final
+   ```
+
+2. **Instale as dependências**
+   ```bash
+   npm install
+   ```
+
+3. **Configure o `.env`**
+   ```env
+   MONGODB_URI=mongodb://localhost:27017/codeconnect
+   PORT=3000
+   JWT_SECRET=your-super-secret-jwt-key-here
+   SESSION_SECRET=your-session-secret-key
+   # Opcional: OAuth
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   GITHUB_CLIENT_ID=your-github-client-id
+   GITHUB_CLIENT_SECRET=your-github-client-secret
+   ```
+
+4. **Inicie o servidor**
+   ```bash
+   npm run dev
+   ```
+
+5. **Acesse**
+   ```
+   http://localhost:3000
+   ```
+
+📖 **Para mais detalhes, consulte [INSTRUCTIONS.md](./INSTRUCTIONS.md)**
 
 ## 🤝 Contribuindo
 

@@ -40,7 +40,7 @@ const getStyles = (theme) => {
     const textSecondary = isDark ? '#b0b3b8' : '#606770';
     // Cor de fundo do 'balão' do comentário
     const backgroundComment = isDark ? '#3a3b3c' : '#f0f2f5'; 
-    const blueAction = '#4F46E5';
+    const blueAction = '#8B5CF6';
     const redLike = '#6860f9ff';
     const hoverBg = isDark ? '#4a4b4c' : '#e4e6e8';
 
@@ -379,7 +379,7 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, on
                                 disabled={!replyText.trim()}
                                 style={{
                                     padding: '6px 12px',
-                                    background: replyText.trim() ? '#4F46E5' : '#ccc',
+                                    background: replyText.trim() ? '#8B5CF6' : '#ccc',
                                     border: 'none',
                                     borderRadius: '6px',
                                     color: 'white',

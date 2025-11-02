@@ -55,14 +55,19 @@ const getPageStyles = (theme) => {
     },
     editButton: {
       padding: '0.5rem 1rem',
-      background: '#4F46E5',
+      background: '#8B5CF6',
       color: 'white',
       border: 'none',
-      borderRadius: '4px',
+      borderRadius: '24px',
       cursor: 'pointer',
       fontSize: '0.9rem',
       fontWeight: '600',
       transition: 'background 0.2s',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '0.5rem',
+      lineHeight: '1',
     },
     email: {
       fontSize: '1rem',
@@ -118,7 +123,7 @@ const getPageStyles = (theme) => {
     addAchievementLink: {
       background: 'none',
       border: 'none',
-      color: '#4F46E5',
+      color: '#8B5CF6',
       cursor: 'pointer',
       marginLeft: '0.3rem',
       fontWeight: '600',
@@ -562,10 +567,10 @@ export default function Profile() {
                     onClick={() => router.push(`/profile?id=${userResult._id}`)}
                     style={{
                       padding: "0.5rem 1rem",
-                      background: "#4F46E5",
+                      background: "#8B5CF6",
                       color: "white",
                       border: "none",
-                      borderRadius: "4px",
+                      borderRadius: "24px",
                       cursor: "pointer",
                       fontSize: "0.9rem",
                       fontWeight: "600",
@@ -608,7 +613,7 @@ export default function Profile() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = isDark ? '#3a3b3c' : '#f0f0f0';
-                    e.currentTarget.style.color = '#4F46E5';
+                    e.currentTarget.style.color = '#8B5CF6';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent';
@@ -685,7 +690,7 @@ export default function Profile() {
               />
               <button
                 onClick={() => router.push(`/chat?userId=${user._id}`)}
-                style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                style={{ padding: '0.5rem 1rem', background: '#8B5CF6', color: 'white', border: 'none', borderRadius: '24px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
                 <FaPaperPlane />
                 Enviar mensagem
@@ -740,7 +745,7 @@ export default function Profile() {
                   height: '144px',
                   borderRadius: '50%',
                   objectFit: 'cover',
-                  border: '4px solid #4F46E5',
+                  border: '4px solid #8B5CF6',
                   marginTop: '4px', // ajuste fino para alinhar com a linha do texto
                 }}
               />
@@ -764,7 +769,7 @@ export default function Profile() {
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = isDark ? '#3a3b3c' : '#f0f0f0';
-                      e.currentTarget.style.color = '#4F46E5';
+                      e.currentTarget.style.color = '#8B5CF6';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = 'transparent';
@@ -842,7 +847,7 @@ export default function Profile() {
                     />
                     <button
                       onClick={() => router.push(`/chat?userId=${user._id}`)}
-                      style={{ padding: '0.5rem 1rem', background: '#4F46E5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                      style={{ padding: '0.5rem 1rem', background: '#8B5CF6', color: 'white', border: 'none', borderRadius: '24px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                     >
                       <FaPaperPlane />
                       {t('send_message')}

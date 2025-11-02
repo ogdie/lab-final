@@ -545,10 +545,10 @@ export default function Forum() {
           </div>
 
           {error && <p style={styles.error}>⚠️ {error}</p>}
-          <h1 style={styles.title}>Tópicos Populares</h1>
+          <h1 style={styles.title}>{t('popular_topics')}</h1>
           <div style={styles.topics}>
             {topics.length === 0 ? (
-              <p style={styles.empty}>Nenhum tópico disponível no momento.</p>
+              <p style={styles.empty}>{t('no_topics_available')}</p>
             ) : (
               topics.map((topic) => (
                 <TopicCard key={topic._id || Math.random()} topic={topic} />

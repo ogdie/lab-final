@@ -16,7 +16,7 @@ export default function FollowButton({ userId, currentUser, onFollow }) {
       onClick={handleFollow}
       style={{
         ...styles.button,
-        background: isFollowing ? '#4CAF50' : '#4F46E5',
+        background: isFollowing ? '#4CAF50' : '#8B5CF6',
         color: 'white'
       }}
     >
@@ -39,10 +39,10 @@ const styles = {
   button: {
     padding: '0.5rem 1rem',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '24px',
     cursor: 'pointer',
     fontSize: '0.9rem',
-    fontWeight: 'bold',
+    fontWeight: '600',
     transition: 'background 0.2s',
     display: 'inline-flex',
     alignItems: 'center',
