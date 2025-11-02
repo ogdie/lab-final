@@ -5,6 +5,8 @@ import BackButton from '../../components/ui/BackButton';
 import Footer from '../../components/ui/Footer';
 import { rankingAPI, usersAPI } from '../../services/api';
 import { useThemeLanguage } from '../../context/ThemeLanguageContext';
+import { SiGamejolt } from "react-icons/si";
+import { FaRankingStar } from "react-icons/fa6";
 
 export default function Ranking() {
   const router = useRouter();
@@ -164,7 +166,7 @@ export default function Ranking() {
           </>
         )}
 
-        <h1 style={styles.title}>🏆 {t('xp')} {t('ranking_title')}</h1>
+        <h1 style={styles.title}><FaRankingStar /> {t('xp')} {t('ranking_title')}</h1>
 
         <div
           style={{
@@ -203,7 +205,7 @@ export default function Ranking() {
                     })()}
                   </div>
                 </div>
-                <div style={styles.xp}>⭐ {rankedUser.xp || 0} XP</div>
+                <div style={styles.xp}><SiGamejolt /> {rankedUser.xp || 0} XP</div>
               </div>
             ))}
           </div>
