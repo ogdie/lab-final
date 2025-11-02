@@ -820,8 +820,8 @@ export default function Home() {
                         onClick={() => setShowPostModal(true)} 
                         style={styles.createPostButton}
                     >
-                        <span style={{...styles.sidebarAvatar, width: '32px', height: '32px'}}>+</span>
-                        <span>{t('start_post')}</span>
+                        <span style={{...styles.sidebarAvatar, width: '32px', height: '32px', color: '#8B5CF6'}}>+</span>
+                        <span style={{ color: '#8B5CF6' }}>{t('start_post')}</span>
                     </div>
 
                     {/* Você pode adicionar mais cards laterais aqui, como "Grupos" ou "Sugestões" */}

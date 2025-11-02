@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react';
+import { FaImage } from 'react-icons/fa';
+import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 
 const MAX_FILE_SIZE = 1.5 * 1024 * 1024;
 const MAX_WIDTH = 1280;
@@ -15,7 +17,9 @@ export default function ImageUpload({
   const [preview, setPreview] = useState(value || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showTooltip, setShowTooltip] = useState(false);
   const fileInputRef = useRef(null);
+  const { t } = useThemeLanguage();
   const isDark = theme === 'dark';
 
   const compressImage = (file) => {
@@ -119,18 +123,57 @@ export default function ImageUpload({
   const inputWrapperStyle = {
     position: 'relative',
     display: 'inline-block',
-    width: '100%'
+    width: 'auto'
+  };
+
+  const tooltipStyle = {
+    position: 'absolute',
+    bottom: 'calc(100% + 10px)',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    padding: '0.4rem 0.6rem',
+    background: isDark ? '#2c2f33' : '#ffffff',
+    color: '#8B5CF6',
+    border: '2px solid #8B5CF6',
+    borderRadius: '6px',
+    fontSize: '0.75rem',
+    whiteSpace: 'nowrap',
+    zIndex: 1000,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+    pointerEvents: 'none',
+    opacity: showTooltip ? 1 : 0,
+    transition: 'opacity 0.2s ease',
+  };
+
+  // Adicionar seta (flecha) na tooltip
+  const tooltipArrowStyle = {
+    position: 'absolute',
+    top: '100%',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: 0,
+    height: 0,
+    borderLeft: '6px solid transparent',
+    borderRight: '6px solid transparent',
+    borderTop: `6px solid #8B5CF6`,
   };
 
   const inputStyle = {
-    width: '100%',
+    width: 'auto',
     padding: '0.75rem',
-    border: `1px solid ${isDark ? '#3e4042' : '#ddd'}`,
-    borderRadius: '4px',
+    border: `1px solid #8B5CF6`,
+    borderRadius: '24px',
     background: isDark ? '#2c2f33' : '#fff',
-    color: isDark ? '#e4e6eb' : '#1d2129',
-    fontSize: '0.9rem',
-    cursor: 'pointer'
+    color: '#8B5CF6',
+    fontSize: '1.2rem',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    transition: 'background 0.2s, border-color 0.2s',
+    minWidth: '48px',
+    height: '48px'
   };
 
   const previewContainerStyle = {
@@ -200,8 +243,36 @@ export default function ImageUpload({
           style={{ display: 'none' }}
           id="image-upload-input"
         />
-        <label htmlFor="image-upload-input" style={inputStyle}>
-          {loading ? 'Processando imagem...' : placeholder}
+        <label 
+          htmlFor="image-upload-input" 
+          style={{
+            ...inputStyle,
+            position: 'relative',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = isDark ? '#3a3b3c' : '#f8f9ff';
+            e.currentTarget.style.borderColor = '#9d68f7';
+            setShowTooltip(true);
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = isDark ? '#2c2f33' : '#fff';
+            e.currentTarget.style.borderColor = '#8B5CF6';
+            setShowTooltip(false);
+          }}
+        >
+          {loading ? (
+            <span style={{ fontSize: '0.9rem' }}>Processando imagem...</span>
+          ) : (
+            <>
+              <FaImage style={{ fontSize: '1.4rem' }} />
+              {showTooltip && (
+                <div style={tooltipStyle}>
+                  {t('add_image') || 'Adicionar Imagem'}
+                  <div style={tooltipArrowStyle}></div>
+                </div>
+              )}
+            </>
+          )}
         </label>
       </div>
 

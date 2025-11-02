@@ -66,7 +66,7 @@ const getStyles = (theme, post = {}) => {
   return {
     card: {
       background: backgroundCard,
-      border: `1px solid ${borderSubtle}`,
+      border: `1px solid #8B5CF6`,
       borderRadius: "12px",
       padding: "16px 0 0 0",
       marginBottom: "8px",

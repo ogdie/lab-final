@@ -61,7 +61,7 @@ export default function PostModal({ isOpen, onClose, onSubmit, theme = 'light' }
             />
             {!image && (
               <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: isDark ? '#b0b3b8' : '#666' }}>
-                Ou{' '}
+                {t('or')}{' '}
                 <input
                   type="text"
                   placeholder={t('image_url_optional') || 'Cole uma URL de imagem'}

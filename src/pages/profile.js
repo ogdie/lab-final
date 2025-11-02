@@ -633,7 +633,7 @@ export default function Profile() {
                     onClick={() => setShowAchievementModal(true)}
                     style={{
                       ...styles.editButton,
-                      background: "#8B5CF6",
+                      background: "#4F46E5",
                     }}
                   >
                     <FaTrophy /> {t('add_achievement')}
@@ -788,7 +788,7 @@ export default function Profile() {
                         onClick={() => setShowAchievementModal(true)}
                         style={{
                           ...styles.editButton,
-                          background: "#8B5CF6",
+                          background: "#4F46E5",
                         }}
                       >
                         <FaTrophy /> {t('add_achievement')}

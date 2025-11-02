@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 import MentionTextarea from './MentionTextarea';
 // Modal component for editing a post
-export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete, theme = 'light' }) {
+export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete, theme: propTheme }) {
   const [content, setContent] = useState('');
   const [image, setImage] = useState('');
-  const { t } = useThemeLanguage();
+  const { t, theme: contextTheme } = useThemeLanguage();
+  const theme = propTheme || contextTheme || 'light';
 
   useEffect(() => {
     if (isOpen) {
@@ -29,6 +30,8 @@ export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete,
 
   if (!isOpen) return null;
 
+  const styles = getStyles(theme);
+
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -51,98 +54,119 @@ export default function EditPostModal({ isOpen, onClose, post, onSave, onDelete,
             style={styles.input}
           />
           <div style={styles.actions}>
-            <button type="button" onClick={onClose} style={styles.cancelButton}>
-              {t('cancel')}
-            </button>
             <button type="submit" style={styles.submitButton}>
               {t('save')}
             </button>
+            <button type="button" onClick={onClose} style={styles.cancelButton}>
+              {t('cancel')}
+            </button>
+            <button type="button" onClick={handleDelete} style={styles.deleteButton}>
+              {t('delete_post')}
+            </button>
           </div>
         </form>
-        <button onClick={handleDelete} style={styles.deleteButton}>
-          {t('delete_post')}
-        </button>
       </div>
     </div>
   );
 }
 
-const styles = {
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-  },
-  modal: {
-    background: 'white',
-    borderRadius: '8px',
-    padding: '2rem',
-    maxWidth: '600px',
-    width: '90%',
-    maxHeight: '90vh',
-    overflow: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  title: {
-    fontSize: '1.5rem',
-    marginBottom: '1rem',
-  },
-  textarea: {
-    width: '100%',
-    padding: '1rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '1rem',
-    resize: 'vertical',
-    marginBottom: '1rem',
-  },
-  input: {
-    width: '100%',
-    padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '1rem',
-    marginBottom: '1rem',
-  },
-  actions: {
-    display: 'flex',
-    gap: '1rem',
-    justifyContent: 'flex-end',
-    marginTop: '1rem',
-  },
-  cancelButton: {
-    padding: '0.75rem 1.5rem',
-    background: '#ccc',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  },
-  submitButton: {
-    padding: '0.75rem 1.5rem',
-    background: '#8B5CF6',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  },
-  deleteButton: {
-    marginTop: '1.5rem',
-    padding: '0.75rem',
-    background: '#f44336',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '1rem',
-    fontWeight: '600',
-  },
+const getStyles = (theme) => {
+  const isDark = theme === 'dark';
+  const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
+  const textSecondary = isDark ? '#b0b3b8' : '#606770';
+  const backgroundCard = isDark ? '#2c2f33' : '#ffffff';
+  const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
+  const blueAction = '#8B5CF6';
+
+  return {
+    overlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.6)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+    },
+    modal: {
+      background: backgroundCard,
+      borderRadius: '8px',
+      padding: '1.5rem',
+      maxWidth: '480px',
+      width: '90%',
+      maxHeight: '90vh',
+      overflow: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      border: `1px solid ${borderSubtle}`,
+    },
+    title: {
+      fontSize: '1.5rem',
+      marginBottom: '1rem',
+      color: textPrimary,
+      marginTop: 0,
+    },
+    textarea: {
+      width: '100%',
+      padding: '1rem',
+      border: `1px solid ${borderSubtle}`,
+      borderRadius: '8px',
+      fontSize: '1rem',
+      resize: 'vertical',
+      marginBottom: '1rem',
+      background: isDark ? '#3a3b3c' : '#f0f2f5',
+      color: textPrimary,
+    },
+    input: {
+      width: '100%',
+      padding: '0.75rem',
+      border: `1px solid ${borderSubtle}`,
+      borderRadius: '8px',
+      fontSize: '1rem',
+      marginBottom: '1rem',
+      background: isDark ? '#3a3b3c' : '#f0f2f5',
+      color: textPrimary,
+    },
+    actions: {
+      display: 'flex',
+      gap: '0.75rem',
+      justifyContent: 'flex-start',
+      marginTop: '1rem',
+      flexWrap: 'wrap',
+    },
+    cancelButton: {
+      padding: '0.6rem 1rem',
+      background: isDark ? '#474a4d' : '#e7e7e7',
+      color: textPrimary,
+      border: 'none',
+      borderRadius: '24px',
+      cursor: 'pointer',
+      fontSize: '0.9rem',
+      fontWeight: '600',
+    },
+    submitButton: {
+      padding: '0.6rem 1rem',
+      background: blueAction,
+      color: 'white',
+      border: 'none',
+      borderRadius: '24px',
+      cursor: 'pointer',
+      fontSize: '0.9rem',
+      fontWeight: '600',
+    },
+    deleteButton: {
+      padding: '0.6rem 1rem',
+      background: '#f44336',
+      color: 'white',
+      border: 'none',
+      borderRadius: '24px',
+      cursor: 'pointer',
+      fontSize: '0.9rem',
+      fontWeight: '600',
+      width: 'auto',
+    },
+  };
 };

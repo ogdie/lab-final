@@ -15,9 +15,10 @@ export default function BackButton({ to = '/forum', style = {}, onClick }) {
       padding: '8px',
       background: 'none',
       border: 'none',
-      color: isDark ? '#e4e6eb' : '#1d2129',
+      color: '#8B5CF6',
       cursor: 'pointer',
       fontSize: '1.5rem',
+      transition: 'color 0.2s',
       ...style,
     },
   };

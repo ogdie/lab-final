@@ -121,7 +121,7 @@ const getStyles = (theme) => {
             background: isDark ? '#5c0000' : '#d32f2f', 
             color: 'white',
             border: 'none',
-            borderRadius: '4px',
+            borderRadius: '24px',
             cursor: 'pointer',
             fontWeight: '600',
         }

@@ -24,7 +24,7 @@ const getStyles = (theme) => {
     main: { maxWidth: '760px', width: '100%', margin: '0 auto', padding: '1rem', flex: 1 },
     header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '1rem 0' },
     title: { fontSize: '1.75rem', fontWeight: 700, color: textPrimary },
-    createBtn: { padding: '0.6rem 1rem', background: blueAction, color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 },
+    createBtn: { padding: '0.6rem 1rem', background: blueAction, color: 'white', border: 'none', borderRadius: '24px', cursor: 'pointer', fontWeight: 600 },
     card: { background: backgroundCard, border: `1px solid ${borderSubtle}`, borderRadius: 8, padding: '1rem', marginBottom: '1rem' },
     loading: { color: textPrimary, textAlign: 'center', padding: '2rem' },
     error: { color: '#d32f2f', textAlign: 'center', padding: '1rem' },
@@ -35,7 +35,7 @@ const getStyles = (theme) => {
     textarea: { width: '100%', padding: '0.75rem', border: `1px solid ${borderSubtle}`, borderRadius: 6, minHeight: 120, background: backgroundCard, color: textPrimary },
     actions: { display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1rem' },
     cancel: { padding: '0.6rem 1rem', background: isDark ? '#474a4d' : '#e7e7e7', color: textPrimary, border: 'none', borderRadius: 6, cursor: 'pointer' },
-    save: { padding: '0.6rem 1rem', background: blueAction, color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 },
+    save: { padding: '0.6rem 1rem', background: blueAction, color: 'white', border: 'none', borderRadius: '24px', cursor: 'pointer', fontWeight: 600 },
   };
 };
 

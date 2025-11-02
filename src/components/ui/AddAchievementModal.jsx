@@ -173,7 +173,7 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
         <form onSubmit={handleSubmit}>
           {/* Título */}
           <div style={styles.field}>
-            <label style={styles.label}>Título *</label>
+            <label style={styles.label}>{t('achievement_title_label')}</label>
             <input
               name="title"
               type="text"
@@ -181,13 +181,13 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
               onChange={handleChange}
               style={styles.input}
               required
-              placeholder="Ex: AWS Certified Developer"
+              placeholder={t('achievement_title_placeholder')}
             />
           </div>
 
           {/* Tipo */}
           <div style={styles.field}>
-            <label style={styles.label}>Tipo *</label>
+            <label style={styles.label}>{t('achievement_type_label')}</label>
             <select
               name="type"
               value={formData.type}
@@ -205,19 +205,19 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
 
           {/* Descrição */}
           <div style={styles.field}>
-            <label style={styles.label}>Descrição</label>
+            <label style={styles.label}>{t('achievement_description_label')}</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
               style={styles.textarea}
-              placeholder="Descreva sua conquista, habilidades aplicadas ou resultado alcançado..."
+              placeholder={t('achievement_description_placeholder')}
             />
           </div>
 
           {/* Data */}
           <div style={styles.field}>
-            <label style={styles.label}>Data *</label>
+            <label style={styles.label}>{t('achievement_date_label')}</label>
             <input
               name="date"
               type="date"
@@ -238,7 +238,7 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
             />
             {!formData.image && (
               <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: styles.label.color }}>
-                Ou{' '}
+                {t('or')}{' '}
                 <input
                   name="image"
                   type="url"
@@ -258,14 +258,14 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
 
           {/* Tecnologias */}
           <div style={styles.field}>
-            <label style={styles.label}>Tecnologias ou Ferramentas</label>
+            <label style={styles.label}>{t('technologies_tools_label')}</label>
             <input
               name="technologies"
               type="text"
               value={formData.technologies}
               onChange={handleChange}
               style={styles.input}
-              placeholder="Ex: React, Node.js, MongoDB (separadas por vírgula)"
+              placeholder={t('technologies_placeholder')}
             />
           </div>
 
@@ -275,7 +275,7 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
               {t('cancel')}
             </button>
             <button type="submit" style={styles.saveButton}>
-              Adicionar
+              {t('add')}
             </button>
           </div>
         </form>

@@ -183,8 +183,28 @@ export default function Ranking() {
           <p style={styles.empty}>{t('no_users_in_ranking')}</p>
         ) : (
           <div style={styles.ranking}>
-            {top10.map((rankedUser, index) => (
-              <div key={rankedUser._id || `rank-${index}`} style={styles.item}>
+            {top10.map((rankedUser, index) => {
+              // Cores das bordas para os 3 primeiros colocados
+              const getBorderColor = (position) => {
+                if (position === 0) return '#FFD700'; // Dourada (1º lugar)
+                if (position === 1) return '#C0C0C0'; // Prateada (2º lugar)
+                if (position === 2) return '#CD7F32'; // Bronze (3º lugar)
+                return theme === 'dark' ? '#3e4042' : '#e0e0e0'; // Cor padrão
+              };
+
+              const getBorderWidth = (position) => {
+                return position < 3 ? '3px' : '1px'; // Borda mais grossa para os 3 primeiros
+              };
+
+              return (
+              <div 
+                key={rankedUser._id || `rank-${index}`} 
+                style={{
+                  ...styles.item,
+                  border: `${getBorderWidth(index)} solid ${getBorderColor(index)}`,
+                  boxShadow: index < 3 ? `0 2px 8px ${getBorderColor(index)}40` : 'none',
+                }}
+              >
                 <div style={styles.position}>{index + 1}º</div>
                 <img
                   src={rankedUser.profilePicture || '/default-avatar.svg'}
@@ -207,7 +227,8 @@ export default function Ranking() {
                 </div>
                 <div style={styles.xp}><SiGamejolt /> {rankedUser.xp || 0} XP</div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
