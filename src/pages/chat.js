@@ -235,7 +235,10 @@ export default function Chat() {
                     </p>
                   </div>
                   <button
-                    onClick={() => router.push(`/profile?id=${userResult._id}`)}
+                    onClick={() => {
+                      handleCloseSearch();
+                      router.push(`/profile?id=${userResult._id}`);
+                    }}
                     style={{ padding: '0.5rem 1rem', background: '#8B5CF6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
                   >
                     {t('view_profile')}

@@ -387,7 +387,10 @@ export default function TopicPage() {
                       </p>
                     </div>
                     <button 
-                      onClick={() => router.push(`/profile?id=${u._id}`)} 
+                      onClick={() => {
+                        handleCloseSearch();
+                        router.push(`/profile?id=${u._id}`);
+                      }} 
                       style={{ 
                         padding: '0.5rem 1rem', 
                         background: '#8B5CF6', 

@@ -493,7 +493,10 @@ export default function Forum() {
                         <FaStar /> {u.xp || 0} XP
                       </p>
                     </div>
-                    <button onClick={() => router.push(`/profile?id=${u._id}`)} style={styles.viewProfileButton}>{t('view_profile')}</button>
+                    <button onClick={() => {
+                      handleCloseSearch();
+                      router.push(`/profile?id=${u._id}`);
+                    }} style={styles.viewProfileButton}>{t('view_profile')}</button>
                   </div>
                 ))
               )}

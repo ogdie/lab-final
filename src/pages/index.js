@@ -28,10 +28,7 @@ export default function Home() {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    if (token) {
-      router.push('/home');
-    }
+    // Não redireciona automaticamente - deixa as páginas protegidas validarem
   }, [router]);
 
   const handleLogin = async (data) => {

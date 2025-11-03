@@ -154,7 +154,10 @@ export default function Ranking() {
                       <p style={{ margin: '2px 0 0 0', color: '#606770', fontSize: '0.85rem' }}>{u.email}</p>
                     </div>
                     <button
-                      onClick={() => router.push(`/profile?id=${u._id}`)}
+                      onClick={() => {
+                        handleCloseSearch();
+                        router.push(`/profile?id=${u._id}`);
+                      }}
                       style={styles.viewProfileButton}
                     >
                       {t('view_profile')}

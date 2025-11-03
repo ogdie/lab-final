@@ -647,7 +647,10 @@ export default function Profile() {
                     </p>
                   </div>
                   <button
-                    onClick={() => router.push(`/profile?id=${userResult._id}`)}
+                    onClick={() => {
+                      handleCloseSearch();
+                      router.push(`/profile?id=${userResult._id}`);
+                    }}
                     style={{
                       padding: "0.5rem 1rem",
                       background: "#8B5CF6",

@@ -516,11 +516,20 @@ export default function Home() {
             if (freshUser?._id) {
                 setUser(freshUser);
                 localStorage.setItem('user', JSON.stringify(freshUser));
+            } else {
+                // Usuário não encontrado - limpa dados e redireciona
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                router.push('/');
             }
         } catch (err) {
             console.error('Error loading current user:', err);
+            // Se o usuário não existir ou token for inválido, limpa dados e redireciona
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            router.push('/');
         }
-    }, []);
+    }, [router]);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -736,7 +745,10 @@ export default function Home() {
                                         </p>
                                     </div>
                                     <button
-                                        onClick={() => router.push(`/profile?id=${userResult._id}`)}
+                                        onClick={() => {
+                                            handleCloseSearch();
+                                            router.push(`/profile?id=${userResult._id}`);
+                                        }}
                                         style={styles.viewProfileButton}
                                     >
                                         {t('view_profile')}
