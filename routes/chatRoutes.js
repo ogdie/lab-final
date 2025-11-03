@@ -4,7 +4,6 @@ import User from "../models/user.js";
 
 const router = express.Router();
 
-// Get conversations for a user
 router.get('/', async (req, res) => {
   try {
     const { userId } = req.query;
@@ -15,7 +14,6 @@ router.get('/', async (req, res) => {
       .populate('receiver', 'name profilePicture')
       .sort({ createdAt: -1 });
     
-    // Group conversations
     const conversations = {};
     messages.forEach(msg => {
       const otherId = msg.sender._id.toString() === userId ? msg.receiver._id : msg.sender._id;
@@ -37,13 +35,11 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Mark messages as read (DEVE VIR ANTES de /:userId/messages para evitar conflitos)
 router.put('/:userId/read', async (req, res) => {
   try {
     const { userId } = req.params;
     const { currentUserId } = req.query;
 
-    // Marcar todas as mensagens enviadas pelo outro usuário como lidas
     await Message.updateMany(
       {
         sender: userId,
@@ -61,7 +57,7 @@ router.put('/:userId/read', async (req, res) => {
   }
 });
 
-// Delete single message (DEVE VIR ANTES de /:userId para evitar conflitos)
+
 router.delete('/messages/:messageId', async (req, res) => {
   try {
     const { messageId } = req.params;
@@ -78,7 +74,6 @@ router.delete('/messages/:messageId', async (req, res) => {
   }
 });
 
-// Get messages between two users
 router.get('/:userId/messages', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -100,7 +95,6 @@ router.get('/:userId/messages', async (req, res) => {
   }
 });
 
-// Send message
 router.post('/:userId/messages', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -122,7 +116,6 @@ router.post('/:userId/messages', async (req, res) => {
   }
 });
 
-// Delete conversation
 router.delete('/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -142,4 +135,3 @@ router.delete('/:userId', async (req, res) => {
 });
 
 export default router;
-

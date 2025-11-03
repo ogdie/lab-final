@@ -33,7 +33,6 @@ const fetchAPI = async (url, options = {}) => {
   return response.json();
 };
 
-// Auth API
 export const authAPI = {
   register: (data) => fetchAPI('/auth/register', {
     method: 'POST',
@@ -49,12 +48,10 @@ export const authAPI = {
     method: 'POST'
   }),
   
-  // OAuth login URLs
   getGoogleLoginUrl: () => `${API_URL}/auth/google`,
   getGitHubLoginUrl: () => `${API_URL}/auth/github`
 };
 
-// Users API
 export const usersAPI = {
   getAll: () => fetchAPI('/users'),
   getById: (id) => fetchAPI(`/users/${id}`),
@@ -90,13 +87,11 @@ export const usersAPI = {
   })
 };
 
-// Follow API
 usersAPI.toggleFollow = (targetUserId, followerId) => fetchAPI(`/users/${targetUserId}/follow`, {
   method: 'POST',
   body: JSON.stringify({ followerId })
 });
 
-// Posts API
 export const postsAPI = {
   getAll: () => fetchAPI('/posts'),
   getById: (id) => fetchAPI(`/posts/${id}`),
@@ -120,7 +115,6 @@ export const postsAPI = {
   getComments: (id) => fetchAPI(`/posts/${id}/comments`)
 };
 
-// Comments API
 export const commentsAPI = {
   getAll: () => fetchAPI('/comments'),
   getById: (id) => fetchAPI(`/comments/${id}`),
@@ -135,7 +129,6 @@ export const commentsAPI = {
   })
 };
 
-// Notifications API
 export const notificationsAPI = {
   getAll: (userId) => fetchAPI(`/notifications${userId ? `?userId=${encodeURIComponent(userId)}` : ''}`),
   markAsRead: (id) => fetchAPI(`/notifications/${id}/read`, {
@@ -144,12 +137,10 @@ export const notificationsAPI = {
   delete: (id) => fetchAPI(`/notifications/${id}`, { method: 'DELETE' })
 };
 
-// Ranking API
 export const rankingAPI = {
   getRanking: () => fetchAPI('/ranking')
 };
 
-// Forum API
 export const forumAPI = {
   getTopics: () => fetchAPI('/forum/topics'),
   createTopic: (data) => fetchAPI('/forum/topics', {
@@ -163,7 +154,6 @@ export const forumAPI = {
   })
 };
 
-// Chat API
 export const chatAPI = {
   getConversations: (userId) => fetchAPI(`/chat?userId=${userId}`),
   getMessages: (userId, currentUserId) => fetchAPI(`/chat/${userId}/messages?currentUserId=${currentUserId}`),
@@ -179,7 +169,6 @@ export const chatAPI = {
   })
 };
 
-// Connections API
 export const connectionsAPI = {
   sendRequest: (id, from) => fetchAPI(`/connections/${id}/request`, {
     method: 'POST',
@@ -198,8 +187,6 @@ export const connectionsAPI = {
   })
 };
 
-// Search API
 export const searchAPI = {
   search: (query) => fetchAPI(`/search?query=${query}`)
 };
-

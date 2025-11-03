@@ -8,8 +8,6 @@ import AlertModal from '../components/ui/AlertModal';
 import { usersAPI } from '../services/api';
 import { FaEdit, FaStar } from 'react-icons/fa';
 
-// --- Função de Estilo (getStyles) ---
-
 const getStyles = (theme) => {
     const isDark = theme === 'dark';
     const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
@@ -20,7 +18,6 @@ const getStyles = (theme) => {
     const blueAction = '#8B5CF6';
 
     return {
-        // --- Layout Geral ---
         container: {
             minHeight: '100vh',
             display: 'flex',
@@ -48,7 +45,6 @@ const getStyles = (theme) => {
             color: textPrimary,
         },
 
-        // --- Seções de Conteúdo (Cards) ---
         section: {
             background: backgroundCard,
             border: `1px solid ${borderSubtle}`,
@@ -66,7 +62,6 @@ const getStyles = (theme) => {
             paddingBottom: '0.75rem',
         },
 
-        // --- Elementos de Interação (Tema/Idioma) ---
         preferenceGroup: {
             marginBottom: '1rem',
             padding: '0.5rem 0',
@@ -187,16 +182,13 @@ export default function Settings() {
             return;
         }
 
-        // Se a pesquisa está pausada e a query não mudou, não fazer nada
         if (searchPaused && query === lastSearchQuery) {
             return;
         }
 
-        // Se a query mudou, reativar a pesquisa
         if (query !== lastSearchQuery) {
             setSearchPaused(false);
         }
-
         try {
             const users = await usersAPI.searchUsers(query);
             setSearchResults(Array.isArray(users) ? users : []);
@@ -214,7 +206,6 @@ export default function Settings() {
         setSearchPaused(true); // Pausar a pesquisa para evitar reabertura automática
     }, []);
     
-    // Carrega usuário e verifica autenticação (Lógica inalterada)
     useEffect(() => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');

@@ -4,7 +4,6 @@ import Notification from "../models/notification.js";
 
 const router = express.Router();
 
-// Get all comments
 router.get('/', async (req, res) => {
   try {
     const comments = await Comment.find().populate('author', 'name profilePicture');
@@ -14,7 +13,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Like/Unlike comment - DEVE VIR ANTES de /:id para evitar conflitos
 router.post('/:id/like', async (req, res) => {
   try {
     const { userId } = req.body;
@@ -28,9 +26,7 @@ router.post('/:id/like', async (req, res) => {
       comment.likes = comment.likes.filter(id => id.toString() !== userId);
     } else {
       comment.likes.push(userId);
-      // Notificar o autor do comentário quando é curtido
       if (comment.author.toString() !== userId) {
-        // Buscar o post para verificar se é do fórum
         const Post = (await import('../models/post.js')).default;
         const post = await Post.findById(comment.post);
         
@@ -55,7 +51,6 @@ router.post('/:id/like', async (req, res) => {
   }
 });
 
-// Get comment by ID
 router.get('/:id', async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id).populate('author', 'name profilePicture');
@@ -66,7 +61,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update comment
 router.put('/:id', async (req, res) => {
   try {
     const comment = await Comment.findByIdAndUpdate(req.params.id, req.body, { new: true })
@@ -78,7 +72,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete comment
 router.delete('/:id', async (req, res) => {
   try {
     await Comment.findByIdAndDelete(req.params.id);
@@ -89,4 +82,3 @@ router.delete('/:id', async (req, res) => {
 });
 
 export default router;
-

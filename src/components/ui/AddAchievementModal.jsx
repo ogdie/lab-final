@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 import ImageUpload from './ImageUpload';
 
-// Tipos de conquista alinhados ao contexto de programação
 const ACHIEVEMENT_TYPES = [
   "certification",
   "course",
@@ -12,7 +11,6 @@ const ACHIEVEMENT_TYPES = [
   "other"
 ];
 
-// --- Estilos dinâmicos (mesmo padrão do EditProfileModal) ---
 const getStyles = (theme) => {
   const isDark = theme === 'dark';
   const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
@@ -117,7 +115,6 @@ const getStyles = (theme) => {
     }
   };
 };
-// --- FIM getStyles ---
 
 export default function AddAchievementModal({ isOpen, onClose, onSave, theme = 'light', achievement = null }) {
   const [formData, setFormData] = useState({
@@ -132,11 +129,9 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
   const styles = getStyles(theme);
   const { t } = useThemeLanguage();
 
-  // Resetar formulário ao abrir/fechar ou preencher se estiver editando
   useEffect(() => {
     if (isOpen) {
       if (achievement) {
-        // Preencher com dados da conquista para edição
         setFormData({
           title: achievement.title || '',
           type: achievement.type || ACHIEVEMENT_TYPES[0],
@@ -146,7 +141,6 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
           image: achievement.image || ''
         });
       } else {
-        // Resetar formulário para nova conquista
         setFormData({
           title: '',
           type: ACHIEVEMENT_TYPES[0],
@@ -165,14 +159,12 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
     e.preventDefault();
     const data = {
       ...formData,
-      // Processa tecnologias como array
       technologies: formData.technologies
         .split(',')
         .map(t => t.trim())
         .filter(t => t.length > 0)
     };
     if (onSave) onSave(data);
-    // Resetar formulário antes de fechar
     setFormData({
       title: '',
       type: ACHIEVEMENT_TYPES[0],
@@ -297,7 +289,7 @@ export default function AddAchievementModal({ isOpen, onClose, onSave, theme = '
             <button 
               type="button" 
               onClick={() => {
-                // Resetar formulário ao cancelar
+
                 setFormData({
                   title: '',
                   type: ACHIEVEMENT_TYPES[0],

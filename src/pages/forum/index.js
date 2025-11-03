@@ -243,7 +243,6 @@ export default function Forum() {
   const router = useRouter();
   const { t, theme, language } = useThemeLanguage();
 
-  // Função helper para traduzir userType
   const translateUserType = (userType) => {
     if (!userType) return null;
     const typeMap = {
@@ -332,8 +331,6 @@ export default function Forum() {
       const data = await forumAPI.getTopics();
       const backendTopics = Array.isArray(data) ? data : [];
       const byName = new Map();
-      
-      // Mapa com descrições traduzidas
       const topicDescriptions = {
         'reports': t('topic_reports_desc'),
         'fullstack': t('topic_fullstack_desc'),
@@ -346,7 +343,6 @@ export default function Forum() {
       backendTopics.forEach((t) => {
         const key = (t?.name || "").toLowerCase();
         if (!byName.has(key)) {
-          // Aplicar descrição traduzida se disponível
           if (topicDescriptions[key]) {
             t.description = topicDescriptions[key];
           }
@@ -358,7 +354,6 @@ export default function Forum() {
       defaultTopics.forEach((t) => {
         const key = (t?.name || "").toLowerCase();
         if (!byName.has(key)) {
-          // Aplicar descrição traduzida
           if (topicDescriptions[key]) {
             t.description = topicDescriptions[key];
           }
@@ -366,7 +361,6 @@ export default function Forum() {
         }
       });
       
-      // Garantir que Reports seja sempre o primeiro
       const reportsIndex = merged.findIndex(t => (t?.name || "").toLowerCase() === "reports");
       if (reportsIndex > 0) {
         const reportsTopic = merged.splice(reportsIndex, 1)[0];
@@ -376,7 +370,6 @@ export default function Forum() {
       setTopics(merged);
     } catch (err) {
       console.error("Error loading topics:", err);
-      // Aplicar traduções aos defaultTopics também em caso de erro
       const translatedDefaults = defaultTopics.map(t => {
         const key = (t?.name || "").toLowerCase();
         const topicDescriptions = {
@@ -422,12 +415,10 @@ export default function Forum() {
       return;
     }
 
-    // Se a pesquisa está pausada e a query não mudou, não fazer nada
     if (searchPaused && query === lastSearchQuery) {
       return;
     }
 
-    // Se a query mudou, reativar a pesquisa
     if (query !== lastSearchQuery) {
       setSearchPaused(false);
     }

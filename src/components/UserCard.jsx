@@ -90,4 +90,3 @@ const styles = {
     marginTop: '0.5rem'
   }
 };
-

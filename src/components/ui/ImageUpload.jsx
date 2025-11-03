@@ -22,7 +22,6 @@ export default function ImageUpload({
   const { t } = useThemeLanguage();
   const isDark = theme === 'dark';
 
-  // Sincronizar preview com value quando value mudar externamente
   useEffect(() => {
     setPreview(value || '');
     if (!value && fileInputRef.current) {
@@ -59,7 +58,6 @@ export default function ImageUpload({
           const qualities = [0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5];
           const tryCompress = (index) => {
             if (index >= qualities.length) {
-              // Se ainda não coube, reduzir dimensões um pouco e tentar qualidade menor
               const smallerWidth = Math.round(width * 0.9);
               const smallerHeight = Math.round(height * 0.9);
               canvas.width = smallerWidth;
@@ -156,7 +154,6 @@ export default function ImageUpload({
     transition: 'opacity 0.2s ease',
   };
 
-  // Adicionar seta (flecha) na tooltip
   const tooltipArrowStyle = {
     position: 'absolute',
     top: '100%',
@@ -192,9 +189,9 @@ export default function ImageUpload({
     marginTop: '0.5rem',
     display: 'inline-block',
     maxWidth: '100%',
-    lineHeight: 0, // Remove espaço extra abaixo da imagem inline
-    width: 'fit-content', // Container se ajusta ao tamanho da imagem
-    fontSize: 0, // Remove espaço entre elementos inline
+    lineHeight: 0,
+    width: 'fit-content',
+    fontSize: 0,
     padding: 0,
     margin: 0
   };
@@ -208,10 +205,10 @@ export default function ImageUpload({
     borderRadius: '8px',
     objectFit: 'contain',
     border: `1px solid ${isDark ? '#3e4042' : '#ddd'}`,
-    verticalAlign: 'top', // Remove espaço extra abaixo
-    margin: 0, // Remove margens
-    padding: 0, // Remove padding
-    outline: 'none' // Remove outline do navegador
+    verticalAlign: 'top',
+    margin: 0,
+    padding: 0,
+    outline: 'none'
   };
 
   const removeButtonStyle = {

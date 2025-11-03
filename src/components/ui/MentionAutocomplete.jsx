@@ -20,7 +20,6 @@ export default function MentionAutocomplete({
   const borderSubtle = isDark ? '#3e4042' : '#e0e0e0';
   const hoverBg = isDark ? '#3a3b3c' : '#f0f2f5';
 
-  // Extrair o texto após @
   const getMentionQuery = () => {
     if (!text || cursorPosition === null) return '';
     const textBeforeCursor = text.substring(0, cursorPosition);
@@ -53,11 +52,9 @@ export default function MentionAutocomplete({
 
     const debounceTimer = setTimeout(searchUsers, 200);
     return () => clearTimeout(debounceTimer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text, cursorPosition]);
 
   useEffect(() => {
-    // Scroll para o item selecionado
     if (listRef.current && selectedIndex >= 0) {
       const selectedItem = listRef.current.children[selectedIndex];
       if (selectedItem) {
@@ -99,7 +96,6 @@ export default function MentionAutocomplete({
     if (users.length === 0) return;
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [users, selectedIndex]);
 
   if (users.length === 0 || !containerRef?.current) return null;
@@ -162,4 +158,3 @@ export default function MentionAutocomplete({
     </div>
   );
 }
-

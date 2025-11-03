@@ -13,7 +13,6 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import rankingRoutes from "./routes/rankingRoutes.js";
 import forumRoutes from "./routes/forumRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
-// connectionRoutes removido
 
 dotenv.config();
 
@@ -32,11 +31,10 @@ async function start() {
       origin: process.env.NODE_ENV === 'production' ? process.env.BASE_URL : 'http://localhost:3000',
       credentials: true
     }));
-    // Aumentar limite do body parser para aceitar imagens base64 (até 10MB)
+
     server.use(express.json({ limit: '10mb' }));
     server.use(express.urlencoded({ limit: '10mb', extended: true }));
     
-    // Session configuration for OAuth
     server.use(session({
       secret: process.env.SESSION_SECRET || 'your-session-secret-key',
       resave: false,
@@ -47,13 +45,10 @@ async function start() {
       }
     }));
     
-    // Passport middleware
     server.use(passport.initialize());
     server.use(passport.session());
     
-    // API Routes (Express handles these)
     server.use('/api/auth', authRoutes);
-    // Also expose non-API OAuth routes to match provider redirect URIs
     server.use('/auth', authRoutes);
     server.use('/api/users', userRoutes);
     server.use('/api/posts', postRoutes);
@@ -62,11 +57,9 @@ async function start() {
     server.use('/api/ranking', rankingRoutes);
     server.use('/api/forum', forumRoutes);
     server.use('/api/chat', chatRoutes);
-    // server.use('/api/connections', connectionRoutes);
 
-    // Next.js handler - only for non-API routes
     server.use((req, res) => {
-      // Skip API routes
+
       if (req.path.startsWith('/api')) {
         return res.status(404).json({ error: 'API route not found' });
       }

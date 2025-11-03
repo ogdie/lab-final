@@ -137,13 +137,10 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
     const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
     const [showConnectionNotifications, setShowConnectionNotifications] = useState(false); 
 
-    // Buscar notificações não lidas
     useEffect(() => {
         if (user?._id) {
             fetchUnreadNotifications();
             fetchUnreadMessages();
-            // Polling para atualizar notificações a cada 5 segundos (tempo real)
-            // Mensagens também são atualizadas a cada 5 segundos
             const notificationsInterval = setInterval(() => {
                 fetchUnreadNotifications();
             }, 5000);
@@ -159,27 +156,22 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
         }
     }, [user?._id]);
 
-    // Listener para atualizar contador quando entrar no chat
     useEffect(() => {
         const handleChatVisited = () => {
-            // Zerar imediatamente
             setUnreadMessagesCount(0);
         };
         
-        // Verificar se estamos na página de chat
         const checkChatPage = () => {
             if (typeof window !== 'undefined' && window.location.pathname === '/chat') {
                 handleChatVisited();
             }
         };
         
-        // Escutar evento customizado (prioridade alta)
         const eventHandler = (e) => {
             handleChatVisited();
         };
         window.addEventListener('chatVisited', eventHandler, true);
         
-        // Escutar BroadcastChannel se disponível
         let broadcastChannel = null;
         if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
             broadcastChannel = new BroadcastChannel('chat-visited');
@@ -190,10 +182,8 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
             };
         }
         
-        // Verificar imediatamente ao montar
         checkChatPage();
         
-        // Verificar periodicamente se estamos na página de chat (fallback mais frequente)
         const interval = setInterval(checkChatPage, 500);
         
         return () => {
@@ -233,12 +223,10 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
         }
     };
 
-    // Lógica para alternar a visibilidade das notificações
     const handleNotificationsClick = async () => {
         const willShow = !showConnectionNotifications;
         setShowConnectionNotifications(willShow);
         
-        // Se está abrindo, marcar todas como lidas
         if (willShow && user?._id && notificationsCount > 0) {
             try {
                 const { notificationsAPI } = await import('../../services/api');
@@ -247,12 +235,10 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                     ? notifications.filter(n => !n.read) 
                     : [];
                 
-                // Marcar todas como lidas
                 await Promise.all(
                     unreadNotifications.map(n => notificationsAPI.markAsRead(n._id))
                 );
                 
-                // Atualizar contador
                 setNotificationsCount(0);
             } catch (err) {
                 console.error('Error marking notifications as read:', err);
@@ -260,7 +246,6 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
         }
     };
     
-    // Busca ao digitar (debounce curto)
     useEffect(() => {
         const term = searchTerm.trim();
         const id = setTimeout(() => {
@@ -411,7 +396,6 @@ export default function Navbar({ user, onSearch = () => {}, onNotificationsClick
                     userId={user?._id} 
                     onClose={() => {
                         setShowConnectionNotifications(false);
-                        // Atualizar contador ao fechar
                         fetchUnreadNotifications();
                     }}
                     onNotificationsUpdated={fetchUnreadNotifications}

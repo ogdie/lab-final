@@ -184,16 +184,15 @@ export default function Ranking() {
         ) : (
           <div style={styles.ranking}>
             {top10.map((rankedUser, index) => {
-              // Cores das bordas para os 3 primeiros colocados
               const getBorderColor = (position) => {
-                if (position === 0) return '#FFD700'; // Dourada (1º lugar)
-                if (position === 1) return '#C0C0C0'; // Prateada (2º lugar)
-                if (position === 2) return '#CD7F32'; // Bronze (3º lugar)
-                return theme === 'dark' ? '#3e4042' : '#e0e0e0'; // Cor padrão
+                if (position === 0) return '#FFD700';
+                if (position === 1) return '#C0C0C0';
+                if (position === 2) return '#CD7F32';
+                return theme === 'dark' ? '#3e4042' : '#e0e0e0';
               };
 
               const getBorderWidth = (position) => {
-                return position < 3 ? '3px' : '1px'; // Borda mais grossa para os 3 primeiros
+                return position < 3 ? '3px' : '1px';
               };
 
               return (

@@ -145,7 +145,6 @@ export default function ArticlesSidebar({ theme }) {
     },
   };
 
-  // Componente interno para cada artigo com tratamento de erro de imagem
   const ArticleItem = ({ article, styles, isDark, language }) => {
     const [imageError, setImageError] = useState(false);
     const articleTitle = typeof article.title === 'object' 
@@ -204,4 +203,3 @@ export default function ArticlesSidebar({ theme }) {
     </aside>
   );
 }
-

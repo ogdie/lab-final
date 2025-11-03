@@ -15,23 +15,19 @@ export default function Home() {
   const resetAnimationCallbackRef = useRef(null);
 
   useEffect(() => {
-    // Check for OAuth callback
     const oauthResult = handleOAuthCallback();
     if (oauthResult) {
-      // Store user data and redirect to home
       localStorage.setItem('user', JSON.stringify(oauthResult.user));
       router.push('/home');
       return;
     }
 
-    // Check for OAuth error
     const oauthError = checkOAuthError();
     if (oauthError) {
       setAlert({ isOpen: true, message: oauthError, title: 'Erro de Autenticação' });
       return;
     }
 
-    // Regular token check
     const token = localStorage.getItem('token');
     if (token) {
       router.push('/home');
@@ -95,7 +91,6 @@ export default function Home() {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify({ ...response.user, _id: userId }));
       
-      // Mostrar modal de sucesso antes de redirecionar
       setShowSuccessModal(true);
     } catch (error) {
       let message = error.message || 'Erro desconhecido.';
@@ -118,7 +113,6 @@ export default function Home() {
 
   const closeAlert = () => {
     setAlert({ isOpen: false, message: '', title: 'Aviso' });
-    // Resetar animação do botão quando o modal de erro fechar
     if (resetAnimationCallbackRef.current && typeof resetAnimationCallbackRef.current === 'function') {
       resetAnimationCallbackRef.current();
     }

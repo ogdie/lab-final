@@ -55,7 +55,6 @@ export default function PostPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Obter postId da URL
     const getPostId = () => {
       if (typeof window === 'undefined') return null;
       const path = window.location.pathname;
@@ -89,11 +88,9 @@ export default function PostPage() {
 
         setUser(parsedUser);
 
-        // Buscar o post
         const postData = await postsAPI.getById(postId);
         setPost(postData);
 
-        // Se o post pertence a um tópico, buscar o tópico também
         if (postData.topic) {
           try {
             const topicData = await forumAPI.getTopic(postData.topic);
@@ -128,7 +125,6 @@ export default function PostPage() {
     if (!postId || !content?.trim() || !user?._id) return;
     try {
       await postsAPI.addComment(postId, { author: user._id, content, parentComment });
-      // Recarregar o post
       const postData = await postsAPI.getById(postId);
       setPost(postData);
     } catch (err) {
@@ -194,7 +190,6 @@ export default function PostPage() {
     const confirmDelete = async () => {
       try {
         await postsAPI.delete(postId);
-        // Redirecionar baseado no contexto
         if (topic) {
           router.push(`/forum/topic?id=${topic._id}`);
         } else {
@@ -277,4 +272,3 @@ export default function PostPage() {
     </div>
   );
 }
-

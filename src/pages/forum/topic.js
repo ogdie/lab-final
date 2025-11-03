@@ -105,7 +105,6 @@ export default function TopicPage() {
         throw new Error('no-id');
       }
     } catch (err) {
-      // Se vier apenas o nome (tópicos padrão), criaremos o tópico sob demanda
       if (topicName) {
         try {
           const name = topicName;
@@ -133,7 +132,6 @@ export default function TopicPage() {
 
   useEffect(() => {
     loadTopic();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicId]);
 
   const handleCreateThread = async () => {
@@ -164,8 +162,6 @@ export default function TopicPage() {
     if (!user?._id) return;
     try {
       const updatedPost = await postsAPI.like(postId, user._id);
-      // Atualizar apenas o post específico no estado, sem recarregar todo o tópico
-      // Normalizar likes para strings para garantir compatibilidade
       const normalizedLikes = (updatedPost.likes || []).map(id => String(id));
       setTopic((prev) => {
         if (!prev) return prev;
@@ -182,13 +178,10 @@ export default function TopicPage() {
     try {
       const newComment = await postsAPI.addComment(postId, { author: user._id, content: content.trim(), parentComment });
       
-      // Atualização otimista - atualizar apenas o post específico no estado, sem recarregar todo o tópico
-      // Isso mantém o scroll no lugar, como nas curtidas
       setTopic((prev) => {
         if (!prev) return prev;
         const updatedPosts = (prev.posts || []).map((post) => {
           if (post._id === postId) {
-            // Garantir que o novo comentário tem a estrutura correta
             const commentWithDefaults = {
               ...newComment,
               likes: newComment.likes || [],
@@ -213,7 +206,6 @@ export default function TopicPage() {
     if (!commentId || !user?._id) return;
     try {
       const updatedComment = await commentsAPI.like(commentId, user._id);
-      // Atualizar apenas o comentário específico no estado, sem recarregar todo o tópico
       const normalizedLikes = (updatedComment.likes || []).map(id => String(id));
       setTopic((prev) => {
         if (!prev) return prev;
@@ -277,12 +269,10 @@ export default function TopicPage() {
       return;
     }
 
-    // Se a pesquisa está pausada e a query não mudou, não fazer nada
     if (searchPaused && query === lastSearchQuery) {
       return;
     }
 
-    // Se a query mudou, reativar a pesquisa
     if (query !== lastSearchQuery) {
       setSearchPaused(false);
     }
@@ -533,5 +523,3 @@ export default function TopicPage() {
     </div>
   );
 }
-
-

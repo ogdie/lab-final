@@ -5,7 +5,6 @@ import Notification from "../models/notification.js";
 
 const router = express.Router();
 
-// Get all users
 router.get('/', async (req, res) => {
   try {
     const users = await User.find().select('-password');
@@ -15,7 +14,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Search users by name
 router.get('/search', async (req, res) => {
   try {
     const { name } = req.query;
@@ -33,7 +31,6 @@ router.get('/search', async (req, res) => {
   }
 });
 
-// Get user by ID
 router.get('/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
@@ -44,7 +41,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update user
 router.put('/:id', async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true }).select('-password');
@@ -55,7 +51,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete user
 router.delete('/:id', async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
@@ -65,7 +60,6 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Update settings
 router.put('/:id/settings', async (req, res) => {
   try {
     const { language, theme } = req.body;
@@ -80,7 +74,6 @@ router.put('/:id/settings', async (req, res) => {
   }
 });
 
-// Edit profile
 router.put('/:id/edit', async (req, res) => {
   try {
     const {
@@ -110,7 +103,6 @@ router.put('/:id/edit', async (req, res) => {
   }
 });
 
-// Get followers
 router.get('/:id/followers', async (req, res) => {
   try {
     const user = await User.findById(req.params.id).populate('followers', 'name email profilePicture xp');
@@ -120,7 +112,6 @@ router.get('/:id/followers', async (req, res) => {
   }
 });
 
-// Get following
 router.get('/:id/following', async (req, res) => {
   try {
     const user = await User.findById(req.params.id).populate('following', 'name email profilePicture xp');
@@ -130,7 +121,6 @@ router.get('/:id/following', async (req, res) => {
   }
 });
 
-// Get connections
 router.get('/:id/connections', async (req, res) => {
   try {
     const user = await User.findById(req.params.id).populate('connections', 'name email profilePicture xp');
@@ -140,7 +130,6 @@ router.get('/:id/connections', async (req, res) => {
   }
 });
 
-// Get user posts
 router.get('/:id/posts', async (req, res) => {
   try {
     const posts = await Post.find({ author: req.params.id })
@@ -153,7 +142,6 @@ router.get('/:id/posts', async (req, res) => {
   }
 });
 
-// Get notifications
 router.get('/:id/notifications', async (req, res) => {
   try {
     const notifications = await Notification.find({ user: req.params.id })
@@ -168,7 +156,6 @@ router.get('/:id/notifications', async (req, res) => {
   }
 });
 
-// Follow/Unfollow user (toggle)
 router.post('/:id/follow', async (req, res) => {
   try {
     const { followerId } = req.body || {};
@@ -195,7 +182,6 @@ router.post('/:id/follow', async (req, res) => {
     } else {
       await User.findByIdAndUpdate(followerId, { $addToSet: { following: targetUserId } });
       await User.findByIdAndUpdate(targetUserId, { $addToSet: { followers: followerId } });
-      // Notificação opcional
       await Notification.create({ user: targetUserId, from: followerId, type: 'new_follower' });
     }
 
@@ -207,7 +193,6 @@ router.post('/:id/follow', async (req, res) => {
   }
 });
 
-// Update achievement - DEVE VIR ANTES da rota POST (rotas mais específicas primeiro)
 router.put('/:id/achievements/:achievementId', async (req, res) => {
   try {
     const { title, type, description, date, technologies, image } = req.body;
@@ -248,16 +233,13 @@ router.put('/:id/achievements/:achievementId', async (req, res) => {
   }
 });
 
-// Delete achievement - DEVE VIR ANTES da rota POST (rotas mais específicas primeiro)
 router.delete('/:id/achievements/:achievementId', async (req, res) => {
   try {
-    // Verificar se o usuário existe primeiro
     const userExists = await User.findById(req.params.id).lean();
     if (!userExists) {
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
-    // Usar updateOne diretamente para evitar validações
     const result = await User.updateOne(
       { _id: req.params.id },
       { $pull: { achievements: { _id: req.params.achievementId } } }
@@ -267,7 +249,6 @@ router.delete('/:id/achievements/:achievementId', async (req, res) => {
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
-    // Buscar o usuário atualizado usando lean() para retornar objeto simples sem validações
     const updatedUser = await User.findById(req.params.id).select('-password').lean();
 
     if (!updatedUser) {
@@ -280,7 +261,6 @@ router.delete('/:id/achievements/:achievementId', async (req, res) => {
   }
 });
 
-// Add achievement to user - Rotas mais genéricas por último
 router.post('/:id/achievements', async (req, res) => {
   try {
     const { title, type, description, date, technologies, image } = req.body;
@@ -303,7 +283,6 @@ router.post('/:id/achievements', async (req, res) => {
       image: image || ''
     };
 
-    // Usa findByIdAndUpdate com $push para evitar validação de campos obrigatórios do schema
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
       { $push: { achievements: newAchievement } },
@@ -321,4 +300,3 @@ router.post('/:id/achievements', async (req, res) => {
 });
 
 export default router;
-

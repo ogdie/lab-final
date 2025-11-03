@@ -9,7 +9,6 @@ import { renderTextWithMentions } from "../utils/mentionRenderer";
 import { useThemeLanguage } from "../context/ThemeLanguageContext";
 import { FaThumbsUp, FaComment, FaShare, FaEllipsisH } from 'react-icons/fa';
 
-// Formata a diferença de tempo de forma resumida (estilo LinkedIn)
 function formatRelativeTime(dateInput) {
   const now = new Date();
   const date = new Date(dateInput);
@@ -42,7 +41,6 @@ function formatRelativeTime(dateInput) {
   return date.toLocaleDateString("pt-BR");
 }
 
-// Ícones usando react-icons
 const ICONS = {
   Like: <FaThumbsUp />,
   Comment: <FaComment />,
@@ -50,7 +48,6 @@ const ICONS = {
   Dots: <FaEllipsisH />,
 };
 
-// CORREÇÃO: getStyles agora recebe o objeto 'post' como argumento
 const getStyles = (theme, post = {}) => {
   const isDark = theme === "dark";
   const textPrimary = isDark ? "#e4e6eb" : "#1d2129";
@@ -130,7 +127,6 @@ const getStyles = (theme, post = {}) => {
     content: {
       fontSize: "0.95rem",
       lineHeight: "1.4",
-      // CORREÇÃO: Acesso a post.image agora é seguro
       marginBottom: post.image ? "0" : "16px",
       whiteSpace: "pre-wrap",
       color: textPrimary,
@@ -169,7 +165,6 @@ const getStyles = (theme, post = {}) => {
       borderBottom: `1px solid ${borderSubtle}`,
       gap: "4px",
     },
-    // UPDATED: actionButton now mirrors ShareButton behavior (same visual style)
     actionButton: {
       background: "none",
       border: "none",
@@ -230,7 +225,6 @@ const getStyles = (theme, post = {}) => {
       fontSize: "0.9rem",
       alignSelf: "flex-end",
     },
-    // expose hover bg & active color so we can reuse inline
     _hoverBg: hoverBg,
     _activeColor: blueAction,
   };
@@ -250,7 +244,6 @@ export default function PostCard({
   theme,
   topicId = null,
 }) {
-  // Passando o objeto 'post' para o getStyles
   const styles = getStyles(theme || "light", post);
   const { t } = useThemeLanguage();
   const router = useRouter();
@@ -277,14 +270,12 @@ export default function PostCard({
     }
   };
 
-  // Normalizar IDs para comparação correta - recalcular a cada render para garantir atualização
   const normalizedLikes = (post.likes || []).map(id => String(id));
   const currentUserId = currentUser?._id ? String(currentUser._id) : null;
   const isLiked = currentUserId && normalizedLikes.includes(currentUserId);
   const isOwnPost =
     currentUser && String(currentUser._id) === String(post.author?._id || post.author);
   
-  // Calcular contagem de comentários (incluindo replies)
   const commentsCount = (post.comments || []).length;
 
   const displayContent = post.content || "";
@@ -304,7 +295,6 @@ export default function PostCard({
     setShowEditModal(false);
   };
 
-  // convenience variables for hover behavior
   const appliedThemeIsDark = (theme || "light") === "dark";
   const hoverBg = styles._hoverBg;
   const activeColor = styles._activeColor;
@@ -365,7 +355,6 @@ export default function PostCard({
 
       <div style={styles.content}>
         {renderTextWithMentions(visibleContent, (userName) => {
-          // Navegar para perfil quando clicar na menção
           router.push(`/profile?name=${encodeURIComponent(userName)}`);
         })}
         {shouldTruncate && !showFullContent && "... "}
@@ -479,10 +468,8 @@ export default function PostCard({
           )}
 
           {(() => {
-            // Separar comentários principais (sem parentComment) de replies
             const allComments = post.comments || [];
 
-            // Função auxiliar para obter o ID do parentComment
             const getParentId = (comment) => {
               if (!comment.parentComment) return null;
               if (typeof comment.parentComment === "string")
@@ -492,7 +479,6 @@ export default function PostCard({
               return String(comment.parentComment);
             };
 
-            // Filtrar comentários principais
             const mainComments = allComments.filter((c) => {
               const parentId = getParentId(c);
               return (
@@ -503,7 +489,6 @@ export default function PostCard({
               );
             });
 
-            // Agrupar replies por comentário pai
             const repliesMap = {};
 
             allComments.forEach((comment) => {
@@ -542,7 +527,6 @@ export default function PostCard({
                     : rawComment.author,
               };
 
-              // Obter replies deste comentário
               const commentId = String(normalizedComment._id);
               const replies = repliesMap[commentId] || [];
 
@@ -558,7 +542,6 @@ export default function PostCard({
                     postId={post._id}
                     theme={theme}
                   />
-                  {/* Renderizar replies indentados */}
                   {replies
                     .sort((a, b) => {
                       const dateA = new Date(
@@ -567,7 +550,7 @@ export default function PostCard({
                       const dateB = new Date(
                         b.createdAt || b.created_at || b.date || 0
                       );
-                      return dateA - dateB; // Ordenar do mais antigo para o mais recente
+                      return dateA - dateB;
                     })
                     .map((reply) => {
                       const normalizedReply = {

@@ -1,4 +1,4 @@
-// Arquivo: src/components/CodemiaLogo.jsx
+
 import React from 'react';
 
 const CodemiaLogo = ({ style }) => (
@@ -6,15 +6,11 @@ const CodemiaLogo = ({ style }) => (
         style={style} 
         version="1.0" 
         xmlns="http://www.w3.org/2000/svg"
-        // Mantemos o viewBox para o dimensionamento interno
         viewBox="0 0 1024 1024" 
         preserveAspectRatio="xMidYMid meet"
         aria-label="Logo Codemia"
-        // Atributos width e height removidos para serem controlados pelo CSS
     >
 
-    {/* O código <g> e <path> foi mantido, mas os atributos de preenchimento foram movidos para a tag <svg>
-        para serem controlados pela prop 'style' do React */}
     <g 
         transform="translate(0.000000,1024.000000) scale(0.100000,-0.100000)"
         fill="currentColor" // Usa a cor do CSS do componente Link pai

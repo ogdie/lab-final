@@ -5,7 +5,6 @@ import MentionTextarea from './ui/MentionTextarea';
 import { renderTextWithMentions } from '../utils/mentionRenderer';
 import { FaTimes } from 'react-icons/fa';
 
-// Formata a diferença de tempo de forma sucinta (reutilizando lógica do PostCard)
 function formatRelativeTime(dateInput) {
     const now = new Date();
     const date = new Date(dateInput);
@@ -33,12 +32,10 @@ function formatRelativeTime(dateInput) {
     return date.toLocaleDateString('pt-BR');
 }
 
-// Estilos dinâmicos baseados no tema
 const getStyles = (theme) => {
     const isDark = theme === 'dark';
     const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
     const textSecondary = isDark ? '#b0b3b8' : '#606770';
-    // Cor de fundo do 'balão' do comentário
     const backgroundComment = isDark ? '#3a3b3c' : '#f0f2f5'; 
     const blueAction = '#8B5CF6';
     const redLike = '#6860f9ff';
@@ -167,7 +164,7 @@ const getStyles = (theme) => {
 };
 
 export default function CommentCard({ comment, currentUser, onLike, onDelete, onEdit, onReply, postId, theme = 'light', isReply = false }) {
-    // Inicialização dos estilos com o tema
+
     const styles = getStyles(theme);
     const { t } = useThemeLanguage();
     const router = useRouter();
@@ -176,13 +173,11 @@ export default function CommentCard({ comment, currentUser, onLike, onDelete, on
     const [showReplyForm, setShowReplyForm] = useState(false);
     const [replyText, setReplyText] = useState('');
     
-    // Helper para cores consistentes
     const isDark = theme === 'dark';
     const textSecondary = isDark ? '#b0b3b8' : '#606770';
 
     const isLiked = currentUser && comment.likes?.map(id => String(id)).includes(String(currentUser._id));
     const canModify = currentUser && (comment.author?._id === currentUser._id || String(comment.author?._id) === String(currentUser._id));
-    // Para fins de demonstração, assumimos que 'author' pode ter um campo 'title'
     const authorTitle = comment.author?.title || t('member_of_network');
 
     const handleAuthorClick = () => {

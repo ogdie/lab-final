@@ -3,7 +3,6 @@ import User from "../models/user.js";
 
 const router = express.Router();
 
-// Get ranking by XP
 router.get('/', async (req, res) => {
   try {
     const users = await User.find()
@@ -17,4 +16,3 @@ router.get('/', async (req, res) => {
 });
 
 export default router;
-

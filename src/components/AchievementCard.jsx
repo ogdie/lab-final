@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { FaMedal, FaGraduationCap, FaRocket, FaTrophy, FaFileAlt, FaCheckCircle, FaEdit, FaTrash } from 'react-icons/fa';
 
-// Ícones usando react-icons
 const getIconByType = (type) => {
   switch (type) {
     case 'certification': return <FaMedal />;
@@ -23,12 +22,10 @@ export default function AchievementCard({ achievement, theme = 'light', onEdit, 
   const background = isDark ? '#3e4042' : '#f6f8fa';
   const border = isDark ? '#4e5052' : '#dddfe2';
 
-  // Resetar erro de imagem quando a imagem mudar
   useEffect(() => {
     setImageError(false);
   }, [achievement?.image]);
 
-  // Labels traduzidos
   const getTypeLabel = (type) => {
     const key = `achievement_type_${type}`;
     return t(key) || type;
@@ -43,13 +40,11 @@ export default function AchievementCard({ achievement, theme = 'light', onEdit, 
     });
   };
 
-  // Verificar se a imagem existe e não está vazia
   const hasImage = achievement?.image && achievement.image.trim() !== '';
   const showImage = hasImage && !imageError;
   const blueAction = '#8B5CF6';
 
   const handleCardClick = (e) => {
-    // Não abrir modal se clicar nos botões de editar/deletar ou nos seus containers
     const clickedButton = e.target.closest('button');
     const clickedButtonContainer = e.target.closest('[data-button-container]');
     
@@ -90,7 +85,7 @@ export default function AchievementCard({ achievement, theme = 'light', onEdit, 
         e.currentTarget.style.boxShadow = 'none';
       } : undefined}
     >
-      {/* Container da imagem ocupando todo o espaço superior */}
+      {/* Container da imagem */}
       <div 
         style={{
           width: '100%',
@@ -121,7 +116,6 @@ export default function AchievementCard({ achievement, theme = 'light', onEdit, 
               setImageError(true);
             }}
             onLoad={() => {
-              // Resetar erro quando a imagem carregar com sucesso
               setImageError(false);
             }}
             loading="lazy"
@@ -141,7 +135,7 @@ export default function AchievementCard({ achievement, theme = 'light', onEdit, 
           </div>
         )}
         
-        {/* Botões de editar e deletar posicionados absolutamente no canto superior direito */}
+        {/* Botões de editar e deletar */}
         {canEdit && (onEdit || onDelete) && (
           <div 
             data-button-container

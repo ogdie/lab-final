@@ -57,7 +57,6 @@ const sanitizeUser = (user) => ({
   updatedAt: user.updatedAt
 });
 
-// Register
 router.post("/register", async (req, res) => {
   try {
     const {
@@ -110,7 +109,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body || {};
@@ -137,12 +135,10 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Logout
 router.post("/logout", (req, res) => {
   return res.json({ message: "Logout realizado" });
 });
 
-// Google OAuth Routes (enabled only if env vars present)
 const hasGoogleCreds = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 if (hasGoogleCreds) {
   router.get('/google', passport.authenticate('google', {
@@ -165,7 +161,6 @@ if (hasGoogleCreds) {
   router.get('/google/callback', (req, res) => res.redirect('/login?error=oauth'));
 }
 
-// GitHub OAuth Routes (enabled only if env vars present)
 const hasGithubCreds = Boolean(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET);
 if (hasGithubCreds) {
   router.get('/github', passport.authenticate('github', {

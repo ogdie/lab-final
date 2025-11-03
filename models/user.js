@@ -16,7 +16,6 @@ const ALLOWED_INSTITUTIONS = [
   "Outros"
 ];
 
-// Schema para conquistas
 const achievementSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
   type: {

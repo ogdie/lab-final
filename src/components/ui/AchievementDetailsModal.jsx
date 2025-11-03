@@ -1,7 +1,6 @@
 import { useThemeLanguage } from '../../context/ThemeLanguageContext';
 import { FaMedal, FaGraduationCap, FaRocket, FaTrophy, FaFileAlt, FaCheckCircle } from 'react-icons/fa';
 
-// Ícones usando react-icons
 const getIconByType = (type) => {
   switch (type) {
     case 'certification': return <FaMedal />;
@@ -220,4 +219,3 @@ export default function AchievementDetailsModal({ isOpen, onClose, achievement, 
     </div>
   );
 }
-

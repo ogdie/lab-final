@@ -8,7 +8,6 @@ export default function PostModal({ isOpen, onClose, onSubmit, theme = 'light' }
   const [image, setImage] = useState('');
   const { t } = useThemeLanguage();
 
-  // Limpar campos quando o modal fecha
   if (!isOpen) {
     if (content || image) {
       setContent('');
@@ -183,4 +182,3 @@ const getStyles = (theme) => {
     }
   };
 };
-

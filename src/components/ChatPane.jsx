@@ -15,44 +15,37 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
   useEffect(() => {
     if (currentUser?._id && otherUser?._id) {
       fetchMessages();
-      setSelectedMessageId(null); // Limpar seleção ao mudar de conversa
+      setSelectedMessageId(null);
       
-      // Polling para atualizar mensagens em tempo real (a cada 2 segundos)
+
       const interval = setInterval(() => {
         fetchMessages();
       }, 2000);
       
       return () => clearInterval(interval);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?._id, otherUser?._id]);
 
   useEffect(() => {
-    // Quando o componente monta ou muda de conversa, marcar mensagens como lidas
     if (currentUser?._id && otherUser?._id && messages.length > 0) {
       markMessagesAsRead();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?._id, otherUser?._id, messages.length]);
 
   const markMessagesAsRead = async () => {
     if (!currentUser?._id || !otherUser?._id) return;
     try {
-      // Verificar se há mensagens não lidas
       const hasUnread = messages.some(msg => !msg.read && msg.sender._id === otherUser._id);
       if (!hasUnread) return;
 
-      // Marcar como lidas no backend
       await chatAPI.markAsRead(otherUser._id, currentUser._id);
       
-      // Atualizar estado local
       setMessages(prev => prev.map(msg => 
         msg.sender._id === otherUser._id && !msg.read 
           ? { ...msg, read: true }
           : msg
       ));
 
-      // Notificar componente pai para atualizar lista de conversas
       if (typeof onMessagesRead === 'function') {
         onMessagesRead();
       }
@@ -68,25 +61,19 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
       const data = await res.json();
       const newMessages = Array.isArray(data) ? data : [];
       
-      // Verificar se há novas mensagens comparando com as existentes
       setMessages(prevMessages => {
-        // Se não há mensagens anteriores, retornar as novas
         if (prevMessages.length === 0) return newMessages;
         
-        // Criar sets de IDs para comparação
         const prevIds = new Set(prevMessages.map(m => m._id?.toString()));
         const newIds = new Set(newMessages.map(m => m._id?.toString()));
         
-        // Verificar se há novas mensagens ou se alguma foi removida
         const hasNewMessages = newMessages.some(m => !prevIds.has(m._id?.toString()));
         const hasRemovedMessages = prevMessages.some(m => !newIds.has(m._id?.toString()));
         
-        // Se há novas mensagens ou mensagens foram removidas (incluindo deletadas), atualizar
         if (hasNewMessages || hasRemovedMessages || newMessages.length !== prevMessages.length) {
           return newMessages;
         }
         
-        // Se não há mudanças, manter o estado anterior (evita re-renders desnecessários)
         return prevMessages;
       });
     } catch (err) {
@@ -106,7 +93,6 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
       const message = await res.json();
       setMessages((prev) => [...prev, message]);
       setNewMessage('');
-      // Notificar o componente pai para atualizar a lista de conversas
       if (typeof onMessageSent === 'function') {
         onMessageSent(otherUser, message);
       }
@@ -135,7 +121,7 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
   };
 
   const handleDeleteMessage = async (e, messageId) => {
-    e.stopPropagation(); // Prevenir que o clique dispare o onClick da mensagem
+    e.stopPropagation();
     if (!currentUser?._id) return;
     try {
       const response = await fetch(`/api/chat/messages/${messageId}?currentUserId=${currentUser._id}`, { 
@@ -147,25 +133,21 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
         throw new Error(error.error || 'Erro ao deletar mensagem');
       }
       
-      // Remover a mensagem do estado local imediatamente
       setMessages(prev => prev.filter(m => {
         const msgId = m._id?.toString();
         const deleteId = messageId?.toString();
         return msgId !== deleteId;
       }));
       
-      // Limpar seleção se a mensagem deletada estava selecionada
       if (selectedMessageId === messageId) {
         setSelectedMessageId(null);
       }
     } catch (err) {
       console.error('Error deleting message:', err);
-      // Mostrar erro para o usuário se necessário
     }
   };
 
   const handleMessageClick = (messageId) => {
-    // Se clicar na mesma mensagem, desselecionar
     if (selectedMessageId === messageId) {
       setSelectedMessageId(null);
     } else {
@@ -182,7 +164,7 @@ export default function ChatPane({ currentUser, otherUser, onConversationDeleted
       <div 
         style={styles.messages}
         onClick={(e) => {
-          // Se clicar na área de mensagens (não em uma mensagem específica), desselecionar
+
           if (e.target === e.currentTarget || e.target.closest('form')) {
             setSelectedMessageId(null);
           }
@@ -331,5 +313,3 @@ const getStyles = (theme) => {
     textSecondary,
   };
 };
-
-

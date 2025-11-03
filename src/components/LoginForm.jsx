@@ -13,7 +13,6 @@ export default function LoginForm({ onLogin, onErrorReset, onSwitchToRegister })
   });
   const [error, setError] = useState('');
 
-  // Registrar função de reset para ser chamada quando o modal fechar
   useEffect(() => {
     if (onErrorReset) {
       const resetFn = () => {
@@ -29,7 +28,6 @@ export default function LoginForm({ onLogin, onErrorReset, onSwitchToRegister })
       ...prev,
       [name]: value
     }));
-    // Limpar erro quando o usuário começar a digitar
     if (error) {
       setError('');
     }
@@ -53,7 +51,6 @@ export default function LoginForm({ onLogin, onErrorReset, onSwitchToRegister })
     
     const data = normalize(formData);
     
-    // Validar campos antes de iniciar animação
     if (!data.email?.trim() || !data.password?.trim()) {
       setError('Preencha email e senha.');
       return;
@@ -319,4 +316,3 @@ const styles = {
     pointerEvents: 'none',
   },
 };
-

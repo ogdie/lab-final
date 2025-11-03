@@ -6,7 +6,6 @@ import { processMentions } from "../lib/mentionUtils.js";
 
 const router = express.Router();
 
-// Get all topics
 router.get('/topics', async (req, res) => {
   try {
     const topics = await Topic.find().populate('posts');
@@ -16,7 +15,6 @@ router.get('/topics', async (req, res) => {
   }
 });
 
-// Create topic
 router.post('/topics', async (req, res) => {
   try {
     const { name, description, category } = req.body;
@@ -27,7 +25,6 @@ router.post('/topics', async (req, res) => {
   }
 });
 
-// Get topic by ID
 router.get('/topics/:id', async (req, res) => {
   try {
     const topic = await Topic.findById(req.params.id).populate({
@@ -51,7 +48,6 @@ router.get('/topics/:id', async (req, res) => {
   }
 });
 
-// Add reply to topic
 router.post('/topics/:id/reply', async (req, res) => {
   try {
     const { author, content, image } = req.body;
@@ -69,10 +65,8 @@ router.post('/topics/:id/reply', async (req, res) => {
     topic.posts.push(post._id);
     await topic.save();
     
-    // Add XP for forum participation
     await User.findByIdAndUpdate(author, { $inc: { xp: 15 } });
     
-    // Processar menções no conteúdo do post do fórum
     if (content) {
       await processMentions(content, author, post._id, null);
     }
@@ -88,4 +82,3 @@ router.post('/topics/:id/reply', async (req, res) => {
 });
 
 export default router;
-

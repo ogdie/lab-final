@@ -8,7 +8,6 @@ import { FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { FaCopy } from "react-icons/fa";
 
-// Função de estilos dinâmicos baseada no tema
 const getStyles = (theme) => {
   const isDark = theme === "dark";
   const textPrimary = isDark ? "#e4e6eb" : "#1d2129";
@@ -83,13 +82,11 @@ export default function ShareButton({
   const [showAlert, setShowAlert] = useState(false);
   const { t } = useThemeLanguage();
 
-  // Se o tema não vier por prop, tenta pegar do contexto
   const { theme: contextTheme } = useThemeLanguage();
   const appliedTheme = theme || contextTheme || "light";
 
   const styles = getStyles(appliedTheme);
 
-  // 🔹 Referência para detectar cliques fora do menu
   const dropdownRef = useRef(null);
 
   const handleShare = (platform) => {
@@ -138,7 +135,6 @@ export default function ShareButton({
     setShowMenu(false);
   };
 
-  // Fecha o menu se clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {

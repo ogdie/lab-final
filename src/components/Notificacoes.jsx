@@ -14,7 +14,6 @@ export default function Notificacoes({ userId, onClose, onNotificationsUpdated }
     if (userId) {
       fetchNotifications();
       
-      // Polling para atualizar notificações em tempo real (a cada 5 segundos)
       const interval = setInterval(() => {
         fetchNotifications();
       }, 5000);
@@ -24,11 +23,9 @@ export default function Notificacoes({ userId, onClose, onNotificationsUpdated }
   }, [userId]);
 
   useEffect(() => {
-    // Quando o componente monta (dropdown abre), marcar todas como lidas
     if (userId && notifications.length > 0) {
       markAllAsRead();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notifications.length]);
 
   const markAllAsRead = async () => {
@@ -41,10 +38,8 @@ export default function Notificacoes({ userId, onClose, onNotificationsUpdated }
         unreadNotifications.map(n => notificationsAPI.markAsRead(n._id))
       );
       
-      // Atualizar estado local
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       
-      // Notificar componente pai para atualizar contador
       if (onNotificationsUpdated) {
         onNotificationsUpdated();
       }
@@ -56,9 +51,7 @@ export default function Notificacoes({ userId, onClose, onNotificationsUpdated }
   const fetchNotifications = async () => {
     try {
       const data = await notificationsAPI.getAll(userId);
-      // Garantir que relatedPost.topic está disponível
       const notifications = Array.isArray(data) ? data.map(n => {
-        // Se relatedTopic existe mas relatedPost.topic não, copiar
         if (n.relatedTopic && !n.relatedPost?.topic) {
           return {
             ...n,
@@ -70,7 +63,6 @@ export default function Notificacoes({ userId, onClose, onNotificationsUpdated }
       setNotifications(notifications);
     } catch (err) {
       console.error('Error fetching notifications (notificationsAPI):', err?.message || err);
-      // Fallback para rota alternativa, caso o backend exponha por usuário
       try {
         const byUser = await usersAPI.getNotifications(userId);
         const notifications = Array.isArray(byUser) ? byUser.map(n => {
@@ -91,19 +83,16 @@ export default function Notificacoes({ userId, onClose, onNotificationsUpdated }
 
   const handleNotificationClick = async (notif) => {
     try {
-      // Marcar como lida
       if (!notif.read) {
         await notificationsAPI.markAsRead(notif._id);
         setNotifications((prev) => prev.map((n) => (n._id === notif._id ? { ...n, read: true } : n)));
       }
 
-      // Navegar para o post/comentário relacionado
       if (notif.relatedPost) {
         const postId = notif.relatedPost._id || notif.relatedPost;
         router.push(`/post/${postId}`);
         if (onClose) onClose();
       } else if (notif.type === 'connection_request' || notif.type === 'connection_accepted' || notif.type === 'new_follower') {
-        // Para conexões e seguidores, ir para o perfil do usuário
         if (notif.from?._id) {
           router.push(`/profile?id=${notif.from._id}`);
           if (onClose) onClose();
@@ -167,7 +156,7 @@ export default function Notificacoes({ userId, onClose, onNotificationsUpdated }
               <p style={styles.text}>
                 <strong>{notif.from?.name}</strong> {
                   notif.type === 'like' && (() => {
-                    // Verificar se é do fórum (pode vir de relatedTopic ou relatedPost.topic)
+
                     const isForum = notif.relatedTopic || (notif.relatedPost?.topic);
                     if (isForum) {
                       return notif.relatedComment 
@@ -181,7 +170,7 @@ export default function Notificacoes({ userId, onClose, onNotificationsUpdated }
                   })()
                 }
                 {notif.type === 'comment' && (() => {
-                  // Verificar se é do fórum (pode vir de relatedTopic ou relatedPost.topic)
+
                   const isForum = notif.relatedTopic || (notif.relatedPost?.topic);
                   if (isForum) {
                     return notif.relatedComment 
@@ -289,4 +278,3 @@ const getStyles = (theme) => {
     }
   };
 };
-

@@ -126,12 +126,9 @@ export default function UsersListModal({
   const router = useRouter();
   const { t } = useThemeLanguage();
   const styles = getStyles(theme);
-  
-  // Usar ref para manter referência estável da função fetchUsers
   const fetchUsersRef = useRef(fetchUsers);
   const userIdsRef = useRef(userIds);
   
-  // Atualizar refs quando props mudarem
   useEffect(() => {
     fetchUsersRef.current = fetchUsers;
     userIdsRef.current = userIds;
@@ -147,7 +144,6 @@ export default function UsersListModal({
       if (currentFetchUsers) {
         userList = await currentFetchUsers();
       } else if (currentUserIds.length > 0) {
-        // Se não tiver função fetchUsers, buscar usuários pelos IDs
         const userPromises = currentUserIds.map(id => usersAPI.getById(id).catch(() => null));
         const results = await Promise.all(userPromises);
         userList = results.filter(u => u !== null);
@@ -235,4 +231,3 @@ export default function UsersListModal({
       </div>
   );
 }
-

@@ -3,7 +3,6 @@ import Notification from "../models/notification.js";
 
 const router = express.Router();
 
-// Get all notifications
 router.get('/', async (req, res) => {
   try {
     const { userId } = req.query;
@@ -22,7 +21,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Mark as read
 router.put('/:id/read', async (req, res) => {
   try {
     const notification = await Notification.findByIdAndUpdate(
@@ -36,7 +34,6 @@ router.put('/:id/read', async (req, res) => {
   }
 });
 
-// Delete notification
 router.delete('/:id', async (req, res) => {
   try {
     await Notification.findByIdAndDelete(req.params.id);
@@ -47,4 +44,3 @@ router.delete('/:id', async (req, res) => {
 });
 
 export default router;
-

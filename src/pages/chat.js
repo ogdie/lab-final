@@ -20,13 +20,10 @@ export default function Chat() {
   const [searchPaused, setSearchPaused] = useState(false);
   const [lastSearchQuery, setLastSearchQuery] = useState('');
 
-  // Notificar que o chat foi visitado sempre que a página for montada ou atualizada
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Disparar evento imediatamente
       window.dispatchEvent(new CustomEvent('chatVisited', { detail: { timestamp: Date.now() } }));
       
-      // Também tentar atualizar via broadcast channel se disponível
       if ('BroadcastChannel' in window) {
         const channel = new BroadcastChannel('chat-visited');
         channel.postMessage({ type: 'chatVisited', timestamp: Date.now() });
@@ -54,7 +51,6 @@ export default function Chat() {
     setUser(parsedUser);
     loadConversations(parsedUser._id);
 
-    // Abrir conversa direto via query param ?userId=
     try {
       const params = new URLSearchParams(window.location.search);
       const targetId = params.get('userId');
@@ -67,14 +63,12 @@ export default function Chat() {
       }
     } catch {}
 
-    // Polling para atualizar conversas em tempo real (a cada 3 segundos)
     const interval = setInterval(() => {
       if (parsedUser._id) {
         loadConversations(parsedUser._id, true); // skipLoading = true para não afetar o estado de loading
       }
     }, 3000);
 
-    // Cleanup
     return () => {
       clearInterval(interval);
     };
@@ -90,7 +84,6 @@ export default function Chat() {
       setConversations(prevConversations => {
         const newConversations = Array.isArray(data) ? data : [];
         
-        // Se está carregando pela primeira vez, definir loading como false
         if (!skipLoading && loading) {
           setTimeout(() => setLoading(false), 0);
         }
@@ -110,12 +103,10 @@ export default function Chat() {
     if (!otherUser?._id) return;
     setSelectedUser(otherUser);
     
-    // Marcar mensagens como lidas ao abrir a conversa
     if (user?._id) {
       try {
         const { chatAPI } = await import('../services/api');
         await chatAPI.markAsRead(otherUser._id, user._id);
-        // Recarregar conversas para atualizar o badge
         await loadConversations(user._id);
       } catch (err) {
         console.error('Error marking messages as read:', err);
@@ -124,12 +115,10 @@ export default function Chat() {
   };
 
   const handleMessagesRead = async () => {
-    // Recarregar conversas quando mensagens são marcadas como lidas
     if (user?._id) {
       await loadConversations(user._id);
     }
   };
-
 
   const handleSearch = async (query) => {
     if (!query?.trim()) {
@@ -140,12 +129,10 @@ export default function Chat() {
       return;
     }
 
-    // Se a pesquisa está pausada e a query não mudou, não fazer nada
     if (searchPaused && query === lastSearchQuery) {
       return;
     }
 
-    // Se a query mudou, reativar a pesquisa
     if (query !== lastSearchQuery) {
       setSearchPaused(false);
     }
@@ -304,7 +291,6 @@ export default function Chat() {
                 setSelectedUser(null);
               }}
               onMessageSent={(otherUser, message) => {
-                // Recarregar as conversas para garantir que a nova conversa apareça na lista
                 if (user?._id) {
                   loadConversations(user._id);
                 }
@@ -365,6 +351,8 @@ const getStyles = (theme) => {
       marginBottom: '1rem',
       cursor: 'pointer',
       transition: 'background 0.2s',
+      overflow: 'hidden',
+      maxWidth: '100%',
     },
     conversationItemHover: {
       background: isDark ? '#3a3b3c' : '#f5f5f5',
@@ -377,17 +365,26 @@ const getStyles = (theme) => {
     },
     info: {
       flex: 1,
+      minWidth: 0,
+      overflow: 'hidden',
     },
     name: {
       margin: 0,
       fontSize: '1.1rem',
       marginBottom: '0.25rem',
       color: textPrimary,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
     },
     lastMessage: {
       margin: 0,
       color: textSecondary,
       fontSize: '0.9rem',
+      wordBreak: 'break-word',
+      overflowWrap: 'break-word',
+      overflow: 'hidden',
+      maxWidth: '100%',
     },
     badge: {
       background: '#8B5CF6',

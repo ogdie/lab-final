@@ -37,5 +37,3 @@ export default function BackButton({ to = '/forum', style = {}, onClick }) {
     </button>
   );
 }
-
-

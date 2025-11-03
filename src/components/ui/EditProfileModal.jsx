@@ -19,11 +19,8 @@ const INSTITUTIONS = [
 
 const USER_TYPES = ["Estudante", "Professor", "Recrutador"];
 
-// --- Função de Estilo Dinâmico (getStyles) ---
-// Note que agora ele recebe o tema (theme) como argumento
 const getStyles = (theme) => {
     const isDark = theme === 'dark';
-    // Paleta de cores LinkedIn-like/Dark Mode
     const textPrimary = isDark ? '#e4e6eb' : '#1d2129';
     const textSecondary = isDark ? '#b0b3b8' : '#606770';
     const backgroundModal = isDark ? '#242526' : 'white';
@@ -33,7 +30,6 @@ const getStyles = (theme) => {
     const grayCancel = isDark ? '#474a4d' : '#e7e7e7'; // Cinza de cancelamento
 
     return {
-        // Overlay (fundo escuro semi-transparente)
         overlay: {
             position: 'fixed',
             top: 0,
@@ -46,7 +42,6 @@ const getStyles = (theme) => {
             justifyContent: 'center',
             zIndex: 1000,
         },
-        // Container do Modal
         modal: {
             background: backgroundModal,
             borderRadius: '10px', // Mais arredondado, estilo moderno
@@ -105,7 +100,6 @@ const getStyles = (theme) => {
             justifyContent: 'flex-end',
             marginTop: '2rem',
         },
-        // Botão de Cancelar (Cinza/Neutro)
         cancelButton: {
             padding: '0.6rem 1.2rem',
             background: grayCancel,
@@ -116,7 +110,6 @@ const getStyles = (theme) => {
             fontWeight: '600',
             transition: 'background 0.2s',
         },
-        // Botão de Salvar (Azul Principal)
         saveButton: {
             padding: '0.6rem 1.2rem',
             background: blueAction,
@@ -129,8 +122,6 @@ const getStyles = (theme) => {
         }
     };
 };
-// --- FIM da Função de Estilo Dinâmico ---
-
 
 export default function EditProfileModal({ isOpen, onClose, user, onSave, theme = 'light' }) {
     const [formData, setFormData] = useState({
@@ -140,12 +131,9 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
         institution: INSTITUTIONS[0],
         userType: USER_TYPES[0]
     });
-    
-    // Obter estilos dinâmicos baseados no tema
     const styles = getStyles(theme);
     const { t } = useThemeLanguage();
 
-    // Carrega os dados do usuário quando o modal abre ou o usuário muda
     useEffect(() => {
         if (user) {
             setFormData({
@@ -156,7 +144,7 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
                 userType: user.userType || USER_TYPES[0]
             });
         }
-    }, [user, isOpen]); // Adicionado 'isOpen' para garantir que os dados sejam redefinidos quando o modal é aberto
+    }, [user, isOpen]);
 
     if (!isOpen) return null;
 
@@ -176,7 +164,6 @@ export default function EditProfileModal({ isOpen, onClose, user, onSave, theme 
     };
 
     return (
-        // Oculta o modal clicando no overlay, mas não no modal em si
         <div style={styles.overlay} onClick={onClose}>
             <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
                 <h2 style={styles.title}>{t('edit_profile')}</h2>

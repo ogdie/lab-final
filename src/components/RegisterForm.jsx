@@ -107,7 +107,6 @@ export default function RegisterForm({ onRegister, onErrorReset, onSwitchToLogin
     
     const data = normalize(formData);
     
-    // Validar campos antes de iniciar animação
     const err = validateRegister(data);
     if (err) {
       setError(err);
@@ -351,4 +350,3 @@ const styles = {
     pointerEvents: 'none',
   },
 };
-

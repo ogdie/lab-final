@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '../components/ui/Navbar';
@@ -15,7 +14,7 @@ import AchievementDetailsModal from '../components/ui/AchievementDetailsModal';
 import AchievementCard from '../components/AchievementCard';
 import { FaTimes, FaEdit, FaTrophy, FaStar, FaShare, FaPaperPlane, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
 
-// Função para estilos dinâmicos da página de perfil
+
 const getPageStyles = (theme) => {
   const isDark = theme === 'dark';
   return {
@@ -178,7 +177,6 @@ export default function Profile() {
   const isDark = theme === 'dark';
   const styles = getPageStyles(theme);
 
-  // Função helper para traduzir userType
   const translateUserType = (userType) => {
     if (!userType) return userType;
     const typeMap = {
@@ -189,7 +187,7 @@ export default function Profile() {
     return t(typeMap[userType]) || userType;
   };
 
-  // Função helper para traduzir institution
+
   const translateInstitution = (institution) => {
     if (!institution) return institution;
     if (institution === 'Outros') {
@@ -258,7 +256,6 @@ export default function Profile() {
     setCurrentUser(parsedUser);
   }, []);
 
-  // Separar useEffect para searchParams para evitar interferência na navegação
   useEffect(() => {
     if (!currentUser?._id) return;
     
@@ -275,11 +272,8 @@ export default function Profile() {
       setError("ID de usuário inválido.");
       setLoading(false);
     }
-    // Usar apenas currentUser._id como dependência para evitar loops
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?._id]);
 
-  // Listener adicional para mudanças na URL (para navegação do Next.js)
   useEffect(() => {
     if (!currentUser?._id || typeof window === 'undefined') return;
     
@@ -287,26 +281,21 @@ export default function Profile() {
       try {
         const params = new URLSearchParams(window.location.search);
         const urlUserId = params.get("id") || currentUser._id;
-        // Só recarregar se o userId mudou
         if (urlUserId && urlUserId !== user?._id) {
           loadUser(urlUserId);
         }
       } catch (e) {
-        // Ignorar erros
       }
     };
     
-    // Verificar mudanças na URL periodicamente (fallback para Next.js router)
     const interval = setInterval(checkUrlChange, 300);
     
-    // Listener para popstate (botões back/forward)
     window.addEventListener('popstate', checkUrlChange);
     
     return () => {
       clearInterval(interval);
       window.removeEventListener('popstate', checkUrlChange);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?._id, user?._id]);
 
   const loadUser = async (userId) => {
@@ -375,12 +364,10 @@ export default function Profile() {
       return;
     }
 
-    // Se a pesquisa está pausada e a query não mudou, não fazer nada
     if (searchPaused && query === lastSearchQuery) {
       return;
     }
 
-    // Se a query mudou, reativar a pesquisa
     if (query !== lastSearchQuery) {
       setSearchPaused(false);
     }
@@ -399,7 +386,7 @@ export default function Profile() {
   const handleCloseSearch = () => {
     setShowSearchResults(false);
     setSearchResults([]);
-    setSearchPaused(true); // Pausar a pesquisa para evitar reabertura automática
+    setSearchPaused(true);
   };
 
   const handleShareProfile = async () => {
@@ -428,7 +415,7 @@ export default function Profile() {
     if (!user?._id) return;
     try {
       if (editingAchievement?._id) {
-        // Atualizar conquista existente
+
         await usersAPI.updateAchievement(user._id, editingAchievement._id, formData);
         await loadUser(user._id);
         setAlert({
@@ -437,7 +424,6 @@ export default function Profile() {
           title: t('success') || (language === 'en' ? 'Success!' : 'Sucesso!'),
         });
       } else {
-        // Adicionar nova conquista
         await usersAPI.addAchievement(user._id, formData);
         await loadUser(user._id);
         setAlert({
@@ -446,7 +432,6 @@ export default function Profile() {
           title: t('success') || (language === 'en' ? 'Success!' : 'Sucesso!'),
         });
       }
-      // Resetar página de conquistas para mostrar a primeira página
       setAchievementPage(0);
     } catch (err) {
       console.error('Erro ao salvar conquista:', err);
@@ -472,7 +457,6 @@ export default function Profile() {
       try {
         await usersAPI.deleteAchievement(user._id, achievementId);
         await loadUser(user._id);
-        // Ajustar página atual se necessário após deletar
         const remainingAchievements = (user.achievements || []).length - 1;
         const itemsPerPage = 3;
         const maxPage = Math.max(0, Math.ceil(remainingAchievements / itemsPerPage) - 1);
@@ -506,7 +490,6 @@ export default function Profile() {
     });
   };
 
-  // Funções estáveis para os modais de seguidores/seguindo
   const fetchFollowers = useCallback(async () => {
     if (!user?._id) return [];
     try {
@@ -578,7 +561,7 @@ export default function Profile() {
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 999, // Lower than search modal
+              zIndex: 999,
             }}
             onClick={handleCloseSearch}
           />
@@ -687,7 +670,6 @@ export default function Profile() {
 
       <div style={styles.content}>
         {isMobile ? (
-          // 📱 Mobile: imagem acima, tudo em coluna
           <div style={styles.profileHeader}>
             <img
               src={user.profilePicture || "/default-avatar.svg"}
@@ -882,7 +864,6 @@ export default function Profile() {
             </div>
           </div>
         ) : (
-          // 💻 Desktop: alinhar imagem com nome na mesma linha visual
           <div style={{ padding: '2rem 0' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem' }}>
               <img

@@ -6,26 +6,21 @@ import React, {
   useContext,
 } from "react";
 
-// 1. Criação do Contexto
 export const ThemeLanguageContext = createContext();
 
-// Função de Estilo que já usamos no Settings.js
 const applyGlobalStyles = (theme) => {
   const isDark = theme === "dark";
   const backgroundPrimary = isDark ? "#1d2226" : "#f0f2f5";
   const textPrimary = isDark ? "#e4e6eb" : "#1d2129";
 
-  // Aplica o background e a cor de texto ao body para afetar toda a aplicação
   document.body.style.backgroundColor = backgroundPrimary;
   document.body.style.color = textPrimary;
 };
 
-// 2. Criação do Provedor (Provider)
 export const ThemeLanguageProvider = ({ children }) => {
   const [theme, setThemeState] = useState("light");
   const [language, setLanguageState] = useState("pt");
 
-  // Carrega tema e idioma salvos no localStorage na montagem
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light";
     const savedLanguage = localStorage.getItem("language") || "pt";
@@ -35,20 +30,17 @@ export const ThemeLanguageProvider = ({ children }) => {
     applyGlobalStyles(savedTheme);
   }, []);
 
-  // Função global para mudar o tema
   const setTheme = useCallback((newTheme) => {
     setThemeState(newTheme);
     localStorage.setItem("theme", newTheme);
     applyGlobalStyles(newTheme); // Aplica as cores globalmente
   }, []);
 
-  // Função global para mudar o idioma
   const setLanguage = useCallback((newLang) => {
     setLanguageState(newLang);
     localStorage.setItem("language", newLang);
   }, []);
 
-  // Traduções globais básicas para componentes comuns
   const translations = {
     pt: {
       search_placeholder: "Buscar posts e usuários...",
@@ -403,7 +395,6 @@ export const ThemeLanguageProvider = ({ children }) => {
     [language]
   );
 
-  // Objeto de valor fornecido ao contexto
   const contextValue = {
     theme,
     setTheme,
@@ -420,7 +411,6 @@ export const ThemeLanguageProvider = ({ children }) => {
   );
 };
 
-// 3. Hook Customizado para usar o Contexto facilmente
 export const useThemeLanguage = () => {
   return useContext(ThemeLanguageContext);
 };

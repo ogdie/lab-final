@@ -21,7 +21,6 @@ export default function MentionTextarea({
     
     onChange(e);
     
-    // Verificar se está digitando após @
     const textBeforeCursor = newValue.substring(0, cursorPos);
     const isTypingMention = /@[a-zA-Z0-9_\-\s]*$/.test(textBeforeCursor);
     
@@ -36,7 +35,6 @@ export default function MentionTextarea({
 
   const handleSelectUser = (newText, newCursorPos) => {
     if (textareaRef.current) {
-      // Criar evento sintético para manter compatibilidade
       const syntheticEvent = {
         target: {
           value: newText,
@@ -48,13 +46,10 @@ export default function MentionTextarea({
         stopPropagation: () => {}
       };
       
-      // Atualizar valor diretamente
       textareaRef.current.value = newText;
       
-      // Disparar onChange
       onChange(syntheticEvent);
       
-      // Restaurar cursor após atualização
       requestAnimationFrame(() => {
         if (textareaRef.current) {
           textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
@@ -67,7 +62,6 @@ export default function MentionTextarea({
   };
 
   const handleKeyDown = (e) => {
-    // Se autocomplete está aberto, deixar ele lidar com as setas e Enter
     if (showAutocomplete && (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter')) {
       e.preventDefault();
       return;
@@ -79,8 +73,6 @@ export default function MentionTextarea({
       setCursorPosition(textareaRef.current.selectionStart);
     }
   };
-
-  // Extrair propriedades que devem ser aplicadas ao container
   const {
     width,
     flex,
@@ -149,4 +141,3 @@ export default function MentionTextarea({
     </div>
   );
 }
-

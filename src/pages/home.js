@@ -236,7 +236,6 @@ export default function Home() {
     const backgroundCard = isDark ? '#2c2f33' : '#ffffff';
     const blueAction = '#8B5CF6';
 
-    // Função helper para traduzir userType
     const translateUserType = (userType) => {
         if (!userType) return null;
         const typeMap = {
@@ -266,7 +265,6 @@ export default function Home() {
         showCancel: false
     });
     
-    // Ref para manter referência estável dos posts para o polling
     const postsRef = useRef([]);
 
     const loadPosts = useCallback(async () => {
@@ -275,9 +273,6 @@ export default function Home() {
         try {
             const data = await postsAPI.getAll();
             const list = Array.isArray(data) ? data : [];
-            
-            // Filtrar posts para mostrar apenas os de usuários que o usuário está seguindo
-            // Incluir também os próprios posts do usuário
             const followingIds = user?.following?.map(id => String(id)) || [];
             const currentUserId = user?._id ? String(user._id) : null;
             
@@ -285,7 +280,6 @@ export default function Home() {
                 const authorId = post.author?._id || post.author;
                 const authorIdStr = authorId ? String(authorId) : null;
                 
-                // Incluir se for post do próprio usuário ou se o autor está sendo seguido
                 return authorIdStr && (
                     authorIdStr === currentUserId || 
                     followingIds.includes(authorIdStr)
@@ -307,7 +301,6 @@ export default function Home() {
         if (!user?._id) return;
         try {
             const created = await postsAPI.create({ ...data, author: user._id });
-            // Adicionar o novo post no início da lista (já que é do próprio usuário, sempre aparece)
             const newPost = { ...(created || {}), author: created?.author || user };
             setPosts(prev => {
                 const updated = [newPost, ...prev];
@@ -326,23 +319,17 @@ export default function Home() {
         if (!postId || !userId) return;
         try {
             const updatedPost = await postsAPI.like(postId, userId);
-            // Atualizar apenas o post específico no estado, sem recarregar todos
-            // Normalizar likes para strings para garantir compatibilidade
             const normalizedLikes = (updatedPost.likes || []).map(id => String(id));
             setPosts(prevPosts => 
                 prevPosts.map(p => {
-                    // Comparar IDs como strings para garantir match
                     const currentPostId = p._id ? String(p._id) : null;
                     const targetPostId = postId ? String(postId) : null;
                     
                     if (currentPostId === targetPostId) {
-                        // Criar um novo objeto completo para forçar re-render do React
-                        // Sempre criar novo array, mesmo que vazio, para garantir nova referência
                         const updatedPost = { 
                             ...p, 
-                            likes: [...normalizedLikes] // Nova referência de array sempre
+                            likes: [...normalizedLikes]
                         };
-                        // Atualizar ref também
                         postsRef.current = postsRef.current.map(p => 
                             String(p._id) === targetPostId ? updatedPost : p
                         );
@@ -361,31 +348,24 @@ export default function Home() {
         
         try {
             const newComment = await postsAPI.addComment(postId, { author: user._id, content, parentComment });
-            
-            // Atualizar apenas o post específico no estado, sem recarregar todos (atualização otimista)
-            // Isso mantém o scroll no lugar, como nas curtidas
             setPosts(prevPosts => 
                 prevPosts.map(post => {
-                    // Comparar IDs como strings para garantir match
                     const currentPostId = post._id ? String(post._id) : null;
                     const targetPostId = postId ? String(postId) : null;
                     
                     if (currentPostId === targetPostId) {
-                        // Garantir que o novo comentário tem a estrutura correta
                         const commentWithDefaults = {
                             ...newComment,
                             author: newComment.author || user,
                             likes: newComment.likes || [],
                             createdAt: newComment.createdAt || new Date().toISOString()
                         };
-                        // Criar novos arrays e objetos para forçar re-render do React
                         const existingComments = post.comments || [];
                         const updatedComments = [...existingComments, commentWithDefaults];
                         const updatedPost = { 
                             ...post, 
                             comments: updatedComments // Sempre nova referência de array
                         };
-                        // Atualizar ref também
                         postsRef.current = postsRef.current.map(p => 
                             String(p._id) === targetPostId ? updatedPost : p
                         );
@@ -403,7 +383,6 @@ export default function Home() {
         if (!commentId || !user?._id) return;
         try {
             const updatedComment = await commentsAPI.like(commentId, user._id);
-            // Atualizar apenas o comentário específico no estado, sem recarregar todos os posts
             const normalizedLikes = (updatedComment.likes || []).map(id => String(id));
             const commentIdStr = String(commentId);
             
@@ -414,7 +393,6 @@ export default function Home() {
                     );
                     
                     if (hasMatchingComment) {
-                        // Criar novos arrays e objetos para forçar re-render
                         return {
                             ...post,
                             comments: (post.comments || []).map(comment => {
@@ -499,12 +477,10 @@ export default function Home() {
             return;
         }
 
-        // Se a pesquisa está pausada e a query não mudou, não fazer nada
         if (searchPaused && query === lastSearchQuery) {
             return;
         }
 
-        // Se a query mudou, reativar a pesquisa
         if (query !== lastSearchQuery) {
             setSearchPaused(false);
         }
@@ -555,59 +531,49 @@ export default function Home() {
 
         if (!token || !parsedUser?._id) { router.push('/'); return; }
 
-        // Buscar dados atualizados da API, como no profile.js
-        setUser(parsedUser); // Set inicial para não ficar sem dados
+        setUser(parsedUser);
         loadCurrentUser(parsedUser._id);
     }, [router, loadCurrentUser]);
 
-    // Recarregar posts quando o user mudar (para atualizar a lista de following)
     useEffect(() => {
         if (user?._id) {
             loadPosts();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?._id, JSON.stringify(user?.following?.sort() || [])]);
 
-    // Atualizar ref quando posts mudarem
     useEffect(() => {
         postsRef.current = posts;
     }, [posts]);
 
-    // Polling para atualizar posts quando outras pessoas curtem/comentam
     useEffect(() => {
         if (!user?._id) return;
 
         const updatePostsFromServer = async () => {
-            const currentPosts = postsRef.current; // Usar ref para evitar dependência de posts
+            const currentPosts = postsRef.current;
             if (currentPosts.length === 0) return;
 
             try {
-                // Para cada post no estado, buscar versão atualizada do servidor
                 const updatePromises = currentPosts.map(async (currentPost) => {
                     try {
                         const updatedPost = await postsAPI.getById(currentPost._id);
                         if (!updatedPost) return currentPost;
 
-                        // Comparar se houve mudanças em likes ou comments
                         const currentLikesCount = (currentPost.likes || []).length;
                         const updatedLikesCount = (updatedPost.likes || []).length;
                         const currentCommentsCount = (currentPost.comments || []).length;
                         const updatedCommentsCount = (updatedPost.comments || []).length;
 
-                        // Se houve mudanças, atualizar o post
                         if (
                             currentLikesCount !== updatedLikesCount ||
                             currentCommentsCount !== updatedCommentsCount
                         ) {
-                            // Normalizar likes para strings
                             const normalizedLikes = (updatedPost.likes || []).map(id => String(id));
                             
-                            // Preservar estrutura do autor (pode vir como objeto populado ou ID)
                             const author = updatedPost.author || currentPost.author;
                             
                             return {
                                 ...currentPost,
-                                author: author, // Manter autor do servidor ou atual
+                                author: author,
                                 likes: [...normalizedLikes],
                                 comments: updatedPost.comments || currentPost.comments || []
                             };
@@ -616,7 +582,7 @@ export default function Home() {
                         return currentPost;
                     } catch (err) {
                         console.error(`Error updating post ${currentPost._id}:`, err);
-                        return currentPost; // Retornar post atual em caso de erro
+                        return currentPost;
                     }
                 });
 
@@ -624,7 +590,6 @@ export default function Home() {
                     (await Promise.all(updatePromises)).map(p => [String(p._id), p])
                 );
                 
-                // Preservar ordem original e atualizar apenas posts que mudaram
                 let hasChanges = false;
                 const finalPosts = currentPosts.map(currentPost => {
                     const postIdStr = String(currentPost._id);
@@ -632,7 +597,6 @@ export default function Home() {
                     
                     if (!updatedPost) return currentPost;
                     
-                    // Comparar se houve mudanças
                     const currentLikes = (currentPost.likes || []).map(id => String(id)).sort().join(',');
                     const updatedLikes = (updatedPost.likes || []).map(id => String(id)).sort().join(',');
                     const currentCommentsCount = (currentPost.comments || []).length;
@@ -640,26 +604,25 @@ export default function Home() {
                     
                     if (currentLikes !== updatedLikes || currentCommentsCount !== updatedCommentsCount) {
                         hasChanges = true;
-                        return updatedPost; // Retornar versão atualizada
+                        return updatedPost;
                     }
                     
-                    return currentPost; // Sem mudanças, manter original
+                    return currentPost;
                 });
 
                 if (hasChanges) {
                     setPosts(finalPosts);
-                    postsRef.current = finalPosts; // Atualizar ref também
+                    postsRef.current = finalPosts;
                 }
             } catch (err) {
                 console.error('Error updating posts from server:', err);
             }
         };
 
-        // Polling a cada 5 segundos para atualizar posts
         const interval = setInterval(updatePostsFromServer, 5000);
 
         return () => clearInterval(interval);
-    }, [user?._id]); // Remover posts das dependências para evitar loops
+    }, [user?._id]);
 
     useEffect(() => {
         if (!user?._id) return;
@@ -669,17 +632,14 @@ export default function Home() {
             if (userData && user?._id) {
                 try {
                     const parsedUser = JSON.parse(userData);
-                    // Buscar dados atualizados da API ao invés de usar apenas o localStorage
                     const freshUser = await usersAPI.getById(user._id);
                     if (freshUser?._id) {
                         setUser(prevUser => {
-                            // Se o following mudou, recarregar posts
                             const prevFollowing = prevUser?.following?.map(id => String(id)) || [];
                             const newFollowing = freshUser?.following?.map(id => String(id)) || [];
                             const followingChanged = JSON.stringify(prevFollowing.sort()) !== JSON.stringify(newFollowing.sort());
                             
                             if (followingChanged) {
-                                // Recarregar posts quando seguir/deixar de seguir alguém
                                 setTimeout(() => loadPosts(), 100);
                             }
                             
@@ -695,7 +655,7 @@ export default function Home() {
         window.addEventListener('storage', handleStorageChange);
         const interval = setInterval(() => {
             handleStorageChange();
-        }, 3000); // Aumentar intervalo para 3 segundos para evitar muitas requisições
+        }, 3000);
 
         return () => {
             window.removeEventListener('storage', handleStorageChange);
@@ -744,7 +704,7 @@ export default function Home() {
                             left: 0,
                             right: 0,
                             bottom: 0,
-                            zIndex: 999, // Lower than search modal
+                            zIndex: 999,
                         }}
                         onClick={handleCloseSearch}
                     />
