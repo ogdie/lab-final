@@ -36,7 +36,7 @@ const getStyles = (theme) => {
     textarea: { width: '100%', padding: '0.75rem', border: `1px solid ${borderSubtle}`, borderRadius: 6, minHeight: 120, background: backgroundCard, color: textPrimary },
     actions: { display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1rem' },
     cancel: { padding: '0.6rem 1rem', background: isDark ? '#474a4d' : '#e7e7e7', color: textPrimary, border: 'none', borderRadius: 6, cursor: 'pointer' },
-    save: { padding: '0.6rem 1rem', background: blueAction, color: 'white', border: 'none', borderRadius: '24px', cursor: 'pointer', fontWeight: 600 },
+    save: { padding: '0.6rem 1rem', background: blueAction, color: 'white', border: 'none', borderRadius: '24px', cursor: 'pointer', fontWeight: 600, opacity: 1, transition: 'opacity 0.2s' },
   };
 };
 
@@ -57,6 +57,7 @@ export default function TopicPage() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchPaused, setSearchPaused] = useState(false);
   const [lastSearchQuery, setLastSearchQuery] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const topicId = useMemo(() => {
     if (typeof window === 'undefined') return '';
@@ -136,10 +137,16 @@ export default function TopicPage() {
   }, [topicId]);
 
   const handleCreateThread = async () => {
-    if (!user?._id || !title.trim()) return;
+    if (!user?._id || !title.trim() || isCreating) return;
+    setIsCreating(true);
     const content = description ? `${title.trim()}\n\n${description.trim()}` : title.trim();
     try {
-      await forumAPI.addReply(topicId, { author: user._id, content, image: image || undefined });
+      const postData = { 
+        author: user._id, 
+        content, 
+        image: image && image.trim() ? image.trim() : '' 
+      };
+      await forumAPI.addReply(topicId, postData);
       setShowModal(false);
       setTitle('');
       setDescription('');
@@ -148,6 +155,8 @@ export default function TopicPage() {
       await refreshUser();
     } catch (err) {
       setError('Não foi possível criar o tópico.');
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -460,7 +469,14 @@ export default function TopicPage() {
       />
 
       {showModal && (
-        <div style={styles.modalOverlay} onClick={() => setShowModal(false)}>
+        <div style={styles.modalOverlay} onClick={() => {
+          if (!isCreating) {
+            setShowModal(false);
+            setTitle('');
+            setDescription('');
+            setImage('');
+          }
+        }}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <h2 style={{ marginTop: 0 }}>{t('create_new_thread')}</h2>
             <label style={styles.label}>{t('thread_title')}</label>
@@ -481,8 +497,35 @@ export default function TopicPage() {
               theme={theme}
             />
             <div style={styles.actions}>
-              <button style={styles.cancel} onClick={() => setShowModal(false)}>{t('cancel')}</button>
-              <button style={styles.save} onClick={handleCreateThread}>{t('create')}</button>
+              <button 
+                style={{
+                  ...styles.cancel,
+                  opacity: isCreating ? 0.6 : 1,
+                  cursor: isCreating ? 'not-allowed' : 'pointer'
+                }} 
+                onClick={() => {
+                  if (!isCreating) {
+                    setShowModal(false);
+                    setTitle('');
+                    setDescription('');
+                    setImage('');
+                  }
+                }} 
+                disabled={isCreating}
+              >
+                {t('cancel')}
+              </button>
+              <button 
+                style={{
+                  ...styles.save,
+                  opacity: (isCreating || !title.trim()) ? 0.6 : 1,
+                  cursor: (isCreating || !title.trim()) ? 'not-allowed' : 'pointer'
+                }} 
+                onClick={handleCreateThread} 
+                disabled={isCreating || !title.trim()}
+              >
+                {isCreating ? t('creating') || 'Criando...' : t('create')}
+              </button>
             </div>
           </div>
         </div>

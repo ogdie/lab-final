@@ -16,7 +16,7 @@ export default function FollowButton({ userId, currentUser, onFollow }) {
       onClick={handleFollow}
       style={{
         ...styles.button,
-        background: isFollowing ? '#4CAF50' : '#8B5CF6',
+        background: isFollowing ? '#EF4444' : '#8B5CF6',
         color: 'white'
       }}
     >

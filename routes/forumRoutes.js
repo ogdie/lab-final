@@ -32,6 +32,7 @@ router.get('/topics/:id', async (req, res) => {
   try {
     const topic = await Topic.findById(req.params.id).populate({
       path: 'posts',
+      select: 'author content image likes comments topic tags createdAt updatedAt',
       populate: [
         { path: 'author', select: 'name profilePicture xp' },
         { 
@@ -53,11 +54,18 @@ router.get('/topics/:id', async (req, res) => {
 // Add reply to topic
 router.post('/topics/:id/reply', async (req, res) => {
   try {
-    const { author, content } = req.body;
+    const { author, content, image } = req.body;
     const topic = await Topic.findById(req.params.id);
     if (!topic) return res.status(404).json({ error: 'Tópico não encontrado' });
     
-    const post = await Post.create({ author, content, topic: topic._id });
+    const postData = {
+      author,
+      content,
+      topic: topic._id,
+      image: (image && typeof image === 'string' && image.trim()) ? image.trim() : ''
+    };
+    
+    const post = await Post.create(postData);
     topic.posts.push(post._id);
     await topic.save();
     
@@ -70,6 +78,7 @@ router.post('/topics/:id/reply', async (req, res) => {
     }
     
     const populatedPost = await Post.findById(post._id)
+      .select('author content image likes comments topic tags createdAt updatedAt')
       .populate('author', 'name profilePicture xp');
     
     res.status(201).json(populatedPost);
